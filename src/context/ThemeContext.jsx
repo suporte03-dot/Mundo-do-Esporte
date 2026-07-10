@@ -4,12 +4,12 @@ const ThemeContext = createContext(null)
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('mde-theme') || 'dark'
+    return localStorage.getItem('arena360-theme') || 'dark'
   })
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('mde-theme', theme)
+    localStorage.setItem('arena360-theme', theme)
   }, [theme])
 
   const toggleTheme = () => {

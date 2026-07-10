@@ -7,8 +7,8 @@ import FeaturedNews from './components/FeaturedNews'
 import NewsGrid from './components/NewsGrid'
 import FanPanel from './components/FanPanel'
 import TrendingSports from './components/TrendingSports'
-import CategoryCards from './components/CategoryCards'
-import Calendar from './components/Calendar'
+import SportsCategories from './components/SportsCategories'
+import WeeklyAgenda from './components/WeeklyAgenda'
 import Curiosities from './components/Curiosities'
 import Stories from './components/Stories'
 import Newsletter from './components/Newsletter'
@@ -29,8 +29,8 @@ function App() {
         <NewsGrid onReadMore={setSelectedNews} />
         <FanPanel />
         <TrendingSports />
-        <CategoryCards />
-        <Calendar />
+        <SportsCategories />
+        <WeeklyAgenda />
         <Curiosities />
         <Stories />
         <Newsletter />

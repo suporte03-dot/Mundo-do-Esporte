@@ -8,9 +8,9 @@ function TrendingSports() {
       <div className="container">
         <SectionReveal>
           <SectionTitle
-            label="Ranking"
+            label="Tendências"
             title="Em alta no esporte"
-            subtitle="As modalidades mais acessadas pelos leitores esta semana"
+            subtitle="As modalidades que mais movimentam torcedores e leitores nesta semana"
           />
         </SectionReveal>
 
@@ -19,7 +19,7 @@ function TrendingSports() {
             <SectionReveal key={sport.rank}>
               <article
                 className="trending__item card"
-                style={{ '--delay': `${index * 0.06}s`, '--color': sport.color }}
+                style={{ '--color': sport.color, '--delay': `${index * 0.06}s` }}
               >
                 <span className="trending__rank">{sport.rank}</span>
                 <span className="trending__icon" aria-hidden="true">{sport.icon}</span>

@@ -21,10 +21,10 @@ function Newsletter() {
             <div className="newsletter__glow" aria-hidden="true" />
             <div className="newsletter__content">
               <span className="newsletter__label">Newsletter</span>
-              <h2>Receba os destaques do esporte direto no seu e-mail.</h2>
+              <h2>Receba os destaques do esporte</h2>
               <p>
-                Toda semana, as manchetes, curiosidades e eventos mais importantes.
-                Grátis e sem spam.
+                Notícias, agenda e curiosidades direto no seu e-mail. Sem enrolação,
+                só o que importa.
               </p>
             </div>
 
@@ -32,15 +32,15 @@ function Newsletter() {
               <div className="newsletter__success" role="status">
                 <span className="newsletter__success-icon">✓</span>
                 <div>
-                  <strong>Inscrição confirmada!</strong>
-                  <p>Em breve você receberá nossos destaques.</p>
+                  <strong>Cadastro realizado!</strong>
+                  <p>Você receberá os próximos destaques da Arena 360.</p>
                 </div>
               </div>
             ) : (
               <form className="newsletter__form" onSubmit={handleSubmit}>
                 <input
                   type="email"
-                  placeholder="Digite seu melhor e-mail"
+                  placeholder="Seu melhor e-mail"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required

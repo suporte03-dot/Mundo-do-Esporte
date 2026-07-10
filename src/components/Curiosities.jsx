@@ -15,9 +15,9 @@ function Curiosities() {
       <div className="container">
         <SectionReveal>
           <SectionTitle
-            label="Você Sabia?"
-            title="Curiosidades esportivas"
-            subtitle="Respostas rápidas para perguntas que todo torcedor já fez"
+            label="Curiosidades"
+            title="Você Sabia?"
+            subtitle="Curiosidades rápidas para quem gosta de entender o esporte além do placar."
           />
         </SectionReveal>
 

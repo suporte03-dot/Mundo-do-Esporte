@@ -8,7 +8,7 @@ const statusClass = {
   'Em breve': 'calendar__status--soon',
 }
 
-function Calendar() {
+function WeeklyAgenda() {
   return (
     <section id="agenda" className="section calendar">
       <div className="container">
@@ -16,7 +16,7 @@ function Calendar() {
           <SectionTitle
             label="Programação"
             title="Agenda da Semana"
-            subtitle="Calendário esportivo com os principais eventos confirmados"
+            subtitle="Confira os principais eventos esportivos dos próximos dias."
             light
           />
         </SectionReveal>
@@ -47,7 +47,6 @@ function Calendar() {
                 <div className="calendar__event">
                   <strong>{event.event}</strong>
                   <span>{event.description}</span>
-                  <em>{event.location}</em>
                 </div>
                 <div className={`calendar__status ${statusClass[event.status]}`}>
                   {event.status}
@@ -61,4 +60,4 @@ function Calendar() {
   )
 }
 
-export default Calendar
+export default WeeklyAgenda

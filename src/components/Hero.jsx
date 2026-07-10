@@ -1,5 +1,5 @@
 import SportImage from './SportImage'
-import { heroQuickCards, sportImages } from '../data/siteData'
+import { heroStats, sportImages } from '../data/siteData'
 
 function Hero() {
   return (
@@ -13,13 +13,16 @@ function Hero() {
         <div className="hero__content">
           <span className="hero__badge">
             <span className="hero__badge-dot" />
-            Portal esportivo premium
+            Portal esportivo
           </span>
 
-          <h1 className="hero__title">O esporte em todos os ângulos</h1>
+          <h1 className="hero__title">
+            O esporte em <span className="hero__highlight">todos os ângulos</span>
+          </h1>
 
           <p className="hero__subtitle">
-            Notícias, histórias, agenda e curiosidades para quem vive o esporte.
+            Notícias, agenda, modalidades, curiosidades e histórias marcantes do
+            universo esportivo em uma experiência moderna e completa.
           </p>
 
           <div className="hero__actions">
@@ -27,21 +30,17 @@ function Hero() {
               Ver destaques
             </a>
             <a href="#agenda" className="btn btn--outline">
-              Conferir agenda
+              Agenda da semana
             </a>
           </div>
         </div>
 
-        <div className="hero__cards">
-          {heroQuickCards.map((card) => (
-            <a key={card.label} href={card.href} className="hero__card card">
-              <span className="hero__card-icon" aria-hidden="true">{card.icon}</span>
-              <div className="hero__card-body">
-                <span className="hero__card-value">{card.value}</span>
-                <strong>{card.label}</strong>
-                <span>{card.detail}</span>
-              </div>
-            </a>
+        <div className="hero__stats">
+          {heroStats.map((stat) => (
+            <div key={stat.label} className="hero__stat card">
+              <span className="hero__stat-value">{stat.value}</span>
+              <span className="hero__stat-label">{stat.label}</span>
+            </div>
           ))}
         </div>
       </div>

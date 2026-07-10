@@ -11,7 +11,7 @@ function Stories() {
           <SectionTitle
             label="Editorial"
             title="Histórias que Marcaram"
-            subtitle="Viradas épicas, recordes e momentos que entraram para a eternidade"
+            subtitle="Momentos que fizeram o esporte virar memória, emoção e legado."
             light
           />
         </SectionReveal>
@@ -26,14 +26,12 @@ function Stories() {
                 <div className="stories__image-wrap">
                   <SportImage src={story.image} className="stories__img" />
                   <div className="stories__overlay" />
-                  <span className="stories__icon" aria-hidden="true">{story.icon}</span>
                 </div>
                 <div className="stories__body">
                   <div className="stories__top">
-                    <span className="stories__year">{story.year}</span>
                     <span className="stories__tag">{story.tag}</span>
+                    <span className="stories__sport">{story.sport}</span>
                   </div>
-                  <span className="stories__sport">{story.sport}</span>
                   <h3>{story.title}</h3>
                   <p>{story.excerpt}</p>
                 </div>

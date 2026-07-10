@@ -18,9 +18,9 @@ function NewsGrid({ onReadMore }) {
       <div className="container">
         <SectionReveal>
           <SectionTitle
-            label="Cobertura"
-            title="Destaques esportivos"
-            subtitle="Notícias filtradas por modalidade — clique para ler a matéria completa"
+            label="Notícias"
+            title="Últimas Notícias"
+            subtitle="Acompanhe os principais acontecimentos do esporte em tempo real."
           />
         </SectionReveal>
 

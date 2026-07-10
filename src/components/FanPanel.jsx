@@ -10,7 +10,7 @@ function FanPanel() {
           <SectionTitle
             label="Ao vivo"
             title="Painel do Torcedor"
-            subtitle="Resumo rápido do que importa agora no mundo esportivo"
+            subtitle="Um resumo rápido do que está movimentando o esporte agora."
             light
           />
         </SectionReveal>
@@ -24,7 +24,6 @@ function FanPanel() {
               >
                 <div className="fan-panel__scoreboard">
                   <span className="fan-panel__icon" aria-hidden="true">{card.icon}</span>
-                  <span className="fan-panel__value">{card.value}</span>
                 </div>
                 <h3>{card.title}</h3>
                 <p>{card.detail}</p>
@@ -35,9 +34,9 @@ function FanPanel() {
         </div>
 
         <div className="fan-panel__links">
-          <a href="#agenda" className="fan-panel__link">📅 Ver agenda completa</a>
-          <a href="#destaques" className="fan-panel__link">📰 Ver todas as notícias</a>
-          <a href="#em-alta" className="fan-panel__link">🔥 Modalidades em alta</a>
+          <a href="#agenda" className="fan-panel__link">Ver agenda completa</a>
+          <a href="#destaques" className="fan-panel__link">Ver todas as notícias</a>
+          <a href="#em-alta" className="fan-panel__link">Modalidades em alta</a>
         </div>
       </div>
     </section>
