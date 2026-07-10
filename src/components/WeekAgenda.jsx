@@ -39,11 +39,10 @@ function WeekAgenda() {
               <div className="scoreboard__sport">{event.sport}</div>
               <div className="scoreboard__event">
                 <strong>{event.event}</strong>
-                <span>{event.location}</span>
+                <span>{event.description}</span>
+                <em>{event.location}</em>
               </div>
-              <div
-                className={`scoreboard__status ${statusClass[event.status]}`}
-              >
+              <div className={`scoreboard__status ${statusClass[event.status]}`}>
                 {event.status}
               </div>
             </article>

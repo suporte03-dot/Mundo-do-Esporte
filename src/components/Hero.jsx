@@ -1,7 +1,14 @@
+import { sportImages } from '../data/siteData'
+
 function Hero() {
   return (
-    <section id="inicio" className="hero">
-      <div className="hero__bg" aria-hidden="true" />
+    <section className="hero">
+      <img
+        src={sportImages.hero}
+        alt=""
+        className="hero__bg-img"
+        loading="eager"
+      />
       <div className="hero__overlay" />
       <div className="hero__lines" aria-hidden="true" />
 
@@ -24,21 +31,6 @@ function Hero() {
           <a href="#agenda" className="btn btn--outline">
             Agenda da semana
           </a>
-        </div>
-
-        <div className="hero__ticker" aria-hidden="true">
-          <div className="hero__ticker-track">
-            <span>⚽ Futebol</span>
-            <span>🏀 Basquete</span>
-            <span>🏎️ Fórmula 1</span>
-            <span>🥊 Lutas</span>
-            <span>🎾 Tênis</span>
-            <span>🏅 Olímpicos</span>
-            <span>⚽ Futebol</span>
-            <span>🏀 Basquete</span>
-            <span>🏎️ Fórmula 1</span>
-            <span>🥊 Lutas</span>
-          </div>
         </div>
       </div>
     </section>
