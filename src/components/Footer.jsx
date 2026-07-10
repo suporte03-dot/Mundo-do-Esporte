@@ -26,15 +26,16 @@ const socialIcons = {
 function Footer() {
   return (
     <footer id="contato" className="footer">
+      <div className="footer__top-line" />
       <div className="container footer__grid">
         <div className="footer__brand">
           <a href="#inicio" className="footer__logo">
-            <span aria-hidden="true">⚡</span>
+            <span className="footer__logo-mark" aria-hidden="true">⚽</span>
             Mundo do <strong>Esporte</strong>
           </a>
           <p>
-            Seu portal completo de notícias, resultados e curiosidades do
-            universo esportivo. Informação de qualidade, todos os dias.
+            Sua central esportiva completa. Notícias, histórias, curiosidades e
+            agenda em um portal feito para quem vive o esporte de verdade.
           </p>
           <div className="footer__social">
             {socialLinks.map((social) => (
@@ -62,9 +63,9 @@ function Footer() {
         </div>
 
         <div className="footer__links">
-          <h4>Esportes</h4>
+          <h4>Conteúdo</h4>
           <ul>
-            {footerLinks.esportes.map((link) => (
+            {footerLinks.conteudo.map((link) => (
               <li key={link.label}>
                 <a href={link.href}>{link.label}</a>
               </li>

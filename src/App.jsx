@@ -1,10 +1,12 @@
 import Header from './components/Header'
 import Hero from './components/Hero'
-import FeaturedNews from './components/FeaturedNews'
+import SpotlightOfTheDay from './components/SpotlightOfTheDay'
+import FanMode from './components/FanMode'
 import CategoryCards from './components/CategoryCards'
 import LatestNews from './components/LatestNews'
+import WeekAgenda from './components/WeekAgenda'
 import Curiosities from './components/Curiosities'
-import Calendar from './components/Calendar'
+import Stories from './components/Stories'
 import Newsletter from './components/Newsletter'
 import Footer from './components/Footer'
 import './App.css'
@@ -15,11 +17,13 @@ function App() {
       <Header />
       <main>
         <Hero />
-        <FeaturedNews />
+        <SpotlightOfTheDay />
+        <FanMode />
         <CategoryCards />
         <LatestNews />
+        <WeekAgenda />
         <Curiosities />
-        <Calendar />
+        <Stories />
         <Newsletter />
       </main>
       <Footer />

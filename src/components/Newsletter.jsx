@@ -13,34 +13,35 @@ function Newsletter() {
   }
 
   return (
-    <section className="newsletter">
+    <section id="newsletter" className="newsletter">
       <div className="container">
         <div className="newsletter__box">
+          <div className="newsletter__glow" aria-hidden="true" />
           <div className="newsletter__content">
             <span className="newsletter__label">Newsletter</span>
-            <h2>Receba as melhores notícias no seu e-mail</h2>
+            <h2>Receba os principais destaques do esporte</h2>
             <p>
-              Cadastre-se e fique por dentro de resultados, análises e
-              curiosidades do mundo esportivo.
+              Toda semana, as manchetes, curiosidades e eventos mais
+              importantes direto no seu e-mail. Grátis e sem spam.
             </p>
           </div>
 
           {submitted ? (
             <p className="newsletter__success" role="status">
-              ✓ Inscrição realizada com sucesso! Obrigado por se cadastrar.
+              ✓ Cadastro realizado! Em breve você receberá nossos destaques.
             </p>
           ) : (
             <form className="newsletter__form" onSubmit={handleSubmit}>
               <input
                 type="email"
-                placeholder="Seu melhor e-mail"
+                placeholder="Digite seu melhor e-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 aria-label="E-mail para newsletter"
               />
               <button type="submit" className="btn btn--accent">
-                Inscrever-se
+                Quero receber
               </button>
             </form>
           )}

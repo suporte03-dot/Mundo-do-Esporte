@@ -8,13 +8,15 @@ function Header() {
 
   return (
     <header className="header">
+      <div className="header__bar" />
       <div className="container header__inner">
         <a href="#inicio" className="header__logo" onClick={closeMenu}>
-          <span className="header__logo-icon" aria-hidden="true">
-            ⚡
+          <span className="header__logo-mark" aria-hidden="true">
+            <span className="header__logo-ball">⚽</span>
           </span>
           <span className="header__logo-text">
-            Mundo do <strong>Esporte</strong>
+            <span className="header__logo-line">Mundo do</span>
+            <strong>Esporte</strong>
           </span>
         </a>
 
