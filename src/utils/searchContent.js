@@ -1,5 +1,5 @@
 import { allNews, categories, curiosities, stories } from '../data/siteData'
-import { agendaEvents } from '../data/agendaData'
+import { getAgendaEvents } from '../data/agendaData'
 
 function matches(text, query) {
   return text?.toLowerCase().includes(query)
@@ -39,7 +39,7 @@ export function searchAllContent(query) {
     }
   })
 
-  agendaEvents.forEach((event) => {
+  getAgendaEvents().forEach((event) => {
     if (
       matches(event.title, q) ||
       matches(event.sport, q) ||

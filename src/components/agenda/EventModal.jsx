@@ -1,9 +1,19 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import SportImage from '../SportImage'
+import { enrichAgendaEvent } from '../../utils/agendaDateUtils'
+
+const statusClass = {
+  Hoje: 'event-modal__status--today',
+  Amanhã: 'event-modal__status--tomorrow',
+  'Em breve': 'event-modal__status--soon',
+  Encerrado: 'event-modal__status--ended',
+}
 
 function EventModal({ event, onClose }) {
+  const display = useMemo(() => (event ? enrichAgendaEvent(event) : null), [event])
+
   useEffect(() => {
-    if (!event) return undefined
+    if (!display) return undefined
 
     const handleKey = (e) => {
       if (e.key === 'Escape') onClose()
@@ -16,9 +26,9 @@ function EventModal({ event, onClose }) {
       document.body.style.overflow = ''
       window.removeEventListener('keydown', handleKey)
     }
-  }, [event, onClose])
+  }, [display, onClose])
 
-  if (!event) return null
+  if (!display) return null
 
   return (
     <div className="modal event-modal" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
@@ -35,59 +45,61 @@ function EventModal({ event, onClose }) {
 
         <div className="event-modal__image-wrap">
           <SportImage
-            src={event.image}
-            filter={event.filter}
-            alt={event.sport}
+            src={display.image}
+            filter={display.filter}
+            alt={display.sport}
             className="event-modal__image"
           />
           <div className="event-modal__image-overlay" />
-          <span className="event-modal__sport">{event.sport}</span>
+          <span className="event-modal__sport">{display.sport}</span>
         </div>
 
         <div className="event-modal__body">
           <div className="event-modal__tags">
-            <span className="event-modal__tag">{event.tag}</span>
-            <span className="event-modal__tag event-modal__tag--phase">{event.phase}</span>
+            <span className="event-modal__tag">{display.tag}</span>
+            <span className="event-modal__tag event-modal__tag--phase">{display.phase}</span>
           </div>
 
-          <h2 id="event-modal-title" className="event-modal__title">{event.title}</h2>
+          <h2 id="event-modal-title" className="event-modal__title">{display.title}</h2>
 
           <div className="event-modal__meta">
             <div>
               <strong>Data</strong>
-              <span>{event.date} ({event.day})</span>
+              <span>{display.date} ({display.day})</span>
             </div>
             <div>
               <strong>Horário</strong>
-              <span>{event.time}</span>
+              <span>{display.time}</span>
             </div>
             <div>
               <strong>Local</strong>
-              <span>{event.location}</span>
+              <span>{display.location}</span>
             </div>
           </div>
 
           <div className="event-modal__details">
             <div className="event-modal__detail">
               <span>Tipo de evento</span>
-              <strong>{event.eventType}</strong>
+              <strong>{display.eventType}</strong>
             </div>
             <div className="event-modal__detail">
               <span>Fase</span>
-              <strong>{event.phase}</strong>
+              <strong>{display.phase}</strong>
             </div>
             <div className="event-modal__detail">
               <span>Importância</span>
-              <strong>{event.importance}</strong>
+              <strong>{display.importance}</strong>
             </div>
             <div className="event-modal__detail">
               <span>Status</span>
-              <strong>{event.status}</strong>
+              <strong className={`event-modal__status ${statusClass[display.status] ?? ''}`}>
+                {display.status}
+              </strong>
             </div>
           </div>
 
           <div className="event-modal__content">
-            {event.fullDescription.map((paragraph) => (
+            {display.fullDescription.map((paragraph) => (
               <p key={paragraph.slice(0, 40)} className="event-modal__paragraph">
                 {paragraph}
               </p>

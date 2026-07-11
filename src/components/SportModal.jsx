@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import SportImage from './SportImage'
 import { allNews, curiosities } from '../data/siteData'
-import { agendaEvents } from '../data/agendaData'
+import { getAgendaEvents } from '../data/agendaData'
+import { enrichAgendaEvent } from '../utils/agendaDateUtils'
 
 function getRelatedNews(categoryId) {
   return allNews
@@ -10,9 +11,10 @@ function getRelatedNews(categoryId) {
 }
 
 function getUpcomingEvents(categoryId) {
-  return agendaEvents
-    .filter((e) => e.filter === categoryId && e.status !== 'Encerrado')
+  return getAgendaEvents()
+    .filter((event) => event.filter === categoryId && event.status !== 'Encerrado')
     .slice(0, 3)
+    .map(enrichAgendaEvent)
 }
 
 function getCuriosity(category) {

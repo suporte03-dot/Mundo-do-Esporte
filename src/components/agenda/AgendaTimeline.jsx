@@ -1,6 +1,9 @@
-import { agendaWeekDays, getEventCountByDay } from '../../data/agendaData'
+import { useMemo } from 'react'
+import { getAgendaWeekDays, getEventCountByDay } from '../../data/agendaData'
 
 function AgendaTimeline({ activeDay, onDaySelect }) {
+  const agendaWeekDays = useMemo(() => getAgendaWeekDays(), [])
+
   return (
     <div className="agenda-timeline">
       <span className="agenda-timeline__label">Linha do tempo da semana</span>

@@ -370,7 +370,18 @@ export const categories = [
 
 export const weekAgenda = []
 
-export { agendaEvents, agendaSummary, agendaSportFilters, agendaPeriodFilters, agendaWeekDays, agendaFeaturedEvent, filterAgendaEvents, getEventCountByDay, REFERENCE_DATE } from './agendaData'
+export {
+  agendaEvents,
+  getAgendaEvents,
+  getAgendaSummary,
+  getAgendaFeaturedEvent,
+  agendaSportFilters,
+  agendaPeriodFilters,
+  getAgendaWeekDays,
+  filterAgendaEvents,
+  getEventCountByDay,
+  enrichAgendaEvent,
+} from './agendaData'
 
 export const curiosities = [
   {

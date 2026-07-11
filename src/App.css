@@ -1409,21 +1409,21 @@
 
 .agenda-event__status--today {
   background: rgba(0, 232, 135, 0.2);
-  color: var(--green);
+  color: #00E887;
   border: 1px solid rgba(0, 232, 135, 0.4);
   animation: pulse 2s ease infinite;
 }
 
 .agenda-event__status--tomorrow {
-  background: rgba(255, 159, 28, 0.15);
-  color: var(--accent);
-  border: 1px solid rgba(255, 159, 28, 0.35);
+  background: rgba(77, 163, 255, 0.18);
+  color: #4DA3FF;
+  border: 1px solid rgba(77, 163, 255, 0.4);
 }
 
 .agenda-event__status--soon {
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 159, 28, 0.15);
+  color: #FF9F1C;
+  border: 1px solid rgba(255, 159, 28, 0.35);
 }
 
 .agenda-event__status--ended {
@@ -1565,6 +1565,35 @@
 .event-modal__detail strong {
   font-size: 0.9rem;
   color: var(--text-primary);
+}
+
+.event-modal__status {
+  display: inline-flex;
+  padding: 0.2rem 0.55rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.event-modal__status--today {
+  background: rgba(0, 232, 135, 0.15);
+  color: #00E887;
+}
+
+.event-modal__status--tomorrow {
+  background: rgba(77, 163, 255, 0.15);
+  color: #4DA3FF;
+}
+
+.event-modal__status--soon {
+  background: rgba(255, 159, 28, 0.15);
+  color: #FF9F1C;
+}
+
+.event-modal__status--ended {
+  background: rgba(169, 181, 199, 0.12);
+  color: var(--cold-gray);
 }
 
 .event-modal__paragraph {

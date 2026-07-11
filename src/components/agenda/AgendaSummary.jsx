@@ -1,4 +1,5 @@
-import { agendaSummary } from '../../data/agendaData'
+import { useMemo } from 'react'
+import { getAgendaSummary } from '../../data/agendaData'
 
 const SUMMARY_ACTIONS = {
   today: 'onTodayClick',
@@ -13,6 +14,7 @@ function AgendaSummary({
   onSportsClick,
   onHighlightClick,
 }) {
+  const agendaSummary = useMemo(() => getAgendaSummary(), [])
   const handlers = {
     onTodayClick,
     onWeekClick,

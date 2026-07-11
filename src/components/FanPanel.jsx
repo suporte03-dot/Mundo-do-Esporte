@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { agendaEvents, agendaFeaturedEvent } from '../data/agendaData'
+import { useEffect, useState } from 'react'
+import { getAgendaEvents, getAgendaFeaturedEvent } from '../data/agendaData'
 import { trendingSports } from '../data/siteData'
 import { formatUpdateLabel, getLastUpdatedAt } from '../services/newsService'
 import { scrollToSection } from '../utils/scrollToSection'
@@ -48,49 +48,49 @@ function FanPanel({ onNavigate }) {
     }
   }
 
-  const cards = useMemo(() => {
-    const todayCount = agendaEvents.filter((e) => e.status === 'Hoje').length
-    const upcomingCount = agendaEvents.filter(
-      (e) => e.status !== 'Encerrado' && e.status !== 'Hoje',
-    ).length
-    const trending = trendingSports[0]
-    const highlight = agendaFeaturedEvent?.title ?? 'Final decisiva movimenta o calendário'
+  const events = getAgendaEvents()
+  const todayCount = events.filter((event) => event.status === 'Hoje').length
+  const upcomingCount = events.filter(
+    (event) => event.status !== 'Encerrado' && event.status !== 'Hoje',
+  ).length
+  const trending = trendingSports[0]
+  const featured = getAgendaFeaturedEvent()
+  const highlight = featured?.title ?? 'Final decisiva movimenta o calendário'
 
-    return [
-      {
-        id: 1,
-        title: 'Jogos hoje',
-        detail: `${todayCount} eventos em destaque`,
-        icon: '⚽',
-        accent: 'green',
-        action: { sectionId: 'agenda', agendaPeriod: 'hoje' },
-      },
-      {
-        id: 2,
-        title: 'Modalidade em alta',
-        detail: `${trending.name} lidera as buscas`,
-        icon: '🔥',
-        accent: 'accent',
-        action: { sectionId: 'modalidades', sportHighlight: trending.filter },
-      },
-      {
-        id: 3,
-        title: 'Destaque da semana',
-        detail: highlight,
-        icon: '⭐',
-        accent: 'orange',
-        action: { sectionId: 'destaques' },
-      },
-      {
-        id: 4,
-        title: 'Próximos eventos',
-        detail: `${upcomingCount} eventos na agenda`,
-        icon: '📅',
-        accent: 'green',
-        action: { sectionId: 'agenda', agendaPeriod: 'semana' },
-      },
-    ]
-  }, [])
+  const cards = [
+    {
+      id: 1,
+      title: 'Jogos hoje',
+      detail: `${todayCount} eventos em destaque`,
+      icon: '⚽',
+      accent: 'green',
+      action: { sectionId: 'agenda', agendaPeriod: 'hoje' },
+    },
+    {
+      id: 2,
+      title: 'Modalidade em alta',
+      detail: `${trending.name} lidera as buscas`,
+      icon: '🔥',
+      accent: 'accent',
+      action: { sectionId: 'modalidades', sportHighlight: trending.filter },
+    },
+    {
+      id: 3,
+      title: 'Destaque da semana',
+      detail: highlight,
+      icon: '⭐',
+      accent: 'orange',
+      action: { sectionId: 'destaques' },
+    },
+    {
+      id: 4,
+      title: 'Próximos eventos',
+      detail: `${upcomingCount} eventos na agenda`,
+      icon: '📅',
+      accent: 'green',
+      action: { sectionId: 'agenda', agendaPeriod: 'semana' },
+    },
+  ]
 
   return (
     <section id="painel" className="section fan-panel">

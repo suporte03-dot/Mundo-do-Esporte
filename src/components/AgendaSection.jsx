@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
-  agendaEvents,
-  agendaFeaturedEvent,
+  getAgendaEvents,
+  getAgendaFeaturedEvent,
   filterAgendaEvents,
 } from '../data/agendaData'
 import { scrollToSection } from '../utils/scrollToSection'
@@ -19,6 +19,9 @@ function AgendaSection({ onEventDetails, periodPreset, onPeriodPresetApplied }) 
   const [periodFilter, setPeriodFilter] = useState('todos')
   const [dayFilter, setDayFilter] = useState(null)
 
+  const agendaEvents = useMemo(() => getAgendaEvents(), [])
+  const featuredEvent = useMemo(() => getAgendaFeaturedEvent(), [])
+
   useEffect(() => {
     if (!periodPreset) return
     setDayFilter(null)
@@ -27,20 +30,20 @@ function AgendaSection({ onEventDetails, periodPreset, onPeriodPresetApplied }) 
   }, [periodPreset, onPeriodPresetApplied])
 
   const filteredEvents = useMemo(() => {
-    const nonFeatured = agendaEvents.filter((e) => !e.featured)
+    const nonFeatured = agendaEvents.filter((event) => !event.featured)
     return filterAgendaEvents(nonFeatured, {
       sport: sportFilter,
       period: dayFilter ? 'todos' : periodFilter,
       dayISO: dayFilter,
     })
-  }, [sportFilter, periodFilter, dayFilter])
+  }, [agendaEvents, sportFilter, periodFilter, dayFilter])
 
   const showFeatured = useMemo(() => {
-    if (!agendaFeaturedEvent) return false
-    if (sportFilter !== 'todos' && agendaFeaturedEvent.filter !== sportFilter) return false
-    if (dayFilter && agendaFeaturedEvent.dateISO !== dayFilter) return false
+    if (!featuredEvent) return false
+    if (sportFilter !== 'todos' && featuredEvent.filter !== sportFilter) return false
+    if (dayFilter && featuredEvent.dateISO !== dayFilter) return false
     if (periodFilter !== 'todos' && !dayFilter) {
-      const inPeriod = filterAgendaEvents([agendaFeaturedEvent], {
+      const inPeriod = filterAgendaEvents([featuredEvent], {
         sport: 'todos',
         period: periodFilter,
         dayISO: null,
@@ -48,7 +51,7 @@ function AgendaSection({ onEventDetails, periodPreset, onPeriodPresetApplied }) 
       if (inPeriod.length === 0) return false
     }
     return true
-  }, [sportFilter, periodFilter, dayFilter])
+  }, [featuredEvent, sportFilter, periodFilter, dayFilter])
 
   const handleWeekClick = () => {
     setDayFilter(null)
@@ -96,7 +99,7 @@ function AgendaSection({ onEventDetails, periodPreset, onPeriodPresetApplied }) 
             }}
             onSportsClick={() => scrollToSection('modalidades')}
             onHighlightClick={() => {
-              if (agendaFeaturedEvent) onEventDetails(agendaFeaturedEvent)
+              if (featuredEvent) onEventDetails(featuredEvent)
             }}
           />
         </SectionReveal>
@@ -118,7 +121,7 @@ function AgendaSection({ onEventDetails, periodPreset, onPeriodPresetApplied }) 
         {showFeatured && (
           <SectionReveal>
             <AgendaFeatured
-              event={agendaFeaturedEvent}
+              event={featuredEvent}
               onDetails={onEventDetails}
             />
           </SectionReveal>
