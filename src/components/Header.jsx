@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import Logo from './Logo'
 import { navItems, BRAND } from '../data/siteData'
 import { scrollToSection, handleSectionClick } from '../utils/scrollToSection'
+
+const logoUrl = (file) => `${import.meta.env.BASE_URL}assets/${file}`
 
 export default function Header({ activeSection }) {
   const [scrolled, setScrolled] = useState(false)
@@ -23,14 +24,19 @@ export default function Header({ activeSection }) {
       <div className="header__inner container">
         <a
           href="#inicio"
-          className="header__brand"
+          className="brand header__brand"
           onClick={(e) => handleSectionClick(e, 'inicio', () => setMenuOpen(false))}
         >
-          <Logo size={32} />
-          <span className="header__brand-text">
-            <strong>{BRAND.name}</strong>
-            <small>{BRAND.slogan}</small>
-          </span>
+          <img
+            src={logoUrl('evoluafit-logo.png')}
+            alt="EvoluaFit - Treinos inteligentes, evolução real"
+            className="brand-logo brand-logo--full"
+          />
+          <img
+            src={logoUrl('evoluafit-icon.png')}
+            alt="EvoluaFit"
+            className="brand-logo brand-logo--compact"
+          />
         </a>
 
         <nav className={`header__nav ${menuOpen ? 'header__nav--open' : ''}`}>

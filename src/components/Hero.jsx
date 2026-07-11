@@ -1,6 +1,7 @@
 import { useFitness } from '../context/FitnessContext'
 import { scrollToSection } from '../utils/scrollToSection'
 import { muscleGroups } from '../data/exercisesData'
+import { BRAND } from '../data/siteData'
 
 export default function Hero() {
   const { performance } = useFitness()
@@ -38,8 +39,12 @@ export default function Hero() {
       <div className="hero__glow" aria-hidden="true" />
       <div className="container hero__inner">
         <div className="hero__content">
-          <span className="hero__badge">Plataforma fitness inteligente</span>
-          <h1 className="hero__title">Treinos inteligentes para evoluir de verdade</h1>
+          <span className="hero__badge">{BRAND.slogan}</span>
+          <h1 className="hero__title">
+            <span className="hero__title-evolua">Evolua</span>
+            <span className="hero__title-fit">Fit</span>
+            <span className="hero__title-rest"> — treinos que geram evolução real</span>
+          </h1>
           <p className="hero__subtitle">
             Organize sua rotina, gere planilhas personalizadas, registre seus treinos e acompanhe seu
             desempenho mês a mês.

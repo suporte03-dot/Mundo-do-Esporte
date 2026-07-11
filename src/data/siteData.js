@@ -23,6 +23,7 @@ export const navItems = [
 export const BRAND = {
   name: 'EvoluaFit',
   slogan: 'Treinos inteligentes, evolução real.',
+  sloganHighlight: 'evolução real',
   disclaimer:
     'Este plano é informativo e não substitui orientação de um profissional de educação física ou saúde. Respeite seus limites e evite overtraining.',
 }

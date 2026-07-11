@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" fill="none">
+  <rect width="320" height="180" fill="#0f1f35"/>
+  <circle cx="160" cy="70" r="24" stroke="#3b82f6" stroke-width="2" opacity="0.7"/>
+  <path d="M120 140c0-22.091 17.909-40 40-40s40 17.909 40 40" stroke="#3b82f6" stroke-width="2" opacity="0.7"/>
+  <text x="160" y="165" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">Inferiores</text>
+</svg>
