@@ -430,6 +430,17 @@
   flex-direction: column;
   gap: 0.25rem;
   transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.hero__stat--clickable {
+  cursor: pointer;
+}
+
+.hero__stat--clickable:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
 }
 
 .hero__stat:hover {
@@ -832,6 +843,12 @@
   gap: 1rem;
   align-items: center;
   padding: 1.1rem 1.5rem;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.trending__item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 232, 135, 0.35);
 }
 
 .trending__rank {
@@ -882,6 +899,12 @@
 }
 
 .categories__card { overflow: hidden; padding: 0; }
+
+.categories__card--highlight {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(0, 232, 135, 0.35), 0 12px 32px rgba(0, 232, 135, 0.15);
+  transform: translateY(-4px);
+}
 
 .categories__visual {
   position: relative;

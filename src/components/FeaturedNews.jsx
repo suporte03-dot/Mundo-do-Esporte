@@ -28,7 +28,7 @@ function FeaturedNews({ onReadMore }) {
   const allFeatured = [headline, ...secondary]
 
   return (
-    <section id="manchete" className="section featured-news">
+    <section id="destaques" className="section featured-news">
       <div className="container">
         <SectionReveal>
           <SectionTitle

@@ -4,6 +4,7 @@ import {
   agendaFeaturedEvent,
   filterAgendaEvents,
 } from '../data/agendaData'
+import { scrollToSection } from '../utils/scrollToSection'
 import SectionReveal from './SectionReveal'
 import AgendaHeader from './agenda/AgendaHeader'
 import AgendaSummary from './agenda/AgendaSummary'
@@ -84,7 +85,20 @@ function AgendaSection({ onEventDetails, periodPreset, onPeriodPresetApplied }) 
         </SectionReveal>
 
         <SectionReveal>
-          <AgendaSummary />
+          <AgendaSummary
+            onTodayClick={() => {
+              setDayFilter(null)
+              setPeriodFilter('hoje')
+            }}
+            onWeekClick={() => {
+              setDayFilter(null)
+              setPeriodFilter('semana')
+            }}
+            onSportsClick={() => scrollToSection('modalidades')}
+            onHighlightClick={() => {
+              if (agendaFeaturedEvent) onEventDetails(agendaFeaturedEvent)
+            }}
+          />
         </SectionReveal>
 
         <SectionReveal>

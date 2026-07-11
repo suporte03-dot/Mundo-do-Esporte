@@ -8,7 +8,7 @@ import SectionReveal from './SectionReveal'
 
 const FAN_PANEL_LINKS = [
   { label: 'Ver agenda completa', sectionId: 'agenda' },
-  { label: 'Ver todas as notícias', sectionId: 'destaques' },
+  { label: 'Ver todas as notícias', sectionId: 'noticias' },
   { label: 'Modalidades em alta', sectionId: 'modalidades' },
 ]
 
@@ -35,7 +35,10 @@ function FanPanel({ onNavigate }) {
   }
 
   const handleCardActivate = (action) => {
-    navigate(action.sectionId, { agendaPeriod: action.agendaPeriod })
+    navigate(action.sectionId, {
+      agendaPeriod: action.agendaPeriod,
+      sportHighlight: action.sportHighlight,
+    })
   }
 
   const handleCardKeyDown = (event, action) => {
@@ -68,7 +71,7 @@ function FanPanel({ onNavigate }) {
         detail: `${trending.name} lidera as buscas`,
         icon: '🔥',
         accent: 'accent',
-        action: { sectionId: 'modalidades' },
+        action: { sectionId: 'modalidades', sportHighlight: trending.filter },
       },
       {
         id: 3,
@@ -84,7 +87,7 @@ function FanPanel({ onNavigate }) {
         detail: `${upcomingCount} eventos na agenda`,
         icon: '📅',
         accent: 'green',
-        action: { sectionId: 'agenda' },
+        action: { sectionId: 'agenda', agendaPeriod: 'semana' },
       },
     ]
   }, [])

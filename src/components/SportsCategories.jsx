@@ -1,9 +1,21 @@
+import { useEffect } from 'react'
 import SportImage from './SportImage'
 import { categories } from '../data/siteData'
 import SectionTitle from './SectionTitle'
 import SectionReveal from './SectionReveal'
 
-function SportsCategories({ onSelectCategory }) {
+function SportsCategories({ onSelectCategory, highlightSport }) {
+  useEffect(() => {
+    if (!highlightSport) return undefined
+
+    const timer = window.setTimeout(() => {
+      const card = document.querySelector(`[data-sport-id="${highlightSport}"]`)
+      card?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }, 400)
+
+    return () => window.clearTimeout(timer)
+  }, [highlightSport])
+
   return (
     <section id="modalidades" className="section categories">
       <div className="container">
@@ -19,7 +31,8 @@ function SportsCategories({ onSelectCategory }) {
           {categories.map((cat, index) => (
             <SectionReveal key={cat.id}>
               <article
-                className="categories__card card card--clickable"
+                data-sport-id={cat.id}
+                className={`categories__card card card--clickable ${highlightSport === cat.id ? 'categories__card--highlight' : ''}`}
                 style={{ '--accent': cat.color, '--delay': `${index * 0.05}s` }}
                 onClick={() => onSelectCategory?.(cat)}
                 onKeyDown={(e) => e.key === 'Enter' && onSelectCategory?.(cat)}

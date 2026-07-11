@@ -4,7 +4,13 @@ function AgendaFeatured({ event, onDetails }) {
   if (!event) return null
 
   return (
-    <article className="agenda-featured card">
+    <article
+      className="agenda-featured card card--clickable"
+      role="button"
+      tabIndex={0}
+      onClick={() => onDetails(event)}
+      onKeyDown={(eventKey) => eventKey.key === 'Enter' && onDetails(event)}
+    >
       <div className="agenda-featured__visual">
         <SportImage
           src={event.image}
@@ -27,7 +33,14 @@ function AgendaFeatured({ event, onDetails }) {
           <span>{event.time}</span>
           <span>{event.location}</span>
         </div>
-        <button type="button" className="btn btn--primary" onClick={() => onDetails(event)}>
+        <button
+          type="button"
+          className="btn btn--primary"
+          onClick={(e) => {
+            e.stopPropagation()
+            onDetails(event)
+          }}
+        >
           Ver detalhes
         </button>
       </div>

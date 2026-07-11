@@ -1,4 +1,5 @@
 import { brand, footerLinks, socialLinks } from '../data/siteData'
+import { handleSectionClick } from '../utils/scrollToSection'
 import Logo from './Logo'
 
 const socialIcons = {
@@ -25,12 +26,21 @@ const socialIcons = {
 }
 
 function Footer() {
+  const handleInternalLink = (event, href) => {
+    if (!href.startsWith('#')) return
+    handleSectionClick(event, href.slice(1))
+  }
+
   return (
-    <footer id="contato" className="footer">
+    <footer className="footer">
       <div className="footer__top-line" />
       <div className="container footer__grid">
         <div className="footer__brand">
-          <a href="#inicio" className="footer__logo">
+          <a
+            href="#inicio"
+            className="footer__logo"
+            onClick={(event) => handleInternalLink(event, '#inicio')}
+          >
             <Logo compact />
           </a>
           <p className="footer__slogan">{brand.slogan}</p>
@@ -42,6 +52,9 @@ function Footer() {
                 href={social.href}
                 aria-label={social.name}
                 title={social.name}
+                {...(social.external
+                  ? { target: '_blank', rel: 'noopener noreferrer' }
+                  : { onClick: (event) => handleInternalLink(event, social.href) })}
               >
                 {socialIcons[social.icon]}
               </a>
@@ -54,7 +67,9 @@ function Footer() {
           <ul>
             {footerLinks.navegacao.map((link) => (
               <li key={link.label}>
-                <a href={link.href}>{link.label}</a>
+                <a href={link.href} onClick={(event) => handleInternalLink(event, link.href)}>
+                  {link.label}
+                </a>
               </li>
             ))}
           </ul>
@@ -65,7 +80,9 @@ function Footer() {
           <ul>
             {footerLinks.conteudo.map((link) => (
               <li key={link.label}>
-                <a href={link.href}>{link.label}</a>
+                <a href={link.href} onClick={(event) => handleInternalLink(event, link.href)}>
+                  {link.label}
+                </a>
               </li>
             ))}
           </ul>
@@ -76,7 +93,9 @@ function Footer() {
           <ul>
             {footerLinks.institucional.map((link) => (
               <li key={link.label}>
-                <a href={link.href}>{link.label}</a>
+                <a href={link.href} onClick={(event) => handleInternalLink(event, link.href)}>
+                  {link.label}
+                </a>
               </li>
             ))}
           </ul>

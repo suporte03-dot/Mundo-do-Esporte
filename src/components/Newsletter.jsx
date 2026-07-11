@@ -23,7 +23,7 @@ function Newsletter() {
   }
 
   return (
-    <section id="newsletter" className="section newsletter">
+    <section className="section newsletter">
       <div className="container">
         <SectionReveal>
           <div className="newsletter__box">

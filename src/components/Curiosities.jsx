@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { curiosities } from '../data/siteData'
 import SectionTitle from './SectionTitle'
 import SectionReveal from './SectionReveal'
@@ -9,6 +9,11 @@ function Curiosities({ onSelectCuriosity }) {
   const showNext = () => {
     setHighlighted((current) => (current + 1) % curiosities.length)
   }
+
+  useEffect(() => {
+    const card = document.querySelector('.curiosities__card--active')
+    card?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [highlighted])
 
   return (
     <section id="curiosidades" className="section curiosities">

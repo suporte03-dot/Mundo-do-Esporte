@@ -1,5 +1,6 @@
 import SportImage from './SportImage'
 import { heroStats, sportImages } from '../data/siteData'
+import { handleSectionClick, scrollToSection } from '../utils/scrollToSection'
 
 function Hero() {
   return (
@@ -26,10 +27,18 @@ function Hero() {
           </p>
 
           <div className="hero__actions">
-            <a href="#destaques" className="btn btn--primary">
+            <a
+              href="#destaques"
+              className="btn btn--primary"
+              onClick={(event) => handleSectionClick(event, 'destaques')}
+            >
               Ver destaques
             </a>
-            <a href="#agenda" className="btn btn--outline">
+            <a
+              href="#agenda"
+              className="btn btn--outline"
+              onClick={(event) => handleSectionClick(event, 'agenda')}
+            >
               Agenda da semana
             </a>
           </div>
@@ -37,10 +46,15 @@ function Hero() {
 
         <div className="hero__stats">
           {heroStats.map((stat) => (
-            <div key={stat.label} className="hero__stat card">
+            <button
+              key={stat.label}
+              type="button"
+              className="hero__stat card hero__stat--clickable"
+              onClick={() => scrollToSection(stat.sectionId)}
+            >
               <span className="hero__stat-value">{stat.value}</span>
               <span className="hero__stat-label">{stat.label}</span>
-            </div>
+            </button>
           ))}
         </div>
       </div>

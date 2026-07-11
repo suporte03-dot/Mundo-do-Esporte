@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { sectionIds } from './data/siteData'
 import { useScrollSpy } from './hooks/useScrollSpy'
 import { scrollToSection } from './utils/scrollToSection'
@@ -29,11 +29,22 @@ function App() {
   const [selectedStory, setSelectedStory] = useState(null)
   const [selectedCuriosity, setSelectedCuriosity] = useState(null)
   const [agendaPeriodPreset, setAgendaPeriodPreset] = useState(null)
+  const [sportHighlight, setSportHighlight] = useState(null)
   const activeSection = useScrollSpy(sectionIds)
+
+  useEffect(() => {
+    if (!sportHighlight) return undefined
+
+    const timer = window.setTimeout(() => setSportHighlight(null), 4000)
+    return () => window.clearTimeout(timer)
+  }, [sportHighlight])
 
   const handleFanPanelNavigate = (sectionId, options = {}) => {
     if (options.agendaPeriod) {
       setAgendaPeriodPreset(options.agendaPeriod)
+    }
+    if (options.sportHighlight) {
+      setSportHighlight(options.sportHighlight)
     }
     scrollToSection(sectionId)
   }
@@ -61,8 +72,14 @@ function App() {
         <FeaturedNews onReadMore={(article, list) => openNews(article, list)} />
         <NewsGrid onReadMore={(article, list) => openNews(article, list)} />
         <FanPanel onNavigate={handleFanPanelNavigate} />
-        <TrendingSports />
-        <SportsCategories onSelectCategory={setSelectedSport} />
+        <TrendingSports onSportHighlight={setSportHighlight} />
+        <SportsCategories
+          highlightSport={sportHighlight}
+          onSelectCategory={(category) => {
+            setSportHighlight(null)
+            setSelectedSport(category)
+          }}
+        />
         <AgendaSection
           onEventDetails={setSelectedEvent}
           periodPreset={agendaPeriodPreset}
@@ -70,9 +87,11 @@ function App() {
         />
         <Curiosities onSelectCuriosity={setSelectedCuriosity} />
         <Stories onSelectStory={setSelectedStory} />
-        <Newsletter />
+        <div id="contato">
+          <Newsletter />
+          <Footer />
+        </div>
       </main>
-      <Footer />
       <NewsModal
         article={selectedNews}
         articles={newsList}

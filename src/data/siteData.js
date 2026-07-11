@@ -43,8 +43,8 @@ export function getNewsImage(news) {
 
 export const sectionIds = [
   'inicio',
-  'manchete',
   'destaques',
+  'noticias',
   'painel',
   'em-alta',
   'modalidades',
@@ -65,10 +65,10 @@ export const menuItems = [
 ]
 
 export const heroStats = [
-  { value: '500+', label: 'notícias por mês' },
-  { value: '9', label: 'modalidades' },
-  { value: '24h', label: 'de cobertura' },
-  { value: '100%', label: 'paixão pelo esporte' },
+  { value: '500+', label: 'notícias por mês', sectionId: 'noticias' },
+  { value: '9', label: 'modalidades', sectionId: 'modalidades' },
+  { value: '24h', label: 'de cobertura', sectionId: 'destaques' },
+  { value: '100%', label: 'paixão pelo esporte', sectionId: 'historias' },
 ]
 
 export const fanPanelCards = [
@@ -103,11 +103,11 @@ export const fanPanelCards = [
 ]
 
 export const trendingSports = [
-  { rank: 1, name: 'Futebol', percent: 92, icon: '⚽', color: '#00E887' },
-  { rank: 2, name: 'Fórmula 1', percent: 78, icon: '🏎️', color: '#FF9F1C' },
-  { rank: 3, name: 'Basquete', percent: 71, icon: '🏀', color: '#00E887' },
-  { rank: 4, name: 'Vôlei', percent: 58, icon: '🏐', color: '#A9B5C7' },
-  { rank: 5, name: 'Lutas', percent: 45, icon: '🥊', color: '#FF9F1C' },
+  { rank: 1, name: 'Futebol', percent: 92, icon: '⚽', color: '#00E887', filter: 'futebol' },
+  { rank: 2, name: 'Fórmula 1', percent: 78, icon: '🏎️', color: '#FF9F1C', filter: 'formula1' },
+  { rank: 3, name: 'Basquete', percent: 71, icon: '🏀', color: '#00E887', filter: 'basquete' },
+  { rank: 4, name: 'Vôlei', percent: 58, icon: '🏐', color: '#A9B5C7', filter: 'volei' },
+  { rank: 5, name: 'Lutas', percent: 45, icon: '🥊', color: '#FF9F1C', filter: 'lutas' },
 ]
 
 export const newsFilters = [
@@ -524,14 +524,15 @@ export const footerLinks = {
   navegacao: [
     { label: 'Início', href: '#inicio' },
     { label: 'Destaques', href: '#destaques' },
+    { label: 'Notícias', href: '#noticias' },
     { label: 'Modalidades', href: '#modalidades' },
     { label: 'Agenda', href: '#agenda' },
   ],
   conteudo: [
+    { label: 'Notícias', href: '#noticias' },
     { label: 'Curiosidades', href: '#curiosidades' },
     { label: 'Histórias', href: '#historias' },
-    { label: 'Newsletter', href: '#newsletter' },
-    { label: 'Contato', href: '#contato' },
+    { label: 'Newsletter', href: '#contato' },
   ],
   institucional: [
     { label: 'Sobre a Arena 360', href: '#contato' },
@@ -542,8 +543,8 @@ export const footerLinks = {
 }
 
 export const socialLinks = [
-  { name: 'Instagram', href: '#', icon: 'instagram' },
-  { name: 'YouTube', href: '#', icon: 'youtube' },
-  { name: 'X / Twitter', href: '#', icon: 'twitter' },
-  { name: 'TikTok', href: '#', icon: 'tiktok' },
+  { name: 'Instagram', href: 'https://www.instagram.com/', icon: 'instagram', external: true },
+  { name: 'YouTube', href: 'https://www.youtube.com/', icon: 'youtube', external: true },
+  { name: 'X / Twitter', href: 'https://x.com/', icon: 'twitter', external: true },
+  { name: 'TikTok', href: 'https://www.tiktok.com/', icon: 'tiktok', external: true },
 ]

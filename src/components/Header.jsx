@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { menuItems } from '../data/siteData'
 import { useTheme } from '../context/ThemeContext'
+import { handleSectionClick } from '../utils/scrollToSection'
 import Logo from './Logo'
 
 function Header({ activeSection }) {
@@ -9,6 +10,10 @@ function Header({ activeSection }) {
   const { theme, toggleTheme } = useTheme()
 
   const closeMenu = () => setMenuOpen(false)
+
+  const navigateTo = (event, sectionId) => {
+    handleSectionClick(event, sectionId, closeMenu)
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
@@ -25,7 +30,11 @@ function Header({ activeSection }) {
     <header className={`header ${scrolled ? 'header--scrolled' : ''}`}>
       <div className="header__bar" />
       <div className="container header__inner">
-        <a href="#inicio" className="header__logo" onClick={closeMenu}>
+        <a
+          href="#inicio"
+          className="header__logo"
+          onClick={(event) => navigateTo(event, 'inicio')}
+        >
           <Logo showTagline />
         </a>
 
@@ -39,7 +48,7 @@ function Header({ activeSection }) {
                 <a
                   href={item.href}
                   className={activeSection === item.sectionId ? 'header__link--active' : ''}
-                  onClick={closeMenu}
+                  onClick={(event) => navigateTo(event, item.sectionId)}
                   aria-current={activeSection === item.sectionId ? 'page' : undefined}
                 >
                   {item.label}
@@ -48,7 +57,11 @@ function Header({ activeSection }) {
             ))}
           </ul>
           <div className="header__mobile-actions">
-            <a href="#destaques" className="btn btn--primary" onClick={closeMenu}>
+            <a
+              href="#destaques"
+              className="btn btn--primary"
+              onClick={(event) => navigateTo(event, 'destaques')}
+            >
               Ver destaques
             </a>
           </div>
@@ -64,7 +77,11 @@ function Header({ activeSection }) {
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
 
-          <a href="#destaques" className="header__cta btn btn--primary btn--sm">
+          <a
+            href="#destaques"
+            className="header__cta btn btn--primary btn--sm"
+            onClick={(event) => navigateTo(event, 'destaques')}
+          >
             Ver destaques
           </a>
 

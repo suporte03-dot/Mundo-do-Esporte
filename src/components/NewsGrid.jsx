@@ -40,7 +40,7 @@ function NewsGrid({ onReadMore }) {
   }
 
   return (
-    <section id="destaques" className="section news-grid">
+    <section id="noticias" className="section news-grid">
       <div className="container">
         <SectionReveal>
           <SectionTitle
@@ -74,7 +74,7 @@ function NewsGrid({ onReadMore }) {
             <p>Não há notícias para o filtro selecionado. Tente outra modalidade ou atualize a lista.</p>
           </div>
         ) : (
-          <div className="news-grid__list" id="noticias">
+          <div className="news-grid__list">
             {filtered.map((news, index) => (
               <SectionReveal key={news.id}>
                 <article
