@@ -2,7 +2,7 @@
 
 @media (max-width: 768px) {
   :root {
-    --header-h: 56px;
+    --header-h: 72px;
     --mobile-nav-h: 64px;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
@@ -34,12 +34,19 @@
   }
 
   .header__inner {
+    min-height: var(--header-h);
     height: var(--header-h);
     gap: 0.75rem;
   }
 
   .header__brand .brand-text {
-    font-size: 0.95rem;
+    font-size: 1.25rem;
+  }
+
+  .logo-header img.brand-logo--compact {
+    height: 56px;
+    max-width: 56px;
+    object-fit: contain;
   }
 
   .header__nav {

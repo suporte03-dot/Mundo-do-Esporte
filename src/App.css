@@ -13,32 +13,49 @@
 }
 
 .brand-logo--full {
-  height: 56px;
-  max-width: 220px;
+  height: 90px;
+  max-width: 340px;
   width: auto;
+  object-fit: contain;
+}
+
+.logo-header {
+  flex-shrink: 0;
 }
 
 .logo-header img {
-  height: 56px;
-  max-width: 220px;
+  height: 90px;
+  max-width: 340px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.logo-header .brand-logo--full {
+  height: 90px;
+  max-width: 340px;
+  width: auto;
   object-fit: contain;
 }
 
 .brand-logo--compact {
   display: none;
-  height: 40px;
+  height: 56px;
   width: auto;
+  max-width: 56px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .brand-text {
   display: none;
   font-family: var(--font-brand);
   font-weight: 800;
-  font-size: 1.05rem;
+  font-size: 1.3rem;
   color: var(--snow);
   letter-spacing: -0.02em;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .brand-text__accent {
@@ -170,7 +187,8 @@ main {
 .header__inner {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.75rem;
+  min-height: var(--header-h);
   height: var(--header-h);
   min-width: 0;
 }
@@ -180,8 +198,9 @@ main {
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
   min-width: 0;
+  max-width: 360px;
 }
 
 .logo-header .brand-logo--full {
@@ -2062,13 +2081,25 @@ main {
 
 @media (min-width: 1201px) {
   .header__link {
-    padding: 0.35rem 0.55rem;
-    font-size: 0.78rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .header__inner {
+    gap: 1.75rem;
+  }
+
+  .header__actions {
+    margin-left: 0.25rem;
   }
 }
 
 /* ===== Responsive ===== */
 @media (min-width: 769px) and (max-width: 1024px) {
+  :root {
+    --header-h: 92px;
+  }
+
   .dashboard__grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -2081,9 +2112,14 @@ main {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .logo-header img {
-    height: 52px;
-    max-width: 200px;
+  .logo-header img,
+  .logo-header .brand-logo--full {
+    height: 72px;
+    max-width: 290px;
+  }
+
+  .header__brand {
+    max-width: 300px;
   }
 }
 
@@ -2160,7 +2196,7 @@ main {
 
 @media (max-width: 768px) {
   :root {
-    --header-h: 64px;
+    --header-h: 72px;
   }
 
   .section {
@@ -2180,15 +2216,26 @@ main {
     display: block;
   }
 
+  .logo-header img,
+  .logo-header .brand-logo--full {
+    display: none;
+  }
+
   .logo-header img.brand-logo--compact {
     display: block;
-    height: 42px;
-    max-width: 42px;
+    height: 56px;
+    max-width: 56px;
+    width: auto;
     object-fit: contain;
   }
 
+  .logo-header .brand-text {
+    font-size: 1.25rem;
+  }
+
   .header__brand {
-    gap: 0.5rem;
+    gap: 0.6rem;
+    max-width: 200px;
   }
 
   .header__disclaimer {
@@ -2499,8 +2546,12 @@ main {
   }
 
   .logo-header img.brand-logo--compact {
-    height: 42px;
-    max-width: 150px;
+    height: 52px;
+    max-width: 52px;
+  }
+
+  .logo-header .brand-text {
+    font-size: 1.1rem;
   }
 
   .perf-stats {
