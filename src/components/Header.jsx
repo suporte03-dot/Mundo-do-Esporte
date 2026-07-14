@@ -34,23 +34,24 @@ export default function Header({ activeSection }) {
       <div className="header__inner container">
         <a
           href="#inicio"
-          className="brand header__brand logo-header"
+          className="brand-logo header__brand"
           onClick={(e) => handleSectionClick(e, 'inicio', closeMenu)}
+          aria-label="EvoluaFit — Início"
         >
-          <img
-            src={logoUrl('evoluafit-logo.png')}
-            alt="EvoluaFit"
-            className="brand-logo brand-logo--full"
-          />
           <img
             src={logoUrl('evoluafit-icon.png')}
             alt=""
-            aria-hidden="true"
-            className="brand-logo brand-logo--compact"
+            className="brand-icon"
+            width={54}
+            height={54}
           />
-          <span className="brand-text">
-            Evolua<span className="brand-text__accent">Fit</span>
-          </span>
+          <div className="brand-copy">
+            <strong className="brand-name">
+              <span>Evolua</span>
+              <em className="brand-name__fit">Fit</em>
+            </strong>
+            <small className="brand-slogan">Treinos inteligentes, evolução real.</small>
+          </div>
         </a>
 
         <nav
