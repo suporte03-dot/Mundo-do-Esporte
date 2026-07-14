@@ -330,6 +330,7 @@ export const MUSCLE_FALLBACK_KEYS = {
   Quadríceps: 'pernas',
   Posterior: 'pernas',
   Glúteos: 'pernas',
+  Panturrilha: 'pernas',
   Abdômen: 'abdomen',
   Oblíquos: 'abdomen',
   Core: 'abdomen',
@@ -339,27 +340,55 @@ export const MUSCLE_FALLBACK_KEYS = {
   Funcional: 'funcional',
   'Corpo inteiro': 'funcional',
   Mobilidade: 'mobilidade',
+  Alongamento: 'mobilidade',
   Coluna: 'mobilidade',
   Quadril: 'mobilidade',
 }
 
-/** Chips padronizados da biblioteca EvoluaFit */
-export const GDT_CATEGORY_CHIPS = [
-  { id: 'Todos', label: 'Todos' },
-  { id: 'Peitoral', label: 'Peitoral', categories: ['Peitoral', 'Peito'] },
-  { id: 'Costas', label: 'Costas', categories: ['Costas', 'Trapézio'] },
-  { id: 'Pernas', label: 'Pernas', categories: ['Pernas', 'Quadríceps', 'Posterior'] },
-  { id: 'Glúteos', label: 'Glúteos' },
-  { id: 'Ombros', label: 'Ombros', categories: ['Ombros', 'Trapézio'] },
-  { id: 'Bíceps', label: 'Bíceps' },
-  { id: 'Tríceps', label: 'Tríceps' },
-  { id: 'Antebraço', label: 'Antebraço' },
-  { id: 'Trapézio', label: 'Trapézio' },
-  { id: 'Abdômen', label: 'Abdômen', categories: ['Abdômen', 'Oblíquos', 'Core', 'Lombar'] },
-  { id: 'Lombar', label: 'Lombar' },
-  { id: 'Cardio', label: 'Cardio', categories: ['Cardio', 'Cardiovascular'] },
-  { id: 'Mobilidade', label: 'Mobilidade', categories: ['Mobilidade', 'Coluna', 'Quadril'] },
+/**
+ * Filtros da biblioteca EvoluaFit, organizados por seção.
+ * Cada chip filtra exatamente o grupo (exceto "Todos").
+ */
+export const GDT_FILTER_GROUPS = [
+  {
+    id: 'principais',
+    label: 'Grupos principais',
+    chips: [
+      { id: 'Todos', label: 'Todos' },
+      { id: 'Peitoral', label: 'Peitoral' },
+      { id: 'Costas', label: 'Costas' },
+      { id: 'Pernas', label: 'Pernas' },
+      { id: 'Glúteos', label: 'Glúteos' },
+      { id: 'Ombros', label: 'Ombros' },
+      { id: 'Bíceps', label: 'Bíceps' },
+      { id: 'Tríceps', label: 'Tríceps' },
+    ],
+  },
+  {
+    id: 'complementares',
+    label: 'Complementares',
+    chips: [
+      { id: 'Antebraço', label: 'Antebraço' },
+      { id: 'Trapézio', label: 'Trapézio' },
+      { id: 'Lombar', label: 'Lombar' },
+      { id: 'Abdômen', label: 'Abdômen' },
+      { id: 'Panturrilha', label: 'Panturrilha' },
+    ],
+  },
+  {
+    id: 'condicionamento',
+    label: 'Condicionamento',
+    chips: [
+      { id: 'Cardio', label: 'Cardio' },
+      { id: 'Mobilidade', label: 'Mobilidade' },
+      { id: 'Funcional', label: 'Funcional' },
+      { id: 'Alongamento', label: 'Alongamento' },
+    ],
+  },
 ]
+
+/** Lista plana de chips (compatibilidade) */
+export const GDT_CATEGORY_CHIPS = GDT_FILTER_GROUPS.flatMap((group) => group.chips)
 
 export function getFallbackKey(category, type) {
   if (type === 'Cardio') return 'cardio'
@@ -376,20 +405,19 @@ export function getFallbackMediaPath(key, base) {
 
 export function matchesGdtChip(chipId, category) {
   if (chipId === 'Todos') return true
-  const chip = GDT_CATEGORY_CHIPS.find((c) => c.id === chipId)
-  if (!chip) return normalizeMuscleGroup(category) === chipId
-  if (chip.categories) {
-    return chip.categories.includes(category) || chip.categories.includes(normalizeMuscleGroup(category))
-  }
-  return category === chipId || normalizeMuscleGroup(category) === chipId
+  const normalized = normalizeMuscleGroup(category)
+  return normalized === chipId || category === chipId
 }
 
 export function muscleGroupLabel(category) {
   const normalized = normalizeMuscleGroup(category)
-  const chip = GDT_CATEGORY_CHIPS.find(
-    (c) => c.id === normalized || c.categories?.includes(category) || c.categories?.includes(normalized),
-  )
+  const chip = GDT_CATEGORY_CHIPS.find((c) => c.id === normalized)
   return chip?.label || normalized || category
+}
+
+export function countExercisesByChip(exercises, chipId) {
+  if (chipId === 'Todos') return exercises.length
+  return exercises.filter((ex) => matchesGdtChip(chipId, ex.category || ex.muscleGroup)).length
 }
 
 /**

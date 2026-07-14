@@ -3348,10 +3348,33 @@ main {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
+}
+
+.gdt-filter-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.1rem;
+}
+
+.gdt-filter-group__title {
+  margin: 0 0 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.92);
+}
+
+.gdt-library-chips--wrap {
+  flex-wrap: wrap;
 }
 
 .gdt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   padding: 0.4rem 0.85rem;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -3363,6 +3386,20 @@ main {
   transition: all 0.15s ease;
 }
 
+.gdt-chip__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 .gdt-chip:hover {
   border-color: rgba(0, 229, 143, 0.35);
   color: #e2e8f0;
@@ -3372,6 +3409,10 @@ main {
   background: rgba(0, 229, 143, 0.15);
   border-color: #00e58f;
   color: #00e58f;
+}
+
+.gdt-chip.is-active .gdt-chip__count {
+  background: rgba(0, 229, 143, 0.22);
 }
 
 .gdt-library-advanced {

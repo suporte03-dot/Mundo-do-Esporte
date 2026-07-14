@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { equipmentTypes as defaultEquipment, levelTypes as defaultLevels, exerciseTypes as defaultTypes } from '../data/exercisesData'
-import { GDT_CATEGORY_CHIPS, matchesGdtChip } from '../data/exerciseMediaMap'
+import { GDT_FILTER_GROUPS, matchesGdtChip, countExercisesByChip } from '../data/exerciseMediaMap'
 import { useFitness } from '../context/FitnessContext'
 import { useExercises } from '../hooks/useExercises'
 import SectionTitle from './SectionTitle'
@@ -37,6 +37,16 @@ export default function ExerciseLibrary() {
 
   const activeFilterCount = [equipment, level, type].filter((v) => v !== 'Todos').length
 
+  const chipCounts = useMemo(() => {
+    const map = {}
+    for (const group of GDT_FILTER_GROUPS) {
+      for (const item of group.chips) {
+        map[item.id] = countExercisesByChip(exercises, item.id)
+      }
+    }
+    return map
+  }, [exercises])
+
   const verifiedCount = useMemo(
     () => exercises.filter((ex) => ex.hasVerifiedMedia && !ex.mediaPending).length,
     [exercises],
@@ -58,6 +68,24 @@ export default function ExerciseLibrary() {
       return matchSearch && matchChip && matchEquip && matchLevel && matchType
     })
   }, [exercises, search, chip, equipment, level, type])
+
+  function renderChipButton(item) {
+    const count = chipCounts[item.id] ?? 0
+    const showCount = item.id !== 'Todos'
+    return (
+      <button
+        key={item.id}
+        type="button"
+        role="tab"
+        aria-selected={chip === item.id}
+        className={`gdt-chip${chip === item.id ? ' is-active' : ''}`}
+        onClick={() => setChip(item.id)}
+      >
+        {item.label}
+        {showCount && <span className="gdt-chip__count">{count}</span>}
+      </button>
+    )
+  }
 
   return (
     <section id="exercicios" className="section section--alt exercise-library--gdt">
@@ -93,18 +121,14 @@ export default function ExerciseLibrary() {
           </button>
         </div>
 
-        <div className="gdt-library-chips" role="tablist" aria-label="Grupos musculares">
-          {GDT_CATEGORY_CHIPS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={chip === item.id}
-              className={`gdt-chip${chip === item.id ? ' is-active' : ''}`}
-              onClick={() => setChip(item.id)}
-            >
-              {item.label}
-            </button>
+        <div className="gdt-filter-groups" aria-label="Grupos musculares">
+          {GDT_FILTER_GROUPS.map((group) => (
+            <div key={group.id} className="gdt-filter-group">
+              <p className="gdt-filter-group__title">{group.label}</p>
+              <div className="gdt-library-chips" role="tablist" aria-label={group.label}>
+                {group.chips.map(renderChipButton)}
+              </div>
+            </div>
           ))}
         </div>
 
@@ -123,6 +147,16 @@ export default function ExerciseLibrary() {
                   Fechar
                 </button>
               </div>
+
+              <div className="gdt-filter-groups gdt-filter-groups--sheet">
+                {GDT_FILTER_GROUPS.map((group) => (
+                  <div key={`sheet-${group.id}`} className="gdt-filter-group">
+                    <p className="gdt-filter-group__title">{group.label}</p>
+                    <div className="gdt-library-chips gdt-library-chips--wrap">{group.chips.map(renderChipButton)}</div>
+                  </div>
+                ))}
+              </div>
+
               <select value={type} onChange={(e) => setType(e.target.value)} aria-label="Tipo de treino">
                 <option value="Todos">Tipo de treino</option>
                 {exerciseTypes.map((t) => (
@@ -189,7 +223,9 @@ export default function ExerciseLibrary() {
         ) : (
           <>
             <p className="gdt-library-results">
-              {filtered.length} {filtered.length === 1 ? 'exercício encontrado' : 'exercícios encontrados'}
+              {filtered.length}{' '}
+              {filtered.length === 1 ? 'exercício encontrado' : 'exercícios encontrados'}
+              {chip !== 'Todos' ? ` em ${chip}` : ''}
             </p>
 
             <div className="gdt-exercise-grid">
@@ -205,7 +241,11 @@ export default function ExerciseLibrary() {
             </div>
 
             {filtered.length === 0 && (
-              <p className="empty-text">Nenhum exercício encontrado.</p>
+              <p className="empty-text">
+                {chip !== 'Todos'
+                  ? 'Nenhum exercício encontrado para este grupo.'
+                  : 'Nenhum exercício encontrado.'}
+              </p>
             )}
           </>
         )}

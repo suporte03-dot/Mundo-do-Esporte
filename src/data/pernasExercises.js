@@ -13,7 +13,7 @@ const SAFETY = [
 
 const base = {
   type: 'Legs',
-  category: 'Quadríceps',
+  category: 'Pernas',
   safetyTips: SAFETY,
   rest: '75 a 120 segundos',
   restrictions: ['joelho'],

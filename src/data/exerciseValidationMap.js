@@ -210,7 +210,9 @@ const CATEGORY_NORMALIZE = {
   Posterior: 'Pernas',
   Pernas: 'Pernas',
   Glúteos: 'Glúteos',
+  Panturrilha: 'Panturrilha',
   Abdômen: 'Abdômen',
+  Abdomen: 'Abdômen',
   Oblíquos: 'Abdômen',
   Core: 'Abdômen',
   Lombar: 'Lombar',
@@ -221,6 +223,7 @@ const CATEGORY_NORMALIZE = {
   Coluna: 'Mobilidade',
   Quadril: 'Mobilidade',
   Mobilidade: 'Mobilidade',
+  Alongamento: 'Alongamento',
 }
 
 export function normalizeMuscleGroup(category) {
