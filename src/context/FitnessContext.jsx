@@ -1,8 +1,14 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import storageService from '../services/storageService'
 import { buildHistoryEntry } from '../services/workoutService'
 import { getPerformanceSummary } from '../utils/performanceUtils'
 import { parseSets, parseRestSeconds } from '../data/exercisesData'
+import {
+  ensureCalendarMirror,
+  markWorkoutPartial,
+  mirrorCalendar,
+  toPersistedStatus,
+} from '../utils/calendarUtils'
 
 const FitnessContext = createContext(null)
 
@@ -12,10 +18,15 @@ export function FitnessProvider({ children }) {
   const [activeWorkout, setActiveWorkout] = useState(null)
   const [generatedPlan, setGeneratedPlan] = useState(null)
 
+  useEffect(() => {
+    ensureCalendarMirror(data.workouts)
+  }, [])
+
   const persist = useCallback((updater) => {
     setData((prev) => {
       const next = typeof updater === 'function' ? updater(prev) : updater
       storageService.save(next)
+      mirrorCalendar(next.workouts)
       return next
     })
   }, [])
@@ -89,18 +100,26 @@ export function FitnessProvider({ children }) {
     (workoutId, sessionData) => {
       // Persisted via localStorage (evoluafit-data). Future: sync to Supabase workout_history + workout_sets.
       const entry = buildHistoryEntry(workoutId, sessionData)
+      const isPartial = Boolean(sessionData?.partial)
 
       persist((prev) => ({
         ...prev,
         history: [entry, ...prev.history],
         workouts: prev.workouts.map((w) =>
           w.id === workoutId
-            ? { ...w, status: 'Realizado', completedAt: entry.completedAt, exercises: sessionData.exercises }
+            ? {
+                ...w,
+                status: isPartial ? toPersistedStatus('partial') : toPersistedStatus('completed'),
+                completedAt: entry.completedAt,
+                exercises: sessionData.exercises,
+                estimatedMinutes: sessionData.durationMinutes ?? w.estimatedMinutes,
+                notes: sessionData.notes != null ? sessionData.notes : w.notes,
+              }
             : w,
         ),
       }))
       setActiveWorkout(null)
-      showToast('Treino finalizado com sucesso!')
+      showToast(isPartial ? 'Treino marcado como parcial.' : 'Treino finalizado com sucesso!')
     },
     [persist, showToast],
   )
@@ -125,9 +144,26 @@ export function FitnessProvider({ children }) {
     [persist, showToast],
   )
 
-  const startWorkout = useCallback((workout) => {
-    setActiveWorkout(workout)
-  }, [])
+  const startWorkout = useCallback(
+    (workout) => {
+      setActiveWorkout(workout)
+      if (workout?.id && workout.status !== 'Realizado') {
+        persist((prev) => ({
+          ...prev,
+          workouts: markWorkoutPartial(prev.workouts, workout.id),
+        }))
+      }
+    },
+    [persist],
+  )
+
+  const replaceWorkouts = useCallback(
+    (workouts, toastMessage) => {
+      persist((prev) => ({ ...prev, workouts }))
+      if (toastMessage) showToast(toastMessage)
+    },
+    [persist, showToast],
+  )
 
   const addWorkoutToPlan = useCallback(
     (workout) => {
@@ -263,6 +299,7 @@ export function FitnessProvider({ children }) {
     savePlan,
     addPlanWorkouts,
     startWorkout,
+    replaceWorkouts,
     addWorkoutToPlan,
     addExerciseToPlan,
     updateGoals,

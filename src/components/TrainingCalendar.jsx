@@ -1,212 +1,852 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useFitness } from '../context/FitnessContext'
+import { planToWorkouts } from '../utils/workoutGenerator'
 import SectionTitle from './SectionTitle'
 import Modal from './Modal'
+import {
+  WEEKDAYS_SHORT,
+  WEEKDAYS_FULL,
+  addWorkoutToCalendar,
+  filterCalendarEntries,
+  formatDisplayDate,
+  formatMonthLabel,
+  getCalendarSummary,
+  getCurrentMonthDays,
+  getMobileAgenda,
+  getTrainingStatusByDate,
+  markRestDay,
+  markWorkoutCompleted,
+  statusLabel,
+  syncPlanToCalendar,
+  todayKey,
+  updateCalendarNotes,
+  updateCalendarWorkout,
+  wouldCreateSevenIntenseDays,
+} from '../utils/calendarUtils'
 
-const statusBadgeClass = {
-  pendente: 'status--pending',
-  realizado: 'status--done',
-  parcial: 'status--partial',
-  pulado: 'status--skipped',
-}
-const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-const WEEKDAYS_FULL = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-const MONTHS = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+const FILTERS = [
+  { id: 'all', label: 'Todos' },
+  { id: 'planned', label: 'Planejados' },
+  { id: 'completed', label: 'Realizados' },
+  { id: 'pending', label: 'Pendentes' },
+  { id: 'rest', label: 'Descanso' },
+  { id: 'week', label: 'Esta semana' },
+  { id: 'month', label: 'Este mês' },
 ]
 
+const WORKOUT_TYPES = ['Push', 'Pull', 'Legs', 'Full Body', 'Cardio', 'Mobilidade', 'Core', 'Outro']
+
+const MUSCLE_OPTIONS = [
+  'Peito',
+  'Costas',
+  'Ombros',
+  'Bíceps',
+  'Tríceps',
+  'Pernas',
+  'Glúteos',
+  'Abdômen',
+  'Cardio',
+  'Mobilidade',
+]
+
+const emptyAddForm = (date) => ({
+  date: date || todayKey(),
+  source: 'quick',
+  workoutId: '',
+  workoutName: '',
+  workoutType: 'Full Body',
+  muscleGroups: [],
+  duration: 45,
+  notes: '',
+  exercises: [],
+})
+
+function StatusIcon({ status }) {
+  const map = {
+    completed: '✓',
+    planned: '◉',
+    pending: '◐',
+    partial: '◑',
+    rest: '☾',
+    missed: '!',
+  }
+  return <span className="cal-status-icon" aria-hidden="true">{map[status] || '·'}</span>
+}
+
+function SummaryCard({ tone, icon, label, value, desc }) {
+  return (
+    <article className={`cal-summary-card cal-summary-card--${tone}`}>
+      <span className="cal-summary-card__icon" aria-hidden="true">
+        {icon}
+      </span>
+      <div className="cal-summary-card__body">
+        <span className="cal-summary-card__label">{label}</span>
+        <strong className="cal-summary-card__value">{value}</strong>
+        <span className="cal-summary-card__desc">{desc}</span>
+      </div>
+    </article>
+  )
+}
+
 export default function TrainingCalendar() {
-  const { workouts } = useFitness()
+  const {
+    workouts,
+    plans,
+    generatedPlan,
+    addWorkout,
+    replaceWorkouts,
+    startWorkout,
+    showToast,
+  } = useFitness()
+
   const [current, setCurrent] = useState(() => new Date())
-  const [selectedDay, setSelectedDay] = useState(null)
+  const [filter, setFilter] = useState('all')
+  const [selectedDate, setSelectedDate] = useState(null)
+  const [showAdd, setShowAdd] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [addForm, setAddForm] = useState(() => emptyAddForm())
+  const [noteDraft, setNoteDraft] = useState('')
+  const [noteTargetId, setNoteTargetId] = useState(null)
+  const [syncConfirm, setSyncConfirm] = useState(false)
+  const [safetyHint, setSafetyHint] = useState('')
 
   const year = current.getFullYear()
   const month = current.getMonth()
+  const today = todayKey()
 
-  const calendar = useMemo(() => {
-    const firstDay = new Date(year, month, 1).getDay()
-    const daysInMonth = new Date(year, month + 1, 0).getDate()
-    const cells = []
+  const filteredWorkouts = useMemo(
+    () => filterCalendarEntries(workouts, filter, new Date()),
+    [workouts, filter],
+  )
 
-    for (let i = 0; i < firstDay; i++) cells.push(null)
-    for (let d = 1; d <= daysInMonth; d++) cells.push(d)
-    return cells
-  }, [year, month])
+  const monthCells = useMemo(
+    () => getCurrentMonthDays(year, month, filteredWorkouts, new Date()),
+    [year, month, filteredWorkouts],
+  )
 
-  const workoutsByDate = useMemo(() => {
-    const map = {}
-    workouts.forEach((w) => {
-      const key = w.date
-      if (!map[key]) map[key] = []
-      map[key].push(w)
+  const summary = useMemo(() => getCalendarSummary(workouts, new Date()), [workouts])
+  const mobileAgenda = useMemo(() => getMobileAgenda(workouts, new Date()), [workouts])
+
+  const dayEntries = useMemo(() => {
+    if (!selectedDate) return []
+    return workouts.filter((w) => w.date === selectedDate)
+  }, [workouts, selectedDate])
+
+  const savedWorkouts = useMemo(() => {
+    const seen = new Set()
+    return workouts.filter((w) => {
+      if (w.isRest || w.status === 'Descanso') return false
+      if (seen.has(w.name)) return false
+      seen.add(w.name)
+      return true
     })
-    return map
   }, [workouts])
 
-  const getDateKey = (day) => {
-    const m = String(month + 1).padStart(2, '0')
-    const d = String(day).padStart(2, '0')
-    return `${year}-${m}-${d}`
-  }
+  const planSource = generatedPlan || plans?.[0] || null
 
-  const monthDays = useMemo(() => {
-    const daysInMonth = new Date(year, month + 1, 0).getDate()
-    const today = new Date()
-    const result = []
-
-    for (let d = 1; d <= daysInMonth; d++) {
-      const key = getDateKey(d)
-      const items = workoutsByDate[key] || []
-      const weekday = new Date(year, month, d).getDay()
-      const isToday =
-        d === today.getDate() &&
-        month === today.getMonth() &&
-        year === today.getFullYear()
-
-      result.push({
-        day: d,
-        key,
-        weekday,
-        items,
-        status: items[0]?.status?.toLowerCase() || '',
-        isToday,
-        isRest: items.length === 0,
-      })
+  useEffect(() => {
+    if (summary.intenseStreak >= 6) {
+      setSafetyHint(
+        'Sequência intensa detectada. Inclua descanso ou mobilidade para recuperar melhor.',
+      )
+    } else {
+      setSafetyHint('')
     }
-    return result
-  }, [year, month, workoutsByDate])
+  }, [summary.intenseStreak])
+
+  const goToday = () => {
+    const now = new Date()
+    setCurrent(now)
+    setSelectedDate(todayKey(now))
+  }
 
   const prevMonth = () => setCurrent(new Date(year, month - 1, 1))
   const nextMonth = () => setCurrent(new Date(year, month + 1, 1))
 
-  const dayWorkouts = selectedDay ? workoutsByDate[getDateKey(selectedDay)] || [] : []
+  const openDay = (date) => setSelectedDate(date)
 
-  const openDay = (day) => setSelectedDay(day)
+  const openAdd = (date) => {
+    setEditingId(null)
+    setAddForm(emptyAddForm(date || selectedDate || today))
+    setShowAdd(true)
+  }
+
+  const openEdit = (workout) => {
+    setEditingId(workout.id)
+    setAddForm({
+      date: workout.date,
+      source: 'edit',
+      workoutId: workout.id,
+      workoutName: workout.name,
+      workoutType: workout.workoutType || 'Outro',
+      muscleGroups: workout.muscleGroups || [],
+      duration: workout.estimatedMinutes || 45,
+      notes: workout.notes || '',
+      exercises: workout.exercises || [],
+    })
+    setShowAdd(true)
+  }
+
+  const toggleMuscle = (group) => {
+    setAddForm((prev) => {
+      const has = prev.muscleGroups.includes(group)
+      return {
+        ...prev,
+        muscleGroups: has
+          ? prev.muscleGroups.filter((g) => g !== group)
+          : [...prev.muscleGroups, group],
+      }
+    })
+  }
+
+  const applySavedWorkout = (id) => {
+    const w = workouts.find((x) => x.id === id)
+    if (!w) return
+    setAddForm((prev) => ({
+      ...prev,
+      source: 'saved',
+      workoutId: w.id,
+      workoutName: w.name,
+      workoutType: w.workoutType || prev.workoutType,
+      muscleGroups: w.muscleGroups || [],
+      duration: w.estimatedMinutes || 45,
+      exercises: (w.exercises || []).map((ex) => ({ ...ex })),
+      notes: w.notes || '',
+    }))
+  }
+
+  const applyPlanDay = (index) => {
+    if (!planSource?.schedule?.[index]) return
+    const day = planSource.schedule[index]
+    setAddForm((prev) => ({
+      ...prev,
+      source: 'plan',
+      workoutName: day.name,
+      workoutType: day.name?.split('—')[0]?.trim() || 'Treino',
+      muscleGroups: day.focus || [],
+      duration: day.estimatedMinutes || 45,
+      exercises: (day.exercises || []).map((ex) => ({ ...ex })),
+    }))
+  }
+
+  const submitAdd = (e) => {
+    e.preventDefault()
+    if (!addForm.workoutName.trim() && addForm.source !== 'rest') {
+      showToast('Informe o nome do treino.', 'info')
+      return
+    }
+
+    const payload = {
+      date: addForm.date,
+      workoutName: addForm.workoutName.trim() || 'Treino',
+      workoutType: addForm.workoutType,
+      muscleGroups: addForm.muscleGroups,
+      duration: Number(addForm.duration) || 45,
+      notes: addForm.notes,
+      exercises: addForm.exercises,
+      status: 'planned',
+      source: addForm.source,
+    }
+
+    if (wouldCreateSevenIntenseDays(workouts, addForm.date, payload)) {
+      const ok = window.confirm(
+        'Isso completaria 7 dias intensos seguidos. O ideal é incluir descanso ou mobilidade. Deseja continuar mesmo assim?',
+      )
+      if (!ok) {
+        setAddForm((prev) => ({
+          ...prev,
+          workoutName: 'Mobilidade / Recuperação',
+          workoutType: 'Mobilidade',
+          muscleGroups: ['Mobilidade'],
+          duration: 25,
+        }))
+        showToast('Sugestão: troque por mobilidade ou descanso.', 'info')
+        return
+      }
+    }
+
+    if (editingId) {
+      const next = updateCalendarWorkout(workouts, editingId, {
+        date: payload.date,
+        workoutName: payload.workoutName,
+        workoutType: payload.workoutType,
+        muscleGroups: payload.muscleGroups,
+        duration: payload.duration,
+        notes: payload.notes,
+        exercises: payload.exercises,
+      })
+      replaceWorkouts(next, 'Treino atualizado no calendário.')
+    } else {
+      const { entry } = addWorkoutToCalendar(workouts, payload)
+      addWorkout(entry)
+    }
+
+    setShowAdd(false)
+    setSelectedDate(addForm.date)
+    setEditingId(null)
+  }
+
+  const handleStart = (workout) => {
+    setSelectedDate(null)
+    startWorkout(workout)
+  }
+
+  const handleMarkDone = (workout) => {
+    const next = markWorkoutCompleted(workouts, workout.id)
+    replaceWorkouts(next, 'Treino marcado como realizado!')
+  }
+
+  const handleRest = (date) => {
+    const { workouts: next } = markRestDay(workouts, date || selectedDate)
+    replaceWorkouts(next, 'Dia marcado como descanso.')
+    setSelectedDate(date || selectedDate)
+  }
+
+  const openNotes = (workout) => {
+    setNoteTargetId(workout.id)
+    setNoteDraft(workout.notes || '')
+  }
+
+  const saveNotes = () => {
+    if (!noteTargetId) return
+    const next = updateCalendarNotes(workouts, noteTargetId, noteDraft)
+    replaceWorkouts(next, 'Observação salva.')
+    setNoteTargetId(null)
+  }
+
+  const confirmSyncPlan = () => {
+    if (!planSource) {
+      showToast('Nenhuma planilha disponível. Gere uma na seção Planilha.', 'info')
+      setSyncConfirm(false)
+      return
+    }
+    const planWorkouts = planToWorkouts(planSource)
+    const { workouts: next, added, safetyWarning } = syncPlanToCalendar(workouts, planWorkouts, {
+      overwrite: true,
+    })
+    replaceWorkouts(next, `${added} treinos enviados ao calendário.`)
+    if (safetyWarning) showToast(safetyWarning, 'info')
+    setSyncConfirm(false)
+  }
+
+  const dayTitle = selectedDate
+    ? `${WEEKDAYS_FULL[new Date(`${selectedDate}T12:00:00`).getDay()]}, ${formatDisplayDate(selectedDate)}`
+    : ''
 
   return (
-    <section id="calendario" className="section">
+    <section id="calendario" className="section section--calendar">
       <div className="container">
-        <SectionTitle tag="Calendário" title="Calendário de treinos" subtitle="Visualize sua rotina mensal com codificação por status." />
+        <SectionTitle
+          tag="Calendário"
+          title="Calendário de treinos"
+          subtitle="Planeje sua rotina, acompanhe treinos realizados e reserve dias de descanso com equilíbrio."
+        />
 
-        <div className="calendar-nav glass-card">
-          <button type="button" className="btn btn--ghost btn--sm" onClick={prevMonth} aria-label="Mês anterior">
-            ←
-          </button>
-          <h3>
-            {MONTHS[month]} {year}
-          </h3>
-          <button type="button" className="btn btn--ghost btn--sm" onClick={nextMonth} aria-label="Próximo mês">
-            →
-          </button>
-        </div>
-
-        {/* Desktop / tablet grid view */}
-        <div className="calendar glass-card calendar--desktop">
-          <div className="calendar__header">
+        <div className="cal-toolbar glass-card">
+          <div className="cal-toolbar__month">
             <button type="button" className="btn btn--ghost btn--sm" onClick={prevMonth} aria-label="Mês anterior">
               ←
             </button>
-            <h3>
-              {MONTHS[month]} {year}
-            </h3>
+            <h3 className="cal-toolbar__label">{formatMonthLabel(year, month)}</h3>
             <button type="button" className="btn btn--ghost btn--sm" onClick={nextMonth} aria-label="Próximo mês">
               →
             </button>
           </div>
+          <div className="cal-toolbar__actions">
+            <button type="button" className="btn btn--ghost btn--sm" onClick={goToday}>
+              Hoje
+            </button>
+            <button type="button" className="btn btn--primary btn--sm" onClick={() => openAdd(today)}>
+              Adicionar treino
+            </button>
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm"
+              onClick={() => setSyncConfirm(true)}
+              disabled={!planSource}
+              title={planSource ? 'Distribuir planilha nos dias' : 'Gere uma planilha primeiro'}
+            >
+              Enviar planilha para o calendário
+            </button>
+          </div>
+          <p className="cal-toolbar__summary">
+            Semana: {summary.weekLabel} · Mês: {summary.monthLabel}
+          </p>
+        </div>
 
+        <div className="cal-summary-grid">
+          <SummaryCard tone="planned" icon="◉" label="Planejados" value={summary.planned} desc="Agendados no mês" />
+          <SummaryCard tone="completed" icon="✓" label="Realizados" value={summary.completed} desc="Concluídos no mês" />
+          <SummaryCard tone="rest" icon="☾" label="Descanso" value={summary.rest} desc="Recuperação" />
+          <SummaryCard tone="pending" icon="◐" label="Pendentes" value={summary.pending} desc="A fazer / parciais" />
+          <SummaryCard tone="streak" icon="⌁" label="Sequência" value={summary.streak} desc="Dias com treino" />
+          <SummaryCard
+            tone="next"
+            icon="→"
+            label="Próximo treino"
+            value={summary.nextWorkout ? summary.nextWorkout.name : '—'}
+            desc={summary.nextLabel}
+          />
+        </div>
+
+        <div className="cal-filters" role="tablist" aria-label="Filtros do calendário">
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              role="tab"
+              aria-selected={filter === f.id}
+              className={`cal-filter-chip ${filter === f.id ? 'cal-filter-chip--active' : ''}`}
+              onClick={() => setFilter(f.id)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {safetyHint && (
+          <p className="cal-safety-banner" role="status">
+            {safetyHint}
+          </p>
+        )}
+
+        {/* Desktop monthly grid */}
+        <div className="calendar glass-card calendar--desktop cal-grid-wrap">
           <div className="calendar__weekdays">
-            {WEEKDAYS.map((d) => (
+            {WEEKDAYS_SHORT.map((d) => (
               <span key={d}>{d}</span>
             ))}
           </div>
-
-          <div className="calendar__grid">
-            {calendar.map((day, i) => {
-              if (!day) return <div key={`empty-${i}`} className="calendar__day calendar__day--empty" />
-
-              const key = getDateKey(day)
-              const dayItems = workoutsByDate[key] || []
-              const status = dayItems[0]?.status?.toLowerCase() || ''
-              const isToday =
-                day === new Date().getDate() &&
-                month === new Date().getMonth() &&
-                year === new Date().getFullYear()
-
+          <div className="calendar__grid cal-month-grid">
+            {monthCells.map((cell, i) => {
+              if (!cell) return <div key={`empty-${i}`} className="calendar__day calendar__day--empty" />
+              const status = cell.status
+              const name = cell.primary?.name
               return (
                 <button
-                  key={day}
+                  key={cell.date}
                   type="button"
-                  className={`calendar__day ${dayItems.length ? `calendar__day--${status}` : ''} ${isToday ? 'calendar__day--today' : ''}`}
-                  onClick={() => openDay(day)}
+                  className={[
+                    'calendar__day',
+                    'cal-day',
+                    status ? `calendar__day--${status} cal-day--${status}` : '',
+                    cell.isToday ? 'calendar__day--today cal-day--today' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  onClick={() => openDay(cell.date)}
                 >
-                  <span>{day}</span>
-                  {dayItems.length > 0 && <span className="calendar__dot" />}
+                  <span className="cal-day__num">{cell.day}</span>
+                  {status && (
+                    <span className={`cal-day__badge cal-day__badge--${status}`}>
+                      <StatusIcon status={status} />
+                      {statusLabel(status)}
+                    </span>
+                  )}
+                  {name && !cell.isRestOnly && (
+                    <span className="cal-day__name">{name}</span>
+                  )}
+                  {cell.isRestOnly && <span className="cal-day__name">Descanso</span>}
+                  {status && <i className={`cal-day__marker cal-day__marker--${status}`} />}
                 </button>
               )
             })}
           </div>
 
-          <div className="calendar__legend">
-            <span><i className="dot dot--pendente" /> Pendente</span>
-            <span><i className="dot dot--realizado" /> Realizado</span>
-            <span><i className="dot dot--parcial" /> Parcial</span>
-            <span><i className="dot dot--pulado" /> Pulado</span>
+          <div className="calendar__legend cal-legend">
+            <span><i className="dot dot--completed" /> Realizado</span>
+            <span><i className="dot dot--planned" /> Planejado</span>
+            <span><i className="dot dot--pending" /> Pendente</span>
+            <span><i className="dot dot--rest" /> Descanso</span>
+            <span><i className="dot dot--missed" /> Atrasado</span>
           </div>
         </div>
 
-        {/* Mobile list-by-day view */}
-        <div className="calendar-list glass-card">
-          {monthDays.map((entry) => (
-            <button
-              key={entry.key}
-              type="button"
-              className={`calendar-list__item ${entry.isToday ? 'calendar-list__item--today' : ''} ${entry.items.length ? `calendar-list__item--${entry.status}` : 'calendar-list__item--rest'}`}
-              onClick={() => openDay(entry.day)}
-            >
-              <div className="calendar-list__date">
-                <span className="calendar-list__day-num">{entry.day}</span>
-                <span className="calendar-list__weekday">{WEEKDAYS_FULL[entry.weekday]}</span>
-              </div>
-              <div className="calendar-list__info">
-                {entry.isRest ? (
-                  <span className="calendar-list__status calendar-list__status--rest">Descanso</span>
-                ) : (
-                  <>
-                    <span className="calendar-list__workout">{entry.items[0].name}</span>
-                    <span className={`calendar-list__status status-badge ${statusBadgeClass[entry.status] || 'status--pending'}`}>
-                      {entry.items[0].status}
-                    </span>
-                  </>
-                )}
-                {entry.items.length > 1 && (
-                  <span className="calendar-list__more">+{entry.items.length - 1} treino(s)</span>
-                )}
-              </div>
-            </button>
-          ))}
+        {/* Mobile organized list */}
+        <div className="calendar-list cal-mobile-list">
+          <MobileDayBlock
+            title="Hoje"
+            block={mobileAgenda.today}
+            highlight
+            onOpen={openDay}
+            onStart={handleStart}
+            onAdd={openAdd}
+          />
+          <MobileDayBlock
+            title="Amanhã"
+            block={mobileAgenda.tomorrow}
+            onOpen={openDay}
+            onStart={handleStart}
+            onAdd={openAdd}
+          />
+          <div className="cal-mobile-section">
+            <h4 className="cal-mobile-section__title">Próximos dias</h4>
+            {mobileAgenda.upcoming.map((block) => (
+              <MobileDayBlock
+                key={block.date}
+                title={block.weekday}
+                block={block}
+                compact
+                onOpen={openDay}
+                onStart={handleStart}
+                onAdd={openAdd}
+              />
+            ))}
+          </div>
         </div>
+
+        <p className="cal-disclaimer">
+          Treinar com consistência importa mais do que intensidade todos os dias. Inclua descanso e
+          recuperação — se sentir dor aguda ou fadiga excessiva, reduza a carga e procure orientação
+          profissional.
+        </p>
       </div>
 
+      {/* Day detail modal */}
       <Modal
-        isOpen={Boolean(selectedDay)}
-        onClose={() => setSelectedDay(null)}
-        title={selectedDay ? `${selectedDay}/${month + 1}/${year}` : ''}
+        isOpen={Boolean(selectedDate)}
+        onClose={() => setSelectedDate(null)}
+        title={dayTitle}
+        size="lg"
+        className="cal-day-modal"
       >
-        {dayWorkouts.length === 0 ? (
-          <p>Dia de descanso ou sem treinos agendados.</p>
+        {dayEntries.length === 0 ? (
+          <div className="cal-day-empty">
+            <p>Nenhum treino planejado para este dia.</p>
+            <div className="cal-day-actions">
+              <button type="button" className="btn btn--primary" onClick={() => openAdd(selectedDate)}>
+                Adicionar treino
+              </button>
+              <button type="button" className="btn btn--ghost" onClick={() => handleRest(selectedDate)}>
+                Marcar descanso
+              </button>
+            </div>
+          </div>
         ) : (
-          <ul className="day-detail-list">
-            {dayWorkouts.map((w) => (
-              <li key={w.id}>
-                <strong>{w.name}</strong>
-                <span className={`status-badge status--${w.status.toLowerCase()}`}>{w.status}</span>
-                <p>{w.exercises?.length} exercícios · {w.estimatedMinutes} min</p>
-              </li>
-            ))}
-          </ul>
+          <div className="cal-day-detail">
+            {dayEntries.map((w) => {
+              const st = getTrainingStatusByDate(w, selectedDate)
+              return (
+                <article key={w.id} className={`cal-day-card cal-day-card--${st}`}>
+                  <header className="cal-day-card__head">
+                    <div>
+                      <h4>{w.name}</h4>
+                      <span className={`status-badge status--${st}`}>{statusLabel(st)}</span>
+                    </div>
+                    <span className="cal-day-card__type">{w.workoutType || 'Treino'}</span>
+                  </header>
+                  <ul className="cal-day-meta">
+                    <li>
+                      <strong>Grupos:</strong>{' '}
+                      {(w.muscleGroups || []).length ? w.muscleGroups.join(', ') : '—'}
+                    </li>
+                    <li>
+                      <strong>Duração:</strong> {w.estimatedMinutes || 0} min
+                    </li>
+                    <li>
+                      <strong>Exercícios:</strong> {(w.exercises || []).length}
+                    </li>
+                  </ul>
+                  {(w.exercises || []).length > 0 && (
+                    <ul className="cal-day-exercises">
+                      {w.exercises.slice(0, 8).map((ex, idx) => (
+                        <li key={`${w.id}-ex-${idx}`}>
+                          {ex.name}
+                          {ex.sets ? ` · ${ex.sets}x${ex.reps || ''}` : ''}
+                        </li>
+                      ))}
+                      {w.exercises.length > 8 && (
+                        <li className="cal-day-exercises__more">+{w.exercises.length - 8} mais</li>
+                      )}
+                    </ul>
+                  )}
+                  {w.notes && <p className="cal-day-notes">{w.notes}</p>}
+                  <div className="cal-day-actions">
+                    {!w.isRest && st !== 'completed' && (
+                      <button type="button" className="btn btn--primary" onClick={() => handleStart(w)}>
+                        Iniciar treino
+                      </button>
+                    )}
+                    {!w.isRest && st !== 'completed' && (
+                      <button type="button" className="btn btn--ghost" onClick={() => handleMarkDone(w)}>
+                        Marcar como realizado
+                      </button>
+                    )}
+                    <button type="button" className="btn btn--ghost" onClick={() => openEdit(w)}>
+                      Editar treino
+                    </button>
+                    <button type="button" className="btn btn--ghost" onClick={() => openNotes(w)}>
+                      Adicionar observação
+                    </button>
+                    {st !== 'rest' && (
+                      <button type="button" className="btn btn--ghost" onClick={() => handleRest(selectedDate)}>
+                        Definir como descanso
+                      </button>
+                    )}
+                  </div>
+                </article>
+              )
+            })}
+            <div className="cal-day-actions cal-day-actions--footer">
+              <button type="button" className="btn btn--ghost" onClick={() => openAdd(selectedDate)}>
+                Adicionar outro treino
+              </button>
+            </div>
+          </div>
         )}
       </Modal>
+
+      {/* Add / edit modal */}
+      <Modal
+        isOpen={showAdd}
+        onClose={() => {
+          setShowAdd(false)
+          setEditingId(null)
+        }}
+        title={editingId ? 'Editar treino' : 'Adicionar treino'}
+        size="lg"
+      >
+        <form className="cal-add-form" onSubmit={submitAdd}>
+          <label className="cal-field">
+            <span>Data</span>
+            <input
+              type="date"
+              value={addForm.date}
+              onChange={(e) => setAddForm((p) => ({ ...p, date: e.target.value }))}
+              required
+            />
+          </label>
+
+          {!editingId && (
+            <div className="cal-source-tabs">
+              <button
+                type="button"
+                className={addForm.source === 'quick' ? 'is-active' : ''}
+                onClick={() => setAddForm((p) => ({ ...p, source: 'quick' }))}
+              >
+                Criação rápida
+              </button>
+              <button
+                type="button"
+                className={addForm.source === 'saved' ? 'is-active' : ''}
+                onClick={() => setAddForm((p) => ({ ...p, source: 'saved' }))}
+              >
+                Treino salvo
+              </button>
+              <button
+                type="button"
+                className={addForm.source === 'plan' ? 'is-active' : ''}
+                onClick={() => setAddForm((p) => ({ ...p, source: 'plan' }))}
+                disabled={!planSource}
+              >
+                Planilha
+              </button>
+            </div>
+          )}
+
+          {addForm.source === 'saved' && (
+            <label className="cal-field">
+              <span>Selecionar treino salvo</span>
+              <select
+                value={addForm.workoutId}
+                onChange={(e) => applySavedWorkout(e.target.value)}
+              >
+                <option value="">Escolha…</option>
+                {savedWorkouts.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          {addForm.source === 'plan' && planSource?.schedule && (
+            <label className="cal-field">
+              <span>Dia da planilha</span>
+              <select defaultValue="" onChange={(e) => applyPlanDay(Number(e.target.value))}>
+                <option value="" disabled>
+                  Escolha…
+                </option>
+                {planSource.schedule.map((day, idx) => (
+                  <option key={`${day.day}-${idx}`} value={idx}>
+                    {day.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          <label className="cal-field">
+            <span>Nome do treino</span>
+            <input
+              type="text"
+              value={addForm.workoutName}
+              onChange={(e) => setAddForm((p) => ({ ...p, workoutName: e.target.value }))}
+              placeholder="Ex.: Push — Peito e Tríceps"
+              required
+            />
+          </label>
+
+          <label className="cal-field">
+            <span>Tipo</span>
+            <select
+              value={addForm.workoutType}
+              onChange={(e) => setAddForm((p) => ({ ...p, workoutType: e.target.value }))}
+            >
+              {WORKOUT_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <fieldset className="cal-field cal-field--muscles">
+            <legend>Grupos musculares</legend>
+            <div className="cal-muscle-chips">
+              {MUSCLE_OPTIONS.map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  className={`cal-filter-chip ${addForm.muscleGroups.includes(g) ? 'cal-filter-chip--active' : ''}`}
+                  onClick={() => toggleMuscle(g)}
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <label className="cal-field">
+            <span>Duração (min)</span>
+            <input
+              type="number"
+              min={10}
+              max={180}
+              value={addForm.duration}
+              onChange={(e) => setAddForm((p) => ({ ...p, duration: e.target.value }))}
+            />
+          </label>
+
+          <label className="cal-field">
+            <span>Observações</span>
+            <textarea
+              rows={3}
+              value={addForm.notes}
+              onChange={(e) => setAddForm((p) => ({ ...p, notes: e.target.value }))}
+              placeholder="Notas, foco do dia, ajustes…"
+            />
+          </label>
+
+          <div className="cal-day-actions">
+            <button type="submit" className="btn btn--primary">
+              {editingId ? 'Salvar alterações' : 'Salvar no calendário'}
+            </button>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => {
+                setShowAdd(false)
+                setEditingId(null)
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Notes modal */}
+      <Modal
+        isOpen={Boolean(noteTargetId)}
+        onClose={() => setNoteTargetId(null)}
+        title="Observação do treino"
+      >
+        <label className="cal-field">
+          <span>Notas</span>
+          <textarea rows={4} value={noteDraft} onChange={(e) => setNoteDraft(e.target.value)} />
+        </label>
+        <div className="cal-day-actions">
+          <button type="button" className="btn btn--primary" onClick={saveNotes}>
+            Salvar
+          </button>
+        </div>
+      </Modal>
+
+      {/* Sync confirm */}
+      <Modal isOpen={syncConfirm} onClose={() => setSyncConfirm(false)} title="Enviar planilha">
+        <p>
+          Isso vai distribuir os treinos da planilha atual nos próximos dias. Entradas não concluídas
+          nas datas alvo podem ser substituídas. Treinos já realizados serão mantidos.
+        </p>
+        {planSource && (
+          <p className="cal-sync-plan-name">
+            Planilha: <strong>{planSource.name || 'Plano gerado'}</strong> ·{' '}
+            {planSource.schedule?.length || 0} dias
+          </p>
+        )}
+        <div className="cal-day-actions">
+          <button type="button" className="btn btn--primary" onClick={confirmSyncPlan}>
+            Confirmar envio
+          </button>
+          <button type="button" className="btn btn--ghost" onClick={() => setSyncConfirm(false)}>
+            Cancelar
+          </button>
+        </div>
+      </Modal>
     </section>
+  )
+}
+
+function MobileDayBlock({ title, block, highlight, compact, onOpen, onStart, onAdd }) {
+  const primary = block.primary
+  const status = block.status
+
+  return (
+    <div
+      className={[
+        'cal-mobile-card',
+        highlight ? 'cal-mobile-card--today' : '',
+        compact ? 'cal-mobile-card--compact' : '',
+        status ? `cal-mobile-card--${status}` : 'cal-mobile-card--empty',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <button type="button" className="cal-mobile-card__main" onClick={() => onOpen(block.date)}>
+        <div className="cal-mobile-card__date">
+          <span className="cal-mobile-card__title">{title}</span>
+          <span className="cal-mobile-card__sub">
+            {block.weekday} · {block.date.slice(8)}/{block.date.slice(5, 7)}
+          </span>
+        </div>
+        <div className="cal-mobile-card__info">
+          {block.isEmpty ? (
+            <span className="cal-mobile-card__empty">Sem treino · toque para planejar</span>
+          ) : (
+            <>
+              <span className="cal-mobile-card__name">{primary?.name}</span>
+              <span className={`status-badge status--${status}`}>{statusLabel(status)}</span>
+              {primary?.estimatedMinutes > 0 && (
+                <span className="cal-mobile-card__meta">{primary.estimatedMinutes} min</span>
+              )}
+            </>
+          )}
+        </div>
+      </button>
+      <div className="cal-mobile-card__actions">
+        {!block.isEmpty && primary && !primary.isRest && status !== 'completed' && (
+          <button type="button" className="btn btn--primary btn--sm cal-mobile-start" onClick={() => onStart(primary)}>
+            Iniciar treino
+          </button>
+        )}
+        {block.isEmpty && (
+          <button type="button" className="btn btn--ghost btn--sm" onClick={() => onAdd(block.date)}>
+            Adicionar
+          </button>
+        )}
+      </div>
+    </div>
   )
 }
