@@ -934,7 +934,7 @@ function matchIntent(question) {
   if (/casa|halter|home|el[aá]stico/.test(q)) return { type: 'home' }
   if (/trocar|substituir|alterar exerc/.test(q)) return { type: 'swap' }
   if (/push|pull|legs|ppl|divis[aã]o|organizar/.test(q)) return { type: 'split' }
-  if (/qual grupo|treinar hoje|o que treinar|hoje\??$/.test(q)) return { type: 'today' }
+  if (/qual grupo|treinar hoje|o que treinar|o que treino|treino hoje|hoje\??$/.test(q)) return { type: 'today' }
   if (/montar|criar|gerar|planilha|treino personalizado/.test(q)) return { type: 'plan' }
   if (/explic|como faz|para que serve/.test(q)) return { type: 'explain' }
   if (/ajust|adapt|reduz|volume|academia/.test(q)) return { type: 'adjust' }

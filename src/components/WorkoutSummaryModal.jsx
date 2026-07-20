@@ -9,8 +9,12 @@ export default function WorkoutSummaryModal({ isOpen, onClose, onConfirm, sessio
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Resumo do treino" size="md">
-      <div className="workout-summary">
+      <div className="workout-summary workout-summary--complete">
+        <div className="workout-summary__celebrate" aria-hidden="true">
+          <span>✓</span>
+        </div>
         <h3 className="workout-summary__name">{workoutName}</h3>
+        <p className="workout-summary__done-label">Treino concluído</p>
 
         <div className="workout-summary__stats">
           <div className="workout-summary__stat">

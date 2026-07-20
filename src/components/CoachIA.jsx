@@ -3,6 +3,8 @@ import { useFitness } from '../context/FitnessContext'
 import { getExerciseCache } from '../data/exerciseCache'
 import { scrollToSection } from '../utils/scrollToSection'
 import { formatDateShort } from '../utils/dateFormat'
+import useCoachVoice from '../hooks/useCoachVoice'
+import { cancelSpeech } from '../utils/coachVoice'
 import SectionTitle from './SectionTitle'
 import {
   askCoach,
@@ -99,6 +101,7 @@ export default function CoachIA() {
   const [moreOpen, setMoreOpen] = useState(false)
   const chatEndRef = useRef(null)
   const inputRef = useRef(null)
+  const loadingRef = useRef(false)
 
   const context = useMemo(
     () => ({ profile, workouts, history, performance, goals }),
@@ -153,30 +156,93 @@ export default function CoachIA() {
     return coachMsg
   }, [])
 
+  const speakCoachReplyRef = useRef(null)
+  const markIdleRef = useRef(null)
+
   const runCoach = useCallback(
     async (question, handler) => {
       const q = String(question || '').trim()
-      if (!q || loading) return
+      if (!q || loadingRef.current) return
+      loadingRef.current = true
       setLoading(true)
       try {
         const result = await handler()
         pushExchange(q, result)
+        loadingRef.current = false
+        setLoading(false)
+        markIdleRef.current?.()
+        // Speak after UI unlocks — don't block on TTS
+        void speakCoachReplyRef.current?.(result)
       } catch {
         showToast('Não foi possível obter resposta do Coach. Tente novamente.', 'error')
-      } finally {
+        loadingRef.current = false
         setLoading(false)
+        markIdleRef.current?.()
       }
     },
-    [loading, pushExchange, showToast],
+    [pushExchange, showToast],
   )
+
+  const handleVoiceTranscript = useCallback(
+    (transcript) => {
+      const q = String(transcript || '').trim()
+      if (!q) {
+        markIdleRef.current?.()
+        return
+      }
+      setInput(q)
+      runCoach(q, () => askCoach(q, context))
+      setInput('')
+    },
+    [context, runCoach],
+  )
+
+  const {
+    voiceState,
+    interimText,
+    error: voiceError,
+    supported: voiceSupported,
+    ttsSupported,
+    ttsEnabled,
+    setSpeakReplies,
+    toggleListening,
+    stopListening,
+    speakCoachReply,
+    markIdle,
+    clearError: clearVoiceError,
+  } = useCoachVoice({ onTranscript: handleVoiceTranscript })
+
+  speakCoachReplyRef.current = speakCoachReply
+  markIdleRef.current = markIdle
 
   const handleSubmit = (e) => {
     e.preventDefault()
     const question = input.trim()
     if (!question) return
     setInput('')
+    stopListening()
     runCoach(question, () => askCoach(question, context))
   }
+
+  const voiceStatusLabel =
+    voiceState === 'listening'
+      ? 'Ouvindo… fale agora'
+      : voiceState === 'processing'
+        ? 'Processando sua pergunta…'
+        : voiceSupported
+          ? 'Toque no microfone para perguntar por voz'
+          : 'Voz indisponível neste navegador — use o teclado'
+
+  const voiceErrorMessage =
+    voiceError === 'unsupported'
+      ? 'Este navegador não oferece reconhecimento de fala. Continue digitando.'
+      : voiceError === 'permission'
+        ? 'Permissão de microfone negada. Ative nas configurações do navegador ou digite.'
+        : voiceError === 'no-speech'
+          ? 'Não captamos fala. Toque no microfone e tente de novo.'
+          : voiceError === 'error'
+            ? 'Falha no reconhecimento. Tente de novo ou digite.'
+            : null
 
   const fillAndAsk = (prompt, handler) => {
     setInput(prompt)
@@ -226,6 +292,8 @@ export default function CoachIA() {
   }
 
   const handleClear = () => {
+    stopListening()
+    cancelSpeech()
     clearCoachMessages()
     setMessages([])
     showToast('Conversa limpa.', 'info')
@@ -350,6 +418,12 @@ export default function CoachIA() {
             <span className="coach-ia__context-chip coach-ia__context-chip--care">
               {summary.attention}
             </span>
+            <span
+              className="coach-ia__context-chip coach-ia__context-chip--privacy"
+              title="Reconhecimento de fala pelo navegador"
+            >
+              Voz: reconhecimento pelo navegador — áudio não enviado aos nossos servidores
+            </span>
           </div>
         </div>
 
@@ -358,19 +432,98 @@ export default function CoachIA() {
             <label htmlFor="coach-question" className="sr-only">
               Pergunte ao Coach IA sobre seu treino
             </label>
-            <textarea
-              ref={inputRef}
-              id="coach-question"
-              className="coach-ia__input"
-              rows={2}
-              placeholder="Ex.: Monte um treino de costas de 40 min para academia"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={loading}
-            />
+            <div className="coach-ia__input-row">
+              <textarea
+                ref={inputRef}
+                id="coach-question"
+                className="coach-ia__input"
+                rows={2}
+                placeholder={
+                  voiceState === 'listening'
+                    ? 'Ouvindo… diga, por exemplo: o que treino hoje?'
+                    : 'Ex.: Monte um treino de costas de 40 min · ou use o microfone'
+                }
+                value={interimText && voiceState === 'listening' ? interimText : input}
+                onChange={(e) => {
+                  if (voiceState === 'listening') stopListening()
+                  setInput(e.target.value)
+                }}
+                disabled={loading || voiceState === 'processing'}
+                aria-describedby="coach-voice-status"
+              />
+              <button
+                type="button"
+                className={`coach-ia__mic${voiceState === 'listening' ? ' is-listening' : ''}${
+                  voiceState === 'processing' ? ' is-processing' : ''
+                }${!voiceSupported ? ' is-unsupported' : ''}`}
+                onClick={toggleListening}
+                disabled={loading || voiceState === 'processing' || !voiceSupported}
+                aria-label={
+                  voiceState === 'listening'
+                    ? 'Parar de ouvir'
+                    : voiceSupported
+                      ? 'Falar com o Coach IA'
+                      : 'Reconhecimento de voz indisponível'
+                }
+                aria-pressed={voiceState === 'listening'}
+                title={
+                  voiceSupported
+                    ? 'Modo voz — microfone só é pedido ao tocar'
+                    : 'Navegador sem reconhecimento de fala'
+                }
+              >
+                {voiceState === 'listening' ? (
+                  <span className="coach-ia__mic-wave" aria-hidden="true">
+                    <i />
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                ) : voiceState === 'processing' ? (
+                  <span className="coach-ia__mic-spin" aria-hidden="true" />
+                ) : (
+                  <span className="coach-ia__mic-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                      <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z" />
+                    </svg>
+                  </span>
+                )}
+              </button>
+            </div>
+
+            <div className="coach-ia__voice-bar" aria-live="polite">
+              <p id="coach-voice-status" className="coach-ia__voice-status">
+                {voiceStatusLabel}
+              </p>
+              <div className="coach-ia__voice-toggles">
+                {ttsSupported && (
+                  <label className="coach-ia__tts-toggle">
+                    <input
+                      type="checkbox"
+                      checked={ttsEnabled}
+                      onChange={(e) => setSpeakReplies(e.target.checked)}
+                    />
+                    <span>Ouvir respostas</span>
+                  </label>
+                )}
+              </div>
+            </div>
+            {voiceErrorMessage && (
+              <p className="coach-ia__voice-error" role="status">
+                {voiceErrorMessage}{' '}
+                <button type="button" className="coach-ia__voice-error-dismiss" onClick={clearVoiceError}>
+                  Entendi
+                </button>
+              </p>
+            )}
+
             <div className="coach-ia__form-actions">
-              <button type="submit" className="btn btn--primary coach-ia__btn-send" disabled={loading || !input.trim()}>
-                {loading ? 'Analisando…' : 'Enviar'}
+              <button
+                type="submit"
+                className="btn btn--primary coach-ia__btn-send"
+                disabled={loading || !input.trim()}
+              >
+                {loading ? 'Analisando…' : 'Perguntar'}
               </button>
               {messages.length > 0 && (
                 <button type="button" className="btn btn--ghost coach-ia__btn-clear" onClick={handleClear}>
@@ -459,15 +612,16 @@ export default function CoachIA() {
                 <p className="coach-ia__empty-title">Exemplo de conversa</p>
                 <div className="coach-ia__example">
                   <div className="coach-ia__example-user">
-                    “Monte um treino de pernas leve para casa, ~30 min.”
+                    “O que treino hoje?” <span className="coach-ia__example-voice">(voz ou texto)</span>
                   </div>
                   <div className="coach-ia__example-coach">
-                    O Coach responde com sessão moderada, foco em técnica e lembrete de recuperação —
+                    Resposta curta falada + texto na tela, com botão para iniciar o treino —
                     sem prometer resultados milagrosos.
                   </div>
                 </div>
                 <p className="coach-ia__empty-desc">
-                  Diferente da “Sugestão de hoje” no Início, aqui você conversa e ajusta o plano.
+                  No treino com as mãos ocupadas, use o microfone. O reconhecimento é do navegador;
+                  o áudio não vai para os servidores EvoluaFit.
                 </p>
               </div>
             )}

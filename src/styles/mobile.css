@@ -914,10 +914,30 @@
     font-size: 0.84rem;
   }
 
+  .coach-ia__input-row {
+    gap: 0.45rem;
+  }
+
   .coach-ia__input {
     width: 100%;
     min-height: 56px;
     font-size: 1rem;
+  }
+
+  .coach-ia__mic {
+    width: 3.5rem;
+    min-width: 3.5rem;
+    min-height: 3.5rem;
+  }
+
+  .coach-ia__voice-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .coach-ia__context-chip--privacy {
+    font-size: 0.68rem;
+    line-height: 1.35;
   }
 
   .coach-ia__chips {
@@ -1145,6 +1165,34 @@
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 360px) {
+  .coach-ia__main {
+    padding: 0.85rem;
+  }
+
+  .coach-ia__input-row {
+    gap: 0.35rem;
+  }
+
+  .coach-ia__mic {
+    width: 3.1rem;
+    min-width: 3.1rem;
+    min-height: 3.1rem;
+  }
+
+  .coach-ia__context-chip {
+    font-size: 0.72rem;
+  }
+
+  .planner-preview__card {
+    padding: 0.9rem;
+  }
+
+  .dash-metric-grid {
+    gap: 0.55rem;
   }
 }
 

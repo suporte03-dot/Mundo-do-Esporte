@@ -54,6 +54,8 @@ export default function WorkoutPlanner() {
   const [plan, setPlan] = useState(null)
   const [noRestrictions, setNoRestrictions] = useState(!(profile.restrictions || []).length)
   const [step, setStep] = useState(1)
+  const [generating, setGenerating] = useState(false)
+  const [justGenerated, setJustGenerated] = useState(false)
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
 
@@ -110,12 +112,20 @@ export default function WorkoutPlanner() {
       setStep(3)
       return
     }
+    setGenerating(true)
     const generated = generateWorkoutPlan({
       ...form,
       restrictions: noRestrictions ? [] : form.restrictions,
     })
-    setPlan(generated)
-    savePlan(generated)
+    // Micro-feedback: brief pulse before revealing plan
+    window.setTimeout(() => {
+      setPlan(generated)
+      savePlan(generated)
+      setGenerating(false)
+      setJustGenerated(true)
+      window.setTimeout(() => setJustGenerated(false), 900)
+      showToast('Planilha gerada com sucesso!', 'success')
+    }, 280)
   }
 
   const handleDownloadExcel = () => {
@@ -254,7 +264,7 @@ export default function WorkoutPlanner() {
 
         <div className="planner-layout planner-layout--wizard">
           <form className="planner-config" onSubmit={handleGenerate}>
-            <div className="planner-step planner-step--active">
+            <div className="planner-step planner-step--active" key={step}>
               <div className="planner-step__head">
                 <span className="planner-step__icon" aria-hidden="true">
                   {step === 1 && '🎯'}
@@ -440,8 +450,12 @@ export default function WorkoutPlanner() {
                   Continuar
                 </button>
               ) : (
-                <button type="submit" className="btn btn--primary btn--lg planner-btn--generate">
-                  Gerar planilha
+                <button
+                  type="submit"
+                  className={`btn btn--primary btn--lg planner-btn--generate${generating ? ' is-generating' : ''}${justGenerated ? ' is-done-pulse' : ''}`}
+                  disabled={generating}
+                >
+                  {generating ? 'Gerando…' : 'Gerar planilha'}
                 </button>
               )}
             </div>
@@ -471,7 +485,9 @@ export default function WorkoutPlanner() {
         </div>
 
         {plan && (
-          <GeneratedPlan plan={plan} onDownloadExcel={handleDownloadExcel} onSaveToPlan={handleSaveToMyPlan} />
+          <div className={justGenerated ? 'planner-result is-revealed' : 'planner-result'}>
+            <GeneratedPlan plan={plan} onDownloadExcel={handleDownloadExcel} onSaveToPlan={handleSaveToMyPlan} />
+          </div>
         )}
       </div>
     </section>
