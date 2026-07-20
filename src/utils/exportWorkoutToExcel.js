@@ -13,15 +13,17 @@ const WEEKDAY_LABELS = [
 
 const HEADERS = [
   'Dia',
-  'Tipo do treino',
+  'Tipo de treino',
+  'Objetivo',
+  'Nível',
+  'Duração estimada',
   'Grupo muscular',
   'Exercício',
   'Séries',
   'Repetições',
   'Descanso',
   'Equipamento',
-  'Nível',
-  'Observações',
+  'Observação',
   'Cuidados',
 ]
 
@@ -31,53 +33,61 @@ function dayLabel(dayNumber) {
 }
 
 function resolveExerciseMeta(exercise, plan) {
-  const full = getExerciseById(exercise.exerciseId)
+  const full = exercise.exerciseId ? getExerciseById(exercise.exerciseId) : null
   const observation =
+    exercise.observation ||
     full?.shortInstruction ||
     full?.executionSteps?.[0] ||
     full?.execution?.[0] ||
     'Movimento controlado'
   const care =
+    exercise.safetyTip ||
     full?.safetyTips?.[0] ||
     full?.commonMistakes?.[0] ||
     plan.safetyNotes?.[0] ||
     'Evite carga excessiva. Pare em caso de dor.'
 
   return {
-    equipment: full?.equipment || plan.equipment?.join(', ') || '—',
-    level: full?.level || plan.level || '—',
+    equipment: exercise.equipment || full?.equipment || plan.equipment?.join(', ') || '—',
     observation,
     care,
   }
 }
 
 /**
- * Converte a planilha gerada em linhas tabulares para exportação.
+ * Converte a planilha gerada em linhas tabulares para exportação (TODOS os dias).
  * @param {object} plan
  */
 export function planToExcelRows(plan) {
-  if (!plan?.schedule?.length) return []
+  const days = plan?.weeklyPlan || plan?.schedule || []
+  if (!days.length) return []
 
   const rows = []
+  const objective = plan.objectiveLabel || plan.goal || plan.objective || '—'
+  const level = plan.level || '—'
 
-  plan.schedule.forEach((day) => {
-    const muscleGroups = (day.focus || []).join('/')
+  days.forEach((day) => {
     const weekday = dayLabel(day.day)
+    const workoutType = day.workoutType || day.name || '—'
+    const duration = day.estimatedDuration || day.estimatedMinutes || plan.minutesPerWorkout || plan.duration || '—'
 
     day.exercises?.forEach((exercise) => {
       const meta = resolveExerciseMeta(exercise, plan)
+      const rest = exercise.rest ?? exercise.restSeconds
 
       rows.push({
         Dia: `Dia ${day.day} (${weekday})`,
-        'Tipo do treino': day.name,
-        'Grupo muscular': exercise.muscleGroup || muscleGroups,
+        'Tipo de treino': workoutType,
+        Objetivo: objective,
+        Nível: level,
+        'Duração estimada': typeof duration === 'number' ? `${duration} min` : duration,
+        'Grupo muscular': exercise.muscleGroup || (day.muscleGroups || day.focus || []).join('/'),
         Exercício: exercise.name,
         Séries: exercise.sets ?? '—',
         Repetições: exercise.reps ?? '—',
-        Descanso: exercise.restSeconds != null ? `${exercise.restSeconds}s` : '—',
+        Descanso: rest != null ? `${rest}s` : '—',
         Equipamento: meta.equipment,
-        Nível: meta.level,
-        Observações: meta.observation,
+        Observação: meta.observation,
         Cuidados: meta.care,
       })
     })
@@ -87,7 +97,7 @@ export function planToExcelRows(plan) {
 }
 
 /**
- * Gera e baixa arquivo .xlsx da planilha atual.
+ * Gera e baixa arquivo .xlsx da planilha atual (todos os dias).
  * @param {object} plan
  * @param {string} [filename]
  */
@@ -99,17 +109,19 @@ export function exportWorkoutToExcel(plan, filename = 'evoluafit-planilha-treino
 
   const worksheet = XLSX.utils.json_to_sheet(rows, { header: HEADERS })
   worksheet['!cols'] = [
-    { wch: 16 },
     { wch: 18 },
     { wch: 22 },
+    { wch: 18 },
+    { wch: 14 },
+    { wch: 16 },
+    { wch: 16 },
     { wch: 28 },
     { wch: 8 },
     { wch: 12 },
     { wch: 10 },
-    { wch: 18 },
-    { wch: 14 },
-    { wch: 36 },
-    { wch: 36 },
+    { wch: 16 },
+    { wch: 40 },
+    { wch: 40 },
   ]
 
   const workbook = XLSX.utils.book_new()

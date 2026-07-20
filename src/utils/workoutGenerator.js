@@ -1,11 +1,16 @@
-import { exercises, parseSets, parseRestSeconds } from '../data/exercisesData'
-import { splitTemplates, levelConfig, objectiveLabels } from '../data/workoutTemplates'
+import { exercises, parseSets, parseRestSeconds, getExerciseById } from '../data/exercisesData'
+import {
+  getSplitTemplate,
+  levelConfig,
+  objectiveLabels,
+  PROFESSIONAL_DISCLAIMER,
+} from '../data/workoutTemplates'
 
 /** Cotas por tipo de treino (máximo desejado por grupo) */
 const DAY_QUOTAS = {
   Push: { Peitoral: 2, Ombros: 2, Tríceps: 2 },
   Pull: { Costas: 3, Bíceps: 2, Trapézio: 1, Lombar: 1 },
-  Legs: { Pernas: 2, Glúteos: 2, Panturrilha: 1, Abdômen: 1 },
+  Legs: { Pernas: 3, Glúteos: 2, Panturrilha: 1, Abdômen: 1 },
   FullBody: {
     Peitoral: 1,
     Costas: 1,
@@ -20,6 +25,38 @@ const DAY_QUOTAS = {
   Cardio: { Cardio: 4 },
   Mobilidade: { Mobilidade: 3, Alongamento: 2 },
   HybridRecovery: { Abdômen: 2, Cardio: 2, Mobilidade: 2, Alongamento: 1 },
+  LegsLight: { Pernas: 2, Glúteos: 1, Panturrilha: 1, Mobilidade: 1, Abdômen: 1 },
+}
+
+/** Tabela tempo → contagem de exercícios (depois limitada pelo nível) */
+const TIME_EXERCISE_TABLE = {
+  Iniciante: [
+    [30, 3],
+    [45, 4],
+    [60, 5],
+    [75, 5],
+    [90, 6],
+  ],
+  Intermediário: [
+    [30, 4],
+    [45, 5],
+    [60, 6],
+    [75, 7],
+    [90, 8],
+  ],
+  Avançado: [
+    [30, 4],
+    [45, 6],
+    [60, 7],
+    [75, 8],
+    [90, 9],
+  ],
+}
+
+const LEVEL_CAPS = {
+  Iniciante: { min: 3, max: 6 },
+  Intermediário: { min: 4, max: 8 },
+  Avançado: { min: 4, max: 9 },
 }
 
 /** Aliases → categoria oficial do catálogo */
@@ -49,6 +86,24 @@ const CATEGORY_ALIASES = {
   'Corpo inteiro': 'Funcional',
 }
 
+const HOME_EQUIPMENT = new Set(['Peso corporal', 'Halteres', 'Elástico', 'Colchonete', 'Kettlebell'])
+
+const EQUIPMENT_ALIASES = {
+  'Academia completa': 'gym_full',
+  Academia: 'gym_full',
+  Todos: 'all',
+  Barra: 'Barra',
+  Halteres: 'Halteres',
+  'Peso corporal': 'Peso corporal',
+  Elástico: 'Elástico',
+  Casa: 'home',
+  Máquina: 'Máquina',
+  Cabo: 'Cabo',
+  Colchonete: 'Colchonete',
+  Kettlebell: 'Kettlebell',
+  'Peso livre': 'Peso livre',
+}
+
 function normalizeCategory(label) {
   return CATEGORY_ALIASES[label] || label
 }
@@ -57,37 +112,105 @@ function normalizeFocus(focus = []) {
   return [...new Set(focus.map(normalizeCategory))]
 }
 
+function normalizeGoal(raw) {
+  const key = String(raw || 'saude')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+  if (key.includes('hipertrof')) return 'hipertrofia'
+  if (key.includes('forca')) return 'forca'
+  if (key.includes('condicion')) return 'condicionamento'
+  if (key.includes('emagrec') || key.includes('perda')) return 'emagrecimento'
+  if (key.includes('mobil')) return 'mobilidade'
+  if (key.includes('saude') || key.includes('geral')) return 'saude'
+  return objectiveLabels[raw] ? raw : 'saude'
+}
+
+function normalizeRestrictions(restrictions = []) {
+  const out = []
+  ;(restrictions || []).forEach((r) => {
+    const key = String(r)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+    if (key.includes('joelho')) out.push('joelho')
+    if (key.includes('lombar') || (key.includes('costas') && !key.includes('ombro'))) out.push('lombar')
+    if (key.includes('ombro')) out.push('ombro')
+  })
+  return [...new Set(out)]
+}
+
 function inferDayType(name = '', focus = []) {
   const n = String(name).toLowerCase()
+  if (/descanso|recuper|ativo/.test(n) && /mobil|cardio|along/.test(n)) return 'HybridRecovery'
   if (/descanso|recuper/.test(n)) return 'Mobilidade'
-  if (/core.*cardio|cardio.*mobil|core \+ cardio/.test(n)) return 'HybridRecovery'
+  if (/core.*cardio|cardio.*mobil|core \+ cardio|core \+/.test(n)) return 'HybridRecovery'
+  if (/legs.*leve|perna.*leve|legs light/.test(n)) return 'LegsLight'
   if (/push/.test(n)) return 'Push'
   if (/pull/.test(n)) return 'Pull'
   if (/legs|perna/.test(n)) return 'Legs'
   if (/superior/.test(n)) return 'Superiores'
   if (/inferior/.test(n)) return 'Inferiores'
-  if (/core|abd/.test(n)) return 'Core'
-  if (/cardio/.test(n)) return 'Cardio'
+  if (/core|abd/.test(n) && !/cardio/.test(n)) return 'Core'
+  if (/cardio/.test(n) && !/mobil|core/.test(n)) return 'Cardio'
   if (/mobil|along/.test(n)) return 'Mobilidade'
   if (/full|corpo/.test(n)) return 'FullBody'
 
   const f = normalizeFocus(focus)
-  if (f.includes('Cardio') && f.length <= 2) return 'Cardio'
+  if (f.includes('Cardio') && f.every((c) => ['Cardio', 'Mobilidade', 'Alongamento', 'Abdômen'].includes(c))) {
+    return 'HybridRecovery'
+  }
   if (f.every((c) => ['Mobilidade', 'Alongamento'].includes(c))) return 'Mobilidade'
-  if (f.includes('Peitoral') && f.includes('Tríceps')) return 'Push'
+  if (f.includes('Peitoral') && (f.includes('Tríceps') || f.includes('Ombros'))) return 'Push'
   if (f.includes('Costas') && f.includes('Bíceps')) return 'Pull'
   if (f.includes('Pernas') || f.includes('Glúteos')) return 'Legs'
   return 'FullBody'
 }
 
-function matchesEquipment(exercise, availableEquipment = []) {
-  if (!availableEquipment.length || availableEquipment.includes('Todos')) return true
-  if (availableEquipment.includes('Academia completa')) return true
-  return availableEquipment.some(
-    (eq) =>
-      exercise.equipment === eq ||
-      (eq === 'Casa' && ['Peso corporal', 'Halteres', 'Elástico', 'Colchonete'].includes(exercise.equipment)),
+function isRecoveryDay(dayType, name = '') {
+  return (
+    ['Core', 'Cardio', 'Mobilidade', 'HybridRecovery', 'LegsLight'].includes(dayType) ||
+    /descanso|recuper|mobilidade|leve/.test(String(name).toLowerCase())
   )
+}
+
+function matchesEquipment(exercise, availableEquipment = [], location = 'Academia') {
+  if (!availableEquipment.length) return true
+
+  const tokens = availableEquipment.map((eq) => EQUIPMENT_ALIASES[eq] || eq)
+  if (tokens.includes('all') || tokens.includes('gym_full')) {
+    if (location === 'Casa' || location === 'Parque') {
+      return (
+        HOME_EQUIPMENT.has(exercise.equipment) ||
+        ['Cardio', 'Mobilidade', 'Alongamento'].includes(exercise.category)
+      )
+    }
+    return true
+  }
+
+  if (tokens.includes('home') || location === 'Casa' || location === 'Parque') {
+    const allowed = new Set(
+      tokens.filter((t) => HOME_EQUIPMENT.has(t)).length
+        ? tokens.filter((t) => typeof t === 'string' && t !== 'home')
+        : [...HOME_EQUIPMENT],
+    )
+    if (tokens.includes('Halteres')) allowed.add('Halteres')
+    if (tokens.includes('Elástico')) allowed.add('Elástico')
+    if (tokens.includes('Peso corporal')) allowed.add('Peso corporal')
+    return (
+      allowed.has(exercise.equipment) ||
+      ['Cardio', 'Mobilidade', 'Alongamento'].includes(normalizeCategory(exercise.category))
+    )
+  }
+
+  return availableEquipment.some((eq) => {
+    if (eq === 'Academia completa') return true
+    if (eq === exercise.equipment) return true
+    if (eq === 'Barra' && ['Barra', 'Peso livre'].includes(exercise.equipment)) return true
+    if (eq === 'Halteres' && ['Halteres', 'Peso livre'].includes(exercise.equipment)) return true
+    if (eq === 'Peso corporal' && exercise.equipment === 'Peso corporal') return true
+    return false
+  })
 }
 
 function matchesLevel(exercise, level) {
@@ -95,7 +218,8 @@ function matchesLevel(exercise, level) {
   const userIdx = levels.indexOf(level)
   const exIdx = levels.indexOf(exercise.level)
   if (userIdx < 0 || exIdx < 0) return true
-  return exIdx <= userIdx + 1
+  if (userIdx === 0) return exIdx <= 1
+  return exIdx <= userIdx
 }
 
 function isRestricted(exercise, restrictions) {
@@ -112,21 +236,78 @@ function shuffle(list) {
   return arr
 }
 
+function preferSimple(pool, level) {
+  if (level !== 'Iniciante') return pool
+  return [...pool].sort((a, b) => {
+    const score = (ex) => {
+      let s = 0
+      if (ex.level === 'Iniciante') s += 3
+      if (ex.level === 'Intermediário') s += 1
+      if (['Peso corporal', 'Máquina', 'Halteres'].includes(ex.equipment)) s += 1
+      return s
+    }
+    return score(b) - score(a)
+  })
+}
+
 function buildPool(options) {
   const { level, equipment, restrictions, location } = options
   let pool = exercises.filter(
     (ex) =>
-      matchesEquipment(ex, equipment) &&
+      matchesEquipment(ex, equipment, location) &&
       matchesLevel(ex, level) &&
       !isRestricted(ex, restrictions),
   )
 
   if (location === 'Casa' || location === 'Parque') {
-    const homeEq = ['Peso corporal', 'Halteres', 'Elástico', 'Colchonete', 'Kettlebell']
-    pool = pool.filter((ex) => homeEq.includes(ex.equipment) || ex.category === 'Cardio' || ex.category === 'Mobilidade' || ex.category === 'Alongamento')
+    pool = pool.filter(
+      (ex) =>
+        HOME_EQUIPMENT.has(ex.equipment) ||
+        ['Cardio', 'Mobilidade', 'Alongamento', 'Funcional'].includes(normalizeCategory(ex.category)),
+    )
   }
 
-  return pool
+  return preferSimple(pool, level)
+}
+
+function scaleQuotasForAdvanced(dayType, maxExercises, minutes) {
+  if (dayType === 'Push' && maxExercises >= 7 && minutes >= 75) {
+    return { Peitoral: 3, Ombros: 2, Tríceps: 2 }
+  }
+  if (dayType === 'Pull' && maxExercises >= 7) {
+    return { Costas: 3, Bíceps: 2, Trapézio: 1, Lombar: 1 }
+  }
+  if (dayType === 'Legs' && maxExercises >= 7) {
+    return { Pernas: 3, Glúteos: 2, Panturrilha: 1, Abdômen: 1 }
+  }
+  return { ...(DAY_QUOTAS[dayType] || {}) }
+}
+
+function buildScopedQuotas(dayType, focusGroups, maxExercises, minutes = 45) {
+  const base = scaleQuotasForAdvanced(dayType, maxExercises, minutes)
+  const fallbackBase =
+    Object.keys(base).length > 0
+      ? base
+      : Object.fromEntries(
+          focusGroups.map((g) => [g, Math.max(1, Math.ceil(maxExercises / Math.max(focusGroups.length, 1)))]),
+        )
+
+  const scopedQuotas = {}
+  for (const [group, quota] of Object.entries(fallbackBase)) {
+    if (focusGroups.includes(group) || focusGroups.length === 0) {
+      scopedQuotas[group] = quota
+    }
+  }
+
+  const defaultShare = Math.max(1, Math.ceil(maxExercises / Math.max(focusGroups.length, 1)))
+  for (const group of focusGroups) {
+    if (!scopedQuotas[group]) scopedQuotas[group] = defaultShare
+  }
+
+  if (!Object.keys(scopedQuotas).length) {
+    for (const group of focusGroups) scopedQuotas[group] = 2
+  }
+  return scopedQuotas
 }
 
 function pickByQuotas(pool, quotas, maxExercises, usedIds, allowReuse = false) {
@@ -163,7 +344,8 @@ function fillRemaining(pool, selected, focusGroups, maxExercises, usedIds) {
     pool.filter(
       (ex) =>
         focusGroups.includes(normalizeCategory(ex.category)) &&
-        !selected.find((s) => s.id === ex.id),
+        !selected.find((s) => s.id === ex.id) &&
+        !usedIds.has(ex.id),
     ),
   )
 
@@ -172,59 +354,85 @@ function fillRemaining(pool, selected, focusGroups, maxExercises, usedIds) {
     selected.push(ex)
     usedIds.add(ex.id)
   }
+
+  if (selected.length < maxExercises) {
+    const reuse = shuffle(
+      pool.filter(
+        (ex) =>
+          focusGroups.includes(normalizeCategory(ex.category)) && !selected.find((s) => s.id === ex.id),
+      ),
+    )
+    for (const ex of reuse) {
+      if (selected.length >= maxExercises) break
+      selected.push(ex)
+      usedIds.add(ex.id)
+    }
+  }
+
   return selected
 }
 
-function emergencyFallback(focusGroups, maxExercises, usedIds) {
+function emergencyFallback(focusGroups, maxExercises, usedIds, restrictions = []) {
   const selected = []
-  const byFocus = exercises.filter((ex) => focusGroups.includes(normalizeCategory(ex.category)))
-  const any = exercises
+  const byFocus = exercises.filter(
+    (ex) => focusGroups.includes(normalizeCategory(ex.category)) && !isRestricted(ex, restrictions),
+  )
+  const any = exercises.filter((ex) => !isRestricted(ex, restrictions))
   for (const ex of [...shuffle(byFocus), ...shuffle(any)]) {
-    if (selected.length >= Math.max(3, maxExercises - 1)) break
+    if (selected.length >= Math.max(3, Math.min(maxExercises, 5))) break
     if (selected.find((s) => s.id === ex.id)) continue
+    const cat = normalizeCategory(ex.category)
+    if (focusGroups.includes('Costas') && !focusGroups.includes('Peitoral') && cat === 'Peitoral') continue
+    if (
+      (focusGroups.includes('Pernas') || focusGroups.includes('Glúteos')) &&
+      !focusGroups.includes('Cardio') &&
+      cat === 'Cardio' &&
+      selected.filter((s) => normalizeCategory(s.category) !== 'Cardio').length < 2
+    ) {
+      continue
+    }
     selected.push(ex)
     usedIds.add(ex.id)
   }
   return selected
 }
 
+function validateDayComposition(selected, dayType, focusGroups) {
+  const cats = selected.map((ex) => normalizeCategory(ex.category))
+  const has = (g) => cats.includes(g)
+
+  if (dayType === 'Push' && !has('Peitoral')) return false
+  if (dayType === 'Pull' && (has('Peitoral') || !has('Costas'))) return false
+  if (dayType === 'Legs') {
+    const strength = cats.filter((c) => ['Pernas', 'Glúteos', 'Panturrilha'].includes(c)).length
+    if (strength === 0) return false
+  }
+  if (dayType === 'Superiores' && !has('Peitoral') && !has('Costas')) return false
+  if (dayType === 'Inferiores' && !has('Pernas') && !has('Glúteos')) return false
+
+  const ids = selected.map((s) => s.id)
+  if (new Set(ids).size !== ids.length) return false
+
+  if (focusGroups.length && selected.length >= 3) {
+    const inFocus = cats.filter((c) => focusGroups.includes(c)).length
+    if (inFocus < Math.min(2, selected.length)) return false
+  }
+  return true
+}
+
 /**
  * Seleciona exercícios para um dia com cotas por grupo.
  */
-function buildScopedQuotas(dayType, focusGroups, maxExercises) {
-  const base =
-    DAY_QUOTAS[dayType] ||
-    Object.fromEntries(focusGroups.map((g) => [g, Math.max(1, Math.ceil(maxExercises / Math.max(focusGroups.length, 1)))]))
-
-  const scopedQuotas = {}
-  for (const [group, quota] of Object.entries(base)) {
-    if (focusGroups.includes(group) || focusGroups.length === 0) {
-      scopedQuotas[group] = quota
-    }
-  }
-
-  // Dias híbridos (ex.: Core + Cardio + Mobilidade): inclui grupos do foco faltantes
-  const defaultShare = Math.max(1, Math.ceil(maxExercises / Math.max(focusGroups.length, 1)))
-  for (const group of focusGroups) {
-    if (!scopedQuotas[group]) scopedQuotas[group] = defaultShare
-  }
-
-  if (!Object.keys(scopedQuotas).length) {
-    for (const group of focusGroups) scopedQuotas[group] = 2
-  }
-  return scopedQuotas
-}
-
 export function pickExercisesForDay(dayTemplate, options, usedIds = new Set()) {
   const focusGroups = normalizeFocus(dayTemplate.focus || [])
   const dayType = inferDayType(dayTemplate.name, focusGroups)
-  const scopedQuotas = buildScopedQuotas(dayType, focusGroups, options.maxExercises)
+  const minutes = options.minutesPerWorkout || options.duration || 45
+  const scopedQuotas = buildScopedQuotas(dayType, focusGroups, options.maxExercises, minutes)
 
   const pool = buildPool(options)
   let selected = pickByQuotas(pool, scopedQuotas, options.maxExercises, usedIds, false)
 
   if (selected.length < Math.min(4, options.maxExercises)) {
-    // Segunda passagem: permite reutilizar exercicios raros sem misturar grupos
     const more = pickByQuotas(pool, scopedQuotas, options.maxExercises, usedIds, true)
     for (const ex of more) {
       if (selected.length >= options.maxExercises) break
@@ -239,108 +447,281 @@ export function pickExercisesForDay(dayTemplate, options, usedIds = new Set()) {
   }
 
   let usedFallback = false
-  if (selected.length < 3) {
+  if (selected.length < 3 || !validateDayComposition(selected, dayType, focusGroups)) {
     usedFallback = true
-    selected = emergencyFallback(focusGroups, options.maxExercises, usedIds)
+    const repaired = emergencyFallback(focusGroups, options.maxExercises, usedIds, options.restrictions)
+    const merged = []
+    const seen = new Set()
+    for (const ex of [...selected, ...repaired]) {
+      if (seen.has(ex.id)) continue
+      const cat = normalizeCategory(ex.category)
+      if (dayType === 'Pull' && cat === 'Peitoral') continue
+      if (dayType === 'Push' && ['Costas', 'Bíceps'].includes(cat) && merged.length > 0) continue
+      merged.push(ex)
+      seen.add(ex.id)
+      if (merged.length >= options.maxExercises) break
+    }
+    selected = merged
   }
 
-  return { selected, usedFallback, dayType, focusGroups }
+  if (dayType === 'Push' && !selected.some((ex) => normalizeCategory(ex.category) === 'Peitoral')) {
+    const chest = pool.find(
+      (ex) => normalizeCategory(ex.category) === 'Peitoral' && !selected.find((s) => s.id === ex.id),
+    )
+    if (chest) {
+      if (selected.length >= options.maxExercises) selected.pop()
+      selected.unshift(chest)
+      usedIds.add(chest.id)
+    }
+  }
+
+  const unique = []
+  const seenIds = new Set()
+  for (const ex of selected) {
+    if (seenIds.has(ex.id)) continue
+    seenIds.add(ex.id)
+    unique.push(ex)
+  }
+
+  return { selected: unique.slice(0, options.maxExercises), usedFallback, dayType, focusGroups }
 }
 
-const buildExerciseEntry = (exercise, level, objective) => {
-  const config = levelConfig[level] || levelConfig['Intermediário']
-  let sets = Math.round(parseSets(exercise.sets) * config.setsMultiplier)
-  let reps = exercise.reps
-  let rest = parseRestSeconds(exercise.rest) + config.restBonus
+function clamp(n, min, max) {
+  return Math.min(max, Math.max(min, n))
+}
 
-  if (objective === 'emagrecimento') {
-    reps = '12-15'
-    rest = Math.max(45, rest - 15)
-  } else if (objective === 'forca') {
-    reps = '4-6'
-    rest = rest + 30
-    sets = Math.min(sets + 1, 5)
-  } else if (objective === 'condicionamento') {
-    reps = '15-20'
-    rest = 45
-  } else if (objective === 'saude') {
-    reps = exercise.reps || '10-12'
-    rest = Math.max(60, rest)
+function getMaxExercises(level, duration, goal) {
+  const table = TIME_EXERCISE_TABLE[level] || TIME_EXERCISE_TABLE.Iniciante
+  const caps = LEVEL_CAPS[level] || LEVEL_CAPS.Iniciante
+  let max = table[0][1]
+  for (const [mins, count] of table) {
+    if (duration >= mins) max = count
   }
+  max = clamp(max, caps.min, caps.max)
+
+  if (goal === 'saude') max = Math.min(max, level === 'Iniciante' ? 5 : 6)
+  if (goal === 'mobilidade') max = Math.min(max, level === 'Iniciante' ? 4 : 6)
+  if (goal === 'forca') max = Math.min(max, level === 'Iniciante' ? 4 : max)
+  return max
+}
+
+function buildSetsRepsRest(exercise, level, goal, dayType) {
+  const config = levelConfig[level] || levelConfig.Intermediário
+  let sets = clamp(Math.round(parseSets(exercise.sets) * config.setsMultiplier), config.setsMin, config.setsMax)
+  let rest = clamp(parseRestSeconds(exercise.rest) + config.restBonus, config.restMin, config.restMax)
+  let reps = exercise.reps || config.defaultReps
+  let observation = ''
+  let intensityBias = 0
+
+  if (level === 'Iniciante') {
+    sets = clamp(sets, 2, 3)
+    reps = '10-15'
+    rest = clamp(rest, 60, 90)
+    observation = 'Foque na técnica e amplitude controlada.'
+  } else if (level === 'Intermediário') {
+    sets = clamp(sets, 3, 4)
+    reps = reps || '8-12'
+    rest = clamp(rest, 60, 120)
+  } else {
+    sets = clamp(sets, 3, 5)
+    rest = clamp(rest, 60, 150)
+    if (!observation && Math.random() < 0.18 && !isRecoveryDay(dayType)) {
+      observation =
+        Math.random() < 0.5
+          ? 'Opcional: bi-set com o próximo exercício do mesmo grupo (apenas se a técnica estiver estável).'
+          : 'Opcional: drop set na última série (reduza a carga ~20% e continue com controle).'
+    }
+  }
+
+  switch (goal) {
+    case 'hipertrofia':
+      reps = level === 'Iniciante' ? '10-12' : '8-12'
+      rest = clamp(rest, 60, level === 'Avançado' ? 120 : 90)
+      intensityBias = 1
+      break
+    case 'forca':
+      reps = level === 'Iniciante' ? '6-8' : '4-6'
+      rest = clamp(rest + 30, 90, 150)
+      sets = clamp(sets + (level === 'Iniciante' ? 0 : 1), config.setsMin, config.setsMax)
+      intensityBias = 1
+      observation = observation || 'Carga desafiadora com execução limpa; não force além da técnica.'
+      break
+    case 'condicionamento':
+      reps = level === 'Iniciante' ? '12-15' : '12-20'
+      rest = clamp(rest - 15, 45, 75)
+      intensityBias = 0
+      break
+    case 'emagrecimento':
+      reps = '12-15'
+      rest = clamp(rest - 10, 45, 75)
+      intensityBias = 0
+      observation =
+        observation || 'Mantenha ritmo constante; priorize consistência, sem promessas de perda de peso.'
+      break
+    case 'mobilidade':
+      if (['Mobilidade', 'Alongamento', 'Abdômen'].includes(normalizeCategory(exercise.category))) {
+        reps = '30-60s'
+        sets = clamp(sets, 2, 3)
+        rest = 45
+      }
+      observation = observation || 'Movimento suave, sem forçar amplitude dolorosa.'
+      intensityBias = -1
+      break
+    case 'saude':
+    default:
+      reps = exercise.reps || '10-12'
+      rest = clamp(Math.max(60, rest), 60, 90)
+      intensityBias = -1
+      observation = observation || 'Priorize conforto e boa forma em todas as séries.'
+      break
+  }
+
+  if (isRecoveryDay(dayType)) {
+    sets = clamp(sets, 2, 3)
+    rest = Math.min(rest, 60)
+    intensityBias = -1
+  }
+
+  return { sets, reps, rest, observation, intensityBias }
+}
+
+function buildSafetyTip(exercise, restrictions, dayType) {
+  const full = getExerciseById(exercise.id) || exercise
+  const tips = []
+  if (full.safetyTips?.[0]) tips.push(full.safetyTips[0])
+  if (restrictions.includes('joelho')) {
+    tips.push('Evite impacto e travamento de joelho; use amplitude confortável.')
+  }
+  if (restrictions.includes('lombar')) {
+    tips.push('Mantenha a coluna neutra e evite carga excessiva na região lombar.')
+  }
+  if (restrictions.includes('ombro')) {
+    tips.push('Controle a amplitude do ombro e evite elevações dolorosas.')
+  }
+  if (isRecoveryDay(dayType)) tips.push('Dia de menor intensidade — respeite sinais de fadiga.')
+  if (!tips.length) tips.push('Pare em caso de dor aguda e priorize a técnica.')
+  return tips[0]
+}
+
+function resolveIntensity(level, goal, dayType, intensityBias = 0) {
+  if (isRecoveryDay(dayType)) return 'Recuperação'
+  let score = level === 'Iniciante' ? 1 : level === 'Intermediário' ? 2 : 3
+  if (goal === 'forca' || goal === 'hipertrofia') score += 1
+  if (goal === 'saude' || goal === 'mobilidade') score -= 1
+  score += intensityBias
+  if (score <= 1) return 'Leve'
+  if (score === 2) return 'Moderada'
+  if (score === 3) return 'Moderada-Alta'
+  return 'Alta'
+}
+
+function buildExerciseEntry(exercise, level, goal, dayType, restrictions) {
+  const { sets, reps, rest, observation, intensityBias } = buildSetsRepsRest(exercise, level, goal, dayType)
+  const full = getExerciseById(exercise.id) || exercise
+  const safetyTip = buildSafetyTip(exercise, restrictions, dayType)
+  const obs =
+    observation ||
+    full.shortInstruction ||
+    full.executionSteps?.[0] ||
+    full.execution?.[0] ||
+    'Movimento controlado.'
 
   return {
     exerciseId: exercise.id,
     name: exercise.name,
     muscleGroup: normalizeCategory(exercise.category),
+    equipment: exercise.equipment,
     sets,
     reps,
+    rest,
     restSeconds: rest,
+    observation: obs,
+    safetyTip,
     load: '',
     completed: false,
-    equipment: exercise.equipment,
     level: exercise.level,
+    _intensityBias: intensityBias,
   }
 }
 
-function getMaxExercises(level, duration, objective) {
-  const config = levelConfig[level] || levelConfig['Iniciante']
-  let max = config.maxExercises
-  if (duration <= 30) max = Math.max(3, max - 2)
-  else if (duration <= 40) max = Math.max(4, max - 1)
-  else if (duration >= 70) max = Math.min(8, max + 1)
-
-  if (objective === 'saude') max = Math.min(max, level === 'Iniciante' ? 5 : 6)
-  if (level === 'Iniciante') max = Math.min(max, 5)
-  if (level === 'Intermediário') max = Math.min(Math.max(max, 5), 7)
-  if (level === 'Avançado') max = Math.min(Math.max(max, 6), 8)
-  return max
+function workoutTypeLabel(dayType, name) {
+  const map = {
+    Push: 'Push',
+    Pull: 'Pull',
+    Legs: 'Legs',
+    LegsLight: 'Legs (leve)',
+    FullBody: 'Full Body',
+    Superiores: 'Superiores',
+    Inferiores: 'Inferiores',
+    Core: 'Core',
+    Cardio: 'Cardio',
+    Mobilidade: 'Mobilidade',
+    HybridRecovery: 'Core + Cardio + Mobilidade',
+  }
+  return map[dayType] || name || 'Treino'
 }
 
-export function generateWorkoutPlan({
-  objective = 'saude',
-  level = 'Iniciante',
-  daysPerWeek = 3,
-  duration = 45,
-  location = 'Academia',
-  equipment = ['Academia completa'],
-  restrictions = [],
-}) {
-  const days = Math.min(Math.max(Number(daysPerWeek) || 3, 2), 7)
-  const template = splitTemplates[days] || splitTemplates[3]
-  const normalizedRestrictions = []
-  ;(restrictions || []).forEach((r) => {
-    const key = String(r).toLowerCase()
-    if (key.includes('joelho')) normalizedRestrictions.push('joelho')
-    if (key.includes('lombar') || key.includes('costas')) normalizedRestrictions.push('lombar')
-    if (key.includes('ombro')) normalizedRestrictions.push('ombro')
-  })
+/**
+ * Gera planilha personalizada.
+ * Aceita aliases: goal|objective, minutesPerWorkout|duration
+ */
+export function generateWorkoutPlan(input = {}) {
+  const goal = normalizeGoal(input.goal ?? input.objective ?? 'saude')
+  const level = input.level || 'Iniciante'
+  const days = Math.min(Math.max(Number(input.daysPerWeek) || 3, 2), 7)
+  const minutesPerWorkout = Number(input.minutesPerWorkout ?? input.duration ?? 45)
+  const location = input.location || 'Academia'
+  const equipment = input.equipment?.length ? input.equipment : ['Academia completa']
+  const restrictions = normalizeRestrictions(input.restrictions || [])
 
-  const maxExercises = getMaxExercises(level, duration, objective)
+  const template = getSplitTemplate(days, level, goal)
+  const maxExercises = getMaxExercises(level, minutesPerWorkout, goal)
   const usedIds = new Set()
   let usedFallback = false
 
-  const schedule = template.map((dayTemplate) => {
-    const { selected, usedFallback: dayFallback, focusGroups } = pickExercisesForDay(
+  const weeklyPlan = template.map((dayTemplate) => {
+    const recovery = isRecoveryDay(inferDayType(dayTemplate.name, dayTemplate.focus), dayTemplate.name)
+    const dayMax = recovery ? Math.min(4, Math.max(3, maxExercises - 1)) : maxExercises
+
+    const { selected, usedFallback: dayFallback, dayType, focusGroups } = pickExercisesForDay(
       dayTemplate,
       {
         level,
         equipment,
-        restrictions: normalizedRestrictions,
-        maxExercises: /descanso|mobil|cardio/i.test(dayTemplate.name)
-          ? Math.min(4, maxExercises)
-          : maxExercises,
+        restrictions,
+        maxExercises: dayMax,
         location,
+        minutesPerWorkout,
+        duration: minutesPerWorkout,
       },
       usedIds,
     )
     if (dayFallback) usedFallback = true
 
+    const exerciseEntries = selected.map((ex) => buildExerciseEntry(ex, level, goal, dayType, restrictions))
+    const avgBias =
+      exerciseEntries.reduce((sum, ex) => sum + (ex._intensityBias || 0), 0) /
+      Math.max(exerciseEntries.length, 1)
+    const intensity = resolveIntensity(level, goal, dayType, Math.round(avgBias))
+    const muscleGroups = focusGroups.length ? focusGroups : normalizeFocus(dayTemplate.focus)
+    const workoutType = workoutTypeLabel(dayType, dayTemplate.name)
+    const estimatedDuration = recovery
+      ? Math.min(minutesPerWorkout, Math.max(25, minutesPerWorkout - 10))
+      : minutesPerWorkout
+
+    const cleanExercises = exerciseEntries.map(({ _intensityBias, ...ex }) => ex)
+
     return {
       day: dayTemplate.day,
+      workoutName: dayTemplate.name,
+      workoutType,
+      muscleGroups,
+      estimatedDuration,
+      intensity,
+      exercises: cleanExercises,
       name: dayTemplate.name,
-      focus: focusGroups.length ? focusGroups : normalizeFocus(dayTemplate.focus),
-      estimatedMinutes: duration,
-      exercises: selected.map((ex) => buildExerciseEntry(ex, level, objective)),
+      focus: muscleGroups,
+      estimatedMinutes: estimatedDuration,
     }
   })
 
@@ -348,64 +729,101 @@ export function generateWorkoutPlan({
     'Aqueça 5–10 minutos antes de cada sessão.',
     'Priorize técnica sobre carga.',
     'Respeite sinais de fadiga e inclua recuperação adequada.',
-    'Plano demonstrativo. Ajuste com um profissional de educação física conforme sua condição, objetivo e limitações.',
+    PROFESSIONAL_DISCLAIMER,
   ]
 
-  if (normalizedRestrictions.includes('joelho')) {
-    safetyNotes.push('Exercícios de alto impacto foram reduzidos por segurança do joelho.')
+  if (restrictions.includes('joelho')) {
+    safetyNotes.push(
+      'Exercícios de alto impacto no joelho foram evitados ou substituídos por alternativas mais controladas.',
+    )
   }
-  if (normalizedRestrictions.includes('lombar')) {
-    safetyNotes.push('Movimentos com alta demanda lombar foram evitados ou controlados.')
+  if (restrictions.includes('lombar')) {
+    safetyNotes.push(
+      'Movimentos com alta demanda lombar foram evitados ou priorizados com carga e amplitude controladas.',
+    )
   }
-  if (normalizedRestrictions.includes('ombro')) {
-    safetyNotes.push('Amplitude e cargas de ombro foram priorizadas com segurança.')
+  if (restrictions.includes('ombro')) {
+    safetyNotes.push(
+      'Exercícios de ombro foram filtrados; prefira amplitudes indoloridas e progressão gradual.',
+    )
+  }
+  if (goal === 'emagrecimento') {
+    safetyNotes.push(
+      'Este plano apoia condicionamento geral; resultados de composição corporal variam e não há garantia de emagrecimento.',
+    )
   }
   if (usedFallback) {
-    safetyNotes.push('Alguns exercícios foram completados com sugestões alternativas.')
+    safetyNotes.push('Alguns exercícios foram completados com sugestões alternativas compatíveis com seu perfil.')
   }
+
+  const objectiveLabel = objectiveLabels[goal] || goal
+  const title = `Plano ${days}x/semana — ${objectiveLabel}`
 
   return {
     id: `plan-${Date.now()}`,
     createdAt: new Date().toISOString(),
-    objective,
-    objectiveLabel: objectiveLabels[objective] || objective,
+    title,
+    goal,
     level,
     daysPerWeek: days,
-    duration,
+    minutesPerWorkout,
     location,
     equipment,
-    restrictions,
-    schedule,
+    restrictions: input.restrictions || [],
+    weeklyPlan,
+    objective: goal,
+    objectiveLabel,
+    duration: minutesPerWorkout,
+    schedule: weeklyPlan,
     usedFallback,
     safetyNotes,
-    disclaimer:
-      'Plano demonstrativo. Ajuste com um profissional de educação física conforme sua condição, objetivo e limitações.',
+    disclaimer: PROFESSIONAL_DISCLAIMER,
   }
 }
 
+/**
+ * Converte o plano gerado em treinos salvos (TODOS os dias).
+ */
 export function planToWorkouts(plan) {
   const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+  const days = plan.weeklyPlan || plan.schedule || []
   const today = new Date()
-  const startDay = today.getDay() === 0 ? 1 : today.getDay()
-  const spacing = Math.max(1, Math.floor(7 / Math.max(plan.daysPerWeek || plan.schedule.length, 1)))
+  const stamp = Date.now()
 
-  return plan.schedule.map((day, index) => {
-    const targetDay = (startDay - 1 + index * spacing) % 7
+  return days.map((day, index) => {
     const workoutDate = new Date(today)
-    let diff = (targetDay - today.getDay() + 7) % 7
-    if (diff === 0 && index > 0) diff = 7
-    workoutDate.setDate(today.getDate() + diff + Math.floor(index / 7) * 7)
+    workoutDate.setDate(today.getDate() + index)
+
+    const muscleGroups = day.muscleGroups || day.focus || []
+    const exercises = (day.exercises || []).map((ex) => ({
+      exerciseId: ex.exerciseId,
+      name: ex.name,
+      muscleGroup: ex.muscleGroup,
+      sets: ex.sets,
+      reps: ex.reps,
+      restSeconds: ex.restSeconds ?? ex.rest ?? 60,
+      rest: ex.rest ?? ex.restSeconds ?? 60,
+      equipment: ex.equipment,
+      observation: ex.observation,
+      safetyTip: ex.safetyTip,
+      load: ex.load || '',
+      completed: false,
+      level: ex.level,
+    }))
 
     return {
-      id: `workout-${plan.id}-${day.day}`,
+      id: `workout-${plan.id || stamp}-${day.day}-${index}`,
       planId: plan.id,
-      name: day.name,
+      name: day.workoutName || day.name,
+      workoutType: day.workoutType,
       date: workoutDate.toISOString().split('T')[0],
       dayLabel: dayNames[workoutDate.getDay()],
-      muscleGroups: day.focus,
-      exercises: day.exercises.map((ex) => ({ ...ex })),
+      dayNumber: day.day,
+      muscleGroups,
+      exercises,
       status: 'Pendente',
-      estimatedMinutes: day.estimatedMinutes,
+      estimatedMinutes: day.estimatedDuration || day.estimatedMinutes || plan.minutesPerWorkout || plan.duration,
+      intensity: day.intensity,
       createdAt: new Date().toISOString(),
     }
   })

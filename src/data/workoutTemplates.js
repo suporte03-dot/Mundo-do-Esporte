@@ -10,17 +10,22 @@ export const splitTemplates = {
     { day: 2, name: 'Pull', focus: ['Costas', 'Bíceps', 'Trapézio'] },
     { day: 3, name: 'Legs', focus: ['Pernas', 'Glúteos', 'Panturrilha'] },
   ],
+  '3_beginner': [
+    { day: 1, name: 'Full Body A', focus: ['Peitoral', 'Costas', 'Pernas', 'Abdômen'] },
+    { day: 2, name: 'Full Body B', focus: ['Ombros', 'Pernas', 'Glúteos', 'Bíceps'] },
+    { day: 3, name: 'Full Body C', focus: ['Peitoral', 'Costas', 'Glúteos', 'Tríceps'] },
+  ],
   4: [
-    { day: 1, name: 'Superiores A', focus: ['Peitoral', 'Costas', 'Ombros'] },
-    { day: 2, name: 'Inferiores A', focus: ['Pernas', 'Glúteos', 'Panturrilha'] },
-    { day: 3, name: 'Superiores B', focus: ['Peitoral', 'Costas', 'Bíceps', 'Tríceps'] },
-    { day: 4, name: 'Inferiores B', focus: ['Pernas', 'Glúteos', 'Abdômen'] },
+    { day: 1, name: 'Upper A', focus: ['Peitoral', 'Costas', 'Ombros'] },
+    { day: 2, name: 'Lower A', focus: ['Pernas', 'Glúteos', 'Panturrilha'] },
+    { day: 3, name: 'Upper B', focus: ['Peitoral', 'Costas', 'Bíceps', 'Tríceps'] },
+    { day: 4, name: 'Lower B', focus: ['Pernas', 'Glúteos', 'Abdômen'] },
   ],
   5: [
     { day: 1, name: 'Push', focus: ['Peitoral', 'Ombros', 'Tríceps'] },
     { day: 2, name: 'Pull', focus: ['Costas', 'Bíceps', 'Trapézio'] },
     { day: 3, name: 'Legs', focus: ['Pernas', 'Glúteos', 'Panturrilha'] },
-    { day: 4, name: 'Superiores', focus: ['Peitoral', 'Costas', 'Ombros', 'Bíceps'] },
+    { day: 4, name: 'Upper', focus: ['Peitoral', 'Costas', 'Ombros', 'Bíceps'] },
     { day: 5, name: 'Core + Cardio + Mobilidade', focus: ['Abdômen', 'Cardio', 'Mobilidade'] },
   ],
   6: [
@@ -29,35 +34,87 @@ export const splitTemplates = {
     { day: 3, name: 'Legs A', focus: ['Pernas', 'Glúteos', 'Panturrilha'] },
     { day: 4, name: 'Push B', focus: ['Peitoral', 'Ombros', 'Tríceps'] },
     { day: 5, name: 'Pull B', focus: ['Costas', 'Bíceps', 'Lombar'] },
-    { day: 6, name: 'Legs B + Core', focus: ['Pernas', 'Glúteos', 'Abdômen', 'Mobilidade'] },
+    { day: 6, name: 'Legs B', focus: ['Pernas', 'Glúteos', 'Abdômen', 'Mobilidade'] },
   ],
   7: [
-    { day: 1, name: 'Push', focus: ['Peitoral', 'Ombros', 'Tríceps'] },
-    { day: 2, name: 'Pull', focus: ['Costas', 'Bíceps', 'Trapézio'] },
-    { day: 3, name: 'Legs', focus: ['Pernas', 'Glúteos', 'Panturrilha'] },
-    { day: 4, name: 'Full Body leve', focus: ['Peitoral', 'Costas', 'Pernas', 'Abdômen'] },
-    { day: 5, name: 'Superiores', focus: ['Peitoral', 'Costas', 'Ombros'] },
-    { day: 6, name: 'Inferiores + Core', focus: ['Pernas', 'Glúteos', 'Abdômen'] },
-    { day: 7, name: 'Descanso ativo — Cardio/Mobilidade', focus: ['Cardio', 'Mobilidade', 'Alongamento'] },
+    { day: 1, name: 'Push A', focus: ['Peitoral', 'Ombros', 'Tríceps'] },
+    { day: 2, name: 'Pull A', focus: ['Costas', 'Bíceps', 'Trapézio'] },
+    { day: 3, name: 'Legs A', focus: ['Pernas', 'Glúteos', 'Panturrilha'] },
+    { day: 4, name: 'Mobilidade / Recuperação ativa', focus: ['Mobilidade', 'Alongamento', 'Abdômen'] },
+    { day: 5, name: 'Push B', focus: ['Peitoral', 'Ombros', 'Tríceps'] },
+    { day: 6, name: 'Pull B', focus: ['Costas', 'Bíceps', 'Trapézio'] },
+    { day: 7, name: 'Legs leve ou Core + Cardio', focus: ['Pernas', 'Glúteos', 'Abdômen', 'Cardio'] },
   ],
+}
+
+/**
+ * Retorna a divisão semanal conforme dias, nível e objetivo.
+ * Iniciante em 3 dias usa Full Body A/B/C; 7 dias nunca são todos intensos.
+ */
+export function getSplitTemplate(daysPerWeek, level = 'Intermediário', goal = 'saude') {
+  const days = Math.min(Math.max(Number(daysPerWeek) || 3, 2), 7)
+
+  if (days === 3 && level === 'Iniciante') {
+    return splitTemplates['3_beginner']
+  }
+
+  if (goal === 'mobilidade' && days <= 3) {
+    return [
+      { day: 1, name: 'Mobilidade + Core A', focus: ['Mobilidade', 'Alongamento', 'Abdômen'] },
+      { day: 2, name: 'Full Body controlado', focus: ['Peitoral', 'Costas', 'Pernas', 'Abdômen'] },
+      ...(days === 3
+        ? [{ day: 3, name: 'Mobilidade + Cardio leve', focus: ['Mobilidade', 'Cardio', 'Alongamento'] }]
+        : []),
+    ].slice(0, days)
+  }
+
+  return splitTemplates[days] || splitTemplates[3]
 }
 
 export const objectiveLabels = {
   hipertrofia: 'Hipertrofia',
-  emagrecimento: 'Emagrecimento',
+  emagrecimento: 'Emagrecimento saudável',
   condicionamento: 'Condicionamento',
   forca: 'Força',
   saude: 'Saúde geral',
+  mobilidade: 'Mobilidade',
 }
 
 export const levelConfig = {
-  Iniciante: { setsMultiplier: 0.8, restBonus: 15, maxExercises: 5 },
-  Intermediário: { setsMultiplier: 1, restBonus: 0, maxExercises: 6 },
-  Avançado: { setsMultiplier: 1.15, restBonus: -5, maxExercises: 7 },
+  Iniciante: {
+    setsMultiplier: 0.85,
+    restBonus: 20,
+    maxExercises: 5,
+    setsMin: 2,
+    setsMax: 3,
+    restMin: 60,
+    restMax: 90,
+    defaultReps: '10-15',
+  },
+  Intermediário: {
+    setsMultiplier: 1,
+    restBonus: 0,
+    maxExercises: 6,
+    setsMin: 3,
+    setsMax: 4,
+    restMin: 60,
+    restMax: 120,
+    defaultReps: '8-12',
+  },
+  Avançado: {
+    setsMultiplier: 1.1,
+    restBonus: -5,
+    maxExercises: 8,
+    setsMin: 3,
+    setsMax: 5,
+    restMin: 60,
+    restMax: 150,
+    defaultReps: '6-15',
+  },
 }
 
-const PROFESSIONAL_DISCLAIMER =
-  'Este conteúdo é informativo e não substitui avaliação de um profissional de educação física ou saúde. Consulte um especialista antes de iniciar ou alterar sua rotina.'
+export const PROFESSIONAL_DISCLAIMER =
+  'Plano demonstrativo e informativo. Não substitui avaliação de um profissional de educação física ou saúde. Ajuste o treino conforme sua condição, objetivo e limitações — respeite seus limites e interrompa em caso de dor.'
 
 const DEFAULT_PRECAUTIONS = [
   'Aqueça 5–10 minutos antes de cada sessão.',

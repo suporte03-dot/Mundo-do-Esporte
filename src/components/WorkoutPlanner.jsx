@@ -9,9 +9,10 @@ import PremiumSelect from './PremiumSelect'
 const objectives = [
   { value: 'saude', label: 'Saúde geral' },
   { value: 'hipertrofia', label: 'Hipertrofia' },
-  { value: 'emagrecimento', label: 'Emagrecimento' },
-  { value: 'condicionamento', label: 'Condicionamento' },
   { value: 'forca', label: 'Força' },
+  { value: 'condicionamento', label: 'Condicionamento' },
+  { value: 'emagrecimento', label: 'Emagrecimento saudável' },
+  { value: 'mobilidade', label: 'Mobilidade' },
 ]
 
 const levels = ['Iniciante', 'Intermediário', 'Avançado']
@@ -110,7 +111,12 @@ export default function WorkoutPlanner() {
       showToast('Gere uma planilha antes de salvar.', 'info')
       return
     }
-    addPlanWorkouts(planToWorkouts(plan))
+    const workouts = planToWorkouts(plan)
+    if (!workouts.length) {
+      showToast('Nenhum dia para salvar nesta planilha.', 'info')
+      return
+    }
+    addPlanWorkouts(workouts)
   }
 
   const daysPct = ((form.daysPerWeek - 2) / (7 - 2)) * 100
@@ -281,8 +287,9 @@ export default function WorkoutPlanner() {
                 ⚠
               </span>
               <p>
-                Plano demonstrativo. Ajuste com um profissional de educação física conforme sua condição,
-                objetivo e limitações. Respeite seus limites e interrompa em caso de dor.
+                Plano demonstrativo e informativo. Não substitui avaliação de um profissional de educação
+                física. Ajuste conforme sua condição, objetivo e limitações. Respeite seus limites e
+                interrompa em caso de dor.
               </p>
             </div>
 

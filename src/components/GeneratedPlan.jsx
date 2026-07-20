@@ -18,31 +18,41 @@ function formatFocus(focus = []) {
 
 /** Resolve a day's visual type + tone from its name/focus. */
 function resolveDayType(day) {
-  const name = String(day?.name || '').toLowerCase()
-  const focus = (day?.focus || []).join(' ').toLowerCase()
+  const name = String(day?.workoutName || day?.name || day?.workoutType || '').toLowerCase()
+  const focus = (day?.muscleGroups || day?.focus || []).join(' ').toLowerCase()
   const hay = `${name} ${focus}`
 
   if (/descanso|recuper/.test(hay)) return { label: 'Descanso', tone: 'rest' }
   if (/mobil|along|yoga/.test(hay)) return { label: 'Mobilidade', tone: 'mobility' }
+  if (/core.*cardio|cardio.*mobil/.test(hay)) return { label: 'Core + Cardio', tone: 'core' }
   if (/cardio|hiit|corrida|aer[óo]bic/.test(hay)) return { label: 'Cardio', tone: 'cardio' }
   if (/core|abd[ôo]men|abdominal/.test(hay)) return { label: 'Core', tone: 'core' }
   if (/push|empurr|peito|peitoral|tr[íi]ceps|ombro/.test(hay)) return { label: 'Push', tone: 'push' }
   if (/pull|puxar|costas|b[íi]ceps|dorsal/.test(hay)) return { label: 'Pull', tone: 'pull' }
-  if (/legs|perna|gl[úu]teo|quadr|posterior|panturr|inferior/.test(hay)) return { label: 'Legs', tone: 'legs' }
-  if (/superior/.test(hay)) return { label: 'Superiores', tone: 'push' }
+  if (/legs|perna|gl[úu]teo|quadr|posterior|panturr|inferior|lower/.test(hay)) {
+    return { label: 'Legs', tone: 'legs' }
+  }
+  if (/superior|upper/.test(hay)) return { label: 'Superiores', tone: 'push' }
   if (/full|corpo/.test(hay)) return { label: 'Full Body', tone: 'full' }
-  return { label: 'Treino', tone: 'full' }
+  return { label: day?.workoutType || 'Treino', tone: 'full' }
 }
 
 function estimateDuration(day) {
+  if (day?.estimatedDuration) return day.estimatedDuration
   if (day?.estimatedMinutes) return day.estimatedMinutes
   const count = (day?.exercises || []).length
   return Math.max(20, count * 8)
 }
 
+function getPlanDays(plan) {
+  return plan?.weeklyPlan || plan?.schedule || []
+}
+
 export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
-  const { addPlanWorkouts, startWorkout } = useFitness()
+  const { addPlanWorkouts, startWorkout, showToast } = useFitness()
   const [detailWorkout, setDetailWorkout] = useState(null)
+
+  const days = getPlanDays(plan)
 
   const handleAddWorkouts = () => {
     if (onSaveToPlan) {
@@ -56,14 +66,19 @@ export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
   const buildDayWorkout = (day) => {
     const workouts = planToWorkouts(plan)
     return (
-      workouts.find((w) => w.name === day.name && w.muscleGroups?.join() === day.focus?.join()) || {
+      workouts.find((w) => w.dayNumber === day.day || w.name === (day.workoutName || day.name)) || {
         id: `preview-${plan.id}-${day.day}`,
-        name: day.name,
+        name: day.workoutName || day.name,
         date: new Date().toISOString().split('T')[0],
-        muscleGroups: day.focus,
-        exercises: day.exercises,
+        muscleGroups: day.muscleGroups || day.focus,
+        exercises: (day.exercises || []).map((ex) => ({
+          ...ex,
+          restSeconds: ex.restSeconds ?? ex.rest ?? 60,
+        })),
         status: 'Pendente',
-        estimatedMinutes: day.estimatedMinutes,
+        estimatedMinutes: day.estimatedDuration || day.estimatedMinutes,
+        intensity: day.intensity,
+        workoutType: day.workoutType,
       }
     )
   }
@@ -74,16 +89,24 @@ export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
 
   const startDayWorkout = (day, e) => {
     e?.stopPropagation()
-    startWorkout(buildDayWorkout(day))
+    const workout = buildDayWorkout(day)
+    if (!workout.exercises?.length) {
+      showToast?.('Este dia ainda não tem exercícios para iniciar.', 'info')
+      return
+    }
+    startWorkout(workout)
   }
 
   return (
     <div className="generated-plan glass-card">
       <div className="generated-plan__header">
         <div>
-          <h3 className="generated-plan__title">Sua planilha — {plan.objectiveLabel}</h3>
+          <h3 className="generated-plan__title">
+            {plan.title || `Sua planilha — ${plan.objectiveLabel || plan.goal}`}
+          </h3>
           <p className="generated-plan__meta">
-            {plan.level} · {plan.daysPerWeek}x/semana · {plan.duration} min · {plan.location}
+            {plan.level} · {plan.daysPerWeek}x/semana · {plan.minutesPerWorkout || plan.duration} min ·{' '}
+            {plan.location}
           </p>
         </div>
         <div className="generated-plan__actions">
@@ -98,11 +121,20 @@ export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
         </div>
       </div>
 
+      <div className="generated-plan__disclaimer" role="note">
+        <strong>Aviso importante</strong>
+        <p>
+          {plan.disclaimer ||
+            'Plano demonstrativo e informativo. Não substitui avaliação de um profissional de educação física. Ajuste conforme sua condição e interrompa em caso de dor.'}
+        </p>
+      </div>
+
       <div className="generated-plan__days">
-        {plan.schedule.map((day) => {
+        {days.map((day) => {
           const type = resolveDayType(day)
           const exerciseCount = (day.exercises || []).length
           const duration = estimateDuration(day)
+          const muscleGroups = day.muscleGroups || day.focus || []
           return (
             <article key={day.day} className={`plan-day plan-day--${type.tone}`}>
               <header className="plan-day__header">
@@ -110,41 +142,64 @@ export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
                   <div className="plan-day__daytag">
                     <span className="plan-day__daynum">Dia {day.day}</span>
                     <span className={`plan-day__type-badge plan-day__type-badge--${type.tone}`}>
-                      {type.label}
+                      {day.workoutType || type.label}
                     </span>
                   </div>
-                  <h4 className="plan-day__name">{day.name}</h4>
+                  <h4 className="plan-day__name">{day.workoutName || day.name}</h4>
                   <p className="plan-day__weekday">{weekdayForDay(day.day)}</p>
                 </div>
               </header>
 
               <div className="plan-day__stats">
                 <span className="plan-day__stat">
-                  <span className="plan-day__stat-icon" aria-hidden="true">🎯</span>
-                  {formatFocus(day.focus) || 'Variado'}
+                  <span className="plan-day__stat-icon" aria-hidden="true">
+                    🎯
+                  </span>
+                  {formatFocus(muscleGroups) || 'Variado'}
                 </span>
                 <span className="plan-day__stat">
-                  <span className="plan-day__stat-icon" aria-hidden="true">🏋️</span>
+                  <span className="plan-day__stat-icon" aria-hidden="true">
+                    🏋️
+                  </span>
                   {exerciseCount} {exerciseCount === 1 ? 'exercício' : 'exercícios'}
                 </span>
                 <span className="plan-day__stat">
-                  <span className="plan-day__stat-icon" aria-hidden="true">⏱️</span>
+                  <span className="plan-day__stat-icon" aria-hidden="true">
+                    ⏱️
+                  </span>
                   ~{duration} min
                 </span>
+                {day.intensity && (
+                  <span className="plan-day__stat">
+                    <span className="plan-day__stat-icon" aria-hidden="true">
+                      📶
+                    </span>
+                    {day.intensity}
+                  </span>
+                )}
               </div>
 
               <ul className="plan-day__exercises">
-                {day.exercises.map((ex) => (
-                  <li key={ex.exerciseId}>
+                {(day.exercises || []).map((ex) => (
+                  <li key={ex.exerciseId || ex.name}>
                     <div className="plan-day__ex-main">
                       <strong>{ex.name}</strong>
                       <span className="plan-day__ex-group">{ex.muscleGroup}</span>
                     </div>
                     <span className="plan-day__ex-meta">
-                      {ex.sets}x {ex.reps} · descanso {ex.restSeconds}s
+                      {ex.sets}x {ex.reps} · descanso {ex.rest ?? ex.restSeconds}s
                       {ex.equipment ? ` · ${ex.equipment}` : ''}
-                      {ex.level ? ` · ${ex.level}` : ''}
                     </span>
+                    {ex.observation && (
+                      <span className="plan-day__ex-note">
+                        <em>Obs:</em> {ex.observation}
+                      </span>
+                    )}
+                    {ex.safetyTip && (
+                      <span className="plan-day__ex-care">
+                        <em>Cuidado:</em> {ex.safetyTip}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -168,7 +223,7 @@ export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
 
       {plan.usedFallback && (
         <p className="plan-fallback-note">
-          Alguns exercícios foram completados com sugestões alternativas.
+          Alguns exercícios foram completados com sugestões alternativas compatíveis com seu perfil.
         </p>
       )}
 
