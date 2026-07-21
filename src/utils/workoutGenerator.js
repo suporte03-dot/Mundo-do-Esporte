@@ -6,11 +6,11 @@ import {
   PROFESSIONAL_DISCLAIMER,
 } from '../data/workoutTemplates'
 
-/** Cotas por tipo de treino (máximo desejado por grupo) */
+/** Cotas base por tipo de treino (ajustadas por nível/tempo em buildDayQuotas) */
 const DAY_QUOTAS = {
-  Push: { Peitoral: 2, Ombros: 2, Tríceps: 2 },
-  Pull: { Costas: 3, Bíceps: 2, Trapézio: 1, Lombar: 1 },
-  Legs: { Pernas: 3, Glúteos: 2, Panturrilha: 1, Abdômen: 1 },
+  Push: { Peitoral: 2, Ombros: 1, Tríceps: 1 },
+  Pull: { Costas: 2, Bíceps: 1, Trapézio: 1 },
+  Legs: { Pernas: 2, Glúteos: 1, Panturrilha: 1 },
   FullBody: {
     Peitoral: 1,
     Costas: 1,
@@ -26,6 +26,15 @@ const DAY_QUOTAS = {
   Mobilidade: { Mobilidade: 3, Alongamento: 2 },
   HybridRecovery: { Abdômen: 2, Cardio: 2, Mobilidade: 2, Alongamento: 1 },
   LegsLight: { Pernas: 2, Glúteos: 1, Panturrilha: 1, Mobilidade: 1, Abdômen: 1 },
+}
+
+/** Grupos obrigatórios mínimos por tipo (evita Push só de tríceps, etc.) */
+const REQUIRED_GROUPS = {
+  Push: ['Peitoral', 'Ombros', 'Tríceps'],
+  Pull: ['Costas', 'Bíceps'],
+  Legs: ['Pernas', 'Glúteos'],
+  Superiores: ['Peitoral', 'Costas'],
+  Inferiores: ['Pernas', 'Glúteos'],
 }
 
 /** Tabela tempo → contagem de exercícios (depois limitada pelo nível) */
@@ -270,82 +279,226 @@ function buildPool(options) {
   return preferSimple(pool, level)
 }
 
-function scaleQuotasForAdvanced(dayType, maxExercises, minutes) {
-  if (dayType === 'Push' && maxExercises >= 7 && minutes >= 75) {
-    return { Peitoral: 3, Ombros: 2, Tríceps: 2 }
+/**
+ * Cotas por nível × tempo × tipo de dia.
+ * Soma ≈ maxExercises para o preenchimento atingir a meta (ex.: Avançado 90 → 9).
+ */
+function buildLevelQuotas(dayType, level, maxExercises, minutes, restrictions = []) {
+  const advanced = level === 'Avançado'
+  const intermediate = level === 'Intermediário'
+  const noLombar = restrictions.includes('lombar')
+
+  if (dayType === 'Push') {
+    if (advanced && minutes >= 75) {
+      // 75–90: 3 peito, 2 ombros, 2–3 tríceps (+ mobilidade opcional no fill)
+      return {
+        Peitoral: 3,
+        Ombros: 2,
+        Tríceps: maxExercises >= 9 ? 3 : 2,
+        ...(maxExercises >= 9 ? { Mobilidade: 1 } : {}),
+      }
+    }
+    if (advanced && minutes >= 60) {
+      return { Peitoral: 3, Ombros: 2, Tríceps: 2 }
+    }
+    if (advanced) {
+      return { Peitoral: 2, Ombros: 1, Tríceps: 1 }
+    }
+    if (intermediate) {
+      return {
+        Peitoral: 2,
+        Ombros: 2,
+        Tríceps: maxExercises >= 6 ? 2 : 1,
+      }
+    }
+    // Iniciante: 2 peito, 1 ombro, 1 tríceps
+    return { Peitoral: 2, Ombros: 1, Tríceps: 1 }
   }
-  if (dayType === 'Pull' && maxExercises >= 7) {
-    return { Costas: 3, Bíceps: 2, Trapézio: 1, Lombar: 1 }
+
+  if (dayType === 'Pull') {
+    if (advanced && minutes >= 90) {
+      return {
+        Costas: 4,
+        Bíceps: 2,
+        Trapézio: 1,
+        ...(noLombar ? {} : { Lombar: 1 }),
+      }
+    }
+    if (advanced && maxExercises >= 7) {
+      return {
+        Costas: 3,
+        Bíceps: 2,
+        Trapézio: 1,
+        ...(noLombar ? {} : { Lombar: 1 }),
+      }
+    }
+    if (intermediate) {
+      return { Costas: 3, Bíceps: 2, Trapézio: 1 }
+    }
+    return { Costas: 2, Bíceps: 1, Trapézio: 1 }
   }
-  if (dayType === 'Legs' && maxExercises >= 7) {
-    return { Pernas: 3, Glúteos: 2, Panturrilha: 1, Abdômen: 1 }
+
+  if (dayType === 'Legs' || dayType === 'LegsLight') {
+    if (advanced && minutes >= 90) {
+      return {
+        Pernas: 3,
+        Glúteos: 2,
+        Panturrilha: maxExercises >= 8 ? 2 : 1,
+        Abdômen: 1,
+        ...(maxExercises >= 9 ? { Mobilidade: 1 } : {}),
+      }
+    }
+    if (advanced && maxExercises >= 7) {
+      return { Pernas: 3, Glúteos: 2, Panturrilha: 1, Abdômen: 1 }
+    }
+    if (intermediate) {
+      return { Pernas: 2, Glúteos: 2, Panturrilha: 1, Abdômen: 1 }
+    }
+    return { Pernas: 2, Glúteos: 1, Panturrilha: 1 }
   }
+
   return { ...(DAY_QUOTAS[dayType] || {}) }
 }
 
-function buildScopedQuotas(dayType, focusGroups, maxExercises, minutes = 45) {
-  const base = scaleQuotasForAdvanced(dayType, maxExercises, minutes)
+function expandFocusForQuotas(dayType, focusGroups, level, restrictions = []) {
+  const groups = [...focusGroups]
+  const add = (g) => {
+    if (!groups.includes(g)) groups.push(g)
+  }
+
+  if (dayType === 'Push') {
+    ;['Peitoral', 'Ombros', 'Tríceps'].forEach(add)
+    if (level === 'Avançado') add('Mobilidade')
+  }
+  if (dayType === 'Pull') {
+    ;['Costas', 'Bíceps', 'Trapézio'].forEach(add)
+    if (level === 'Avançado' && !restrictions.includes('lombar')) add('Lombar')
+  }
+  if (dayType === 'Legs' || dayType === 'LegsLight') {
+    ;['Pernas', 'Glúteos', 'Panturrilha'].forEach(add)
+    if (level === 'Avançado' || level === 'Intermediário') {
+      add('Abdômen')
+      if (level === 'Avançado') add('Mobilidade')
+    }
+  }
+  return groups
+}
+
+function buildScopedQuotas(dayType, focusGroups, maxExercises, minutes = 45, level = 'Intermediário', restrictions = []) {
+  const effectiveFocus = expandFocusForQuotas(dayType, focusGroups, level, restrictions)
+  const base = buildLevelQuotas(dayType, level, maxExercises, minutes, restrictions)
   const fallbackBase =
     Object.keys(base).length > 0
       ? base
       : Object.fromEntries(
-          focusGroups.map((g) => [g, Math.max(1, Math.ceil(maxExercises / Math.max(focusGroups.length, 1)))]),
+          effectiveFocus.map((g) => [g, Math.max(1, Math.ceil(maxExercises / Math.max(effectiveFocus.length, 1)))]),
         )
 
   const scopedQuotas = {}
   for (const [group, quota] of Object.entries(fallbackBase)) {
-    if (focusGroups.includes(group) || focusGroups.length === 0) {
+    if (effectiveFocus.includes(group) || effectiveFocus.length === 0) {
       scopedQuotas[group] = quota
     }
   }
 
-  const defaultShare = Math.max(1, Math.ceil(maxExercises / Math.max(focusGroups.length, 1)))
-  for (const group of focusGroups) {
+  const defaultShare = Math.max(1, Math.ceil(maxExercises / Math.max(effectiveFocus.length, 1)))
+  for (const group of effectiveFocus) {
     if (!scopedQuotas[group]) scopedQuotas[group] = defaultShare
   }
 
   if (!Object.keys(scopedQuotas).length) {
-    for (const group of focusGroups) scopedQuotas[group] = 2
+    for (const group of effectiveFocus) scopedQuotas[group] = 2
   }
+
+  // Garante pelo menos 1 em cada grupo obrigatório
+  for (const group of REQUIRED_GROUPS[dayType] || []) {
+    if (scopedQuotas[group] == null || scopedQuotas[group] < 1) scopedQuotas[group] = 1
+  }
+
   return scopedQuotas
 }
 
-function pickByQuotas(pool, quotas, maxExercises, usedIds, allowReuse = false) {
+/** Grupos com poucos itens no catálogo — podem repetir entre dias A/B */
+const SCARCE_GROUPS = new Set(['Panturrilha', 'Trapézio', 'Lombar', 'Alongamento'])
+
+function pickByQuotas(pool, quotas, maxExercises, usedIds, allowReuse = false, requiredGroups = []) {
   const selected = []
   const counts = Object.fromEntries(Object.keys(quotas).map((k) => [k, 0]))
-  const orderedGroups = Object.keys(quotas)
 
-  for (const group of orderedGroups) {
-    const quota = quotas[group]
-    const candidates = shuffle(
+  const tryAdd = (ex, group) => {
+    if (selected.length >= maxExercises) return false
+    if (selected.find((s) => s.id === ex.id)) return false
+    if (!allowReuse && usedIds.has(ex.id) && !SCARCE_GROUPS.has(group)) return false
+    selected.push(ex)
+    counts[group] = (counts[group] || 0) + 1
+    usedIds.add(ex.id)
+    return true
+  }
+
+  const candidatesFor = (group, ignoreUsed = false) =>
+    shuffle(
       pool.filter(
         (ex) =>
           normalizeCategory(ex.category) === group &&
-          (allowReuse || !usedIds.has(ex.id)) &&
+          (ignoreUsed || allowReuse || !usedIds.has(ex.id) || SCARCE_GROUPS.has(group)) &&
           !selected.find((s) => s.id === ex.id),
       ),
     )
+
+  // 1) Garantir 1 de cada grupo obrigatório
+  for (const group of requiredGroups) {
+    if (selected.length >= maxExercises) break
+    if ((counts[group] || 0) >= 1) continue
+    for (const ex of candidatesFor(group)) {
+      if (tryAdd(ex, group)) break
+    }
+  }
+
+  // 2) Preencher cotas na ordem definida
+  for (const group of Object.keys(quotas)) {
+    const quota = quotas[group]
+    let candidates = candidatesFor(group)
+    if (!candidates.length && quota > 0) {
+      candidates = candidatesFor(group, true)
+    }
     for (const ex of candidates) {
       if (selected.length >= maxExercises) break
-      if (counts[group] >= quota) break
-      selected.push(ex)
-      counts[group] += 1
-      usedIds.add(ex.id)
+      if ((counts[group] || 0) >= quota) break
+      tryAdd(ex, group)
     }
   }
 
   return selected
 }
 
-function fillRemaining(pool, selected, focusGroups, maxExercises, usedIds) {
+function fillRemaining(pool, selected, focusGroups, maxExercises, usedIds, dayType) {
   if (selected.length >= maxExercises) return selected
+
+  const bannedForPull = dayType === 'Pull'
+  const preferCardioOnly = dayType === 'Cardio'
+
+  const isAllowed = (ex) => {
+    const cat = normalizeCategory(ex.category)
+    if (selected.find((s) => s.id === ex.id)) return false
+    if (bannedForPull && cat === 'Peitoral') return false
+    if (dayType === 'Push' && ['Costas', 'Bíceps'].includes(cat)) return false
+    if (
+      (dayType === 'Legs' || dayType === 'LegsLight') &&
+      cat === 'Cardio' &&
+      selected.filter((s) => ['Pernas', 'Glúteos', 'Panturrilha'].includes(normalizeCategory(s.category))).length < 2
+    ) {
+      return false
+    }
+    if (!preferCardioOnly && dayType === 'Legs' && cat === 'Cardio') return false
+    return true
+  }
 
   const preferred = shuffle(
     pool.filter(
       (ex) =>
         focusGroups.includes(normalizeCategory(ex.category)) &&
-        !selected.find((s) => s.id === ex.id) &&
-        !usedIds.has(ex.id),
+        !usedIds.has(ex.id) &&
+        isAllowed(ex),
     ),
   )
 
@@ -357,10 +510,7 @@ function fillRemaining(pool, selected, focusGroups, maxExercises, usedIds) {
 
   if (selected.length < maxExercises) {
     const reuse = shuffle(
-      pool.filter(
-        (ex) =>
-          focusGroups.includes(normalizeCategory(ex.category)) && !selected.find((s) => s.id === ex.id),
-      ),
+      pool.filter((ex) => focusGroups.includes(normalizeCategory(ex.category)) && isAllowed(ex)),
     )
     for (const ex of reuse) {
       if (selected.length >= maxExercises) break
@@ -372,16 +522,20 @@ function fillRemaining(pool, selected, focusGroups, maxExercises, usedIds) {
   return selected
 }
 
-function emergencyFallback(focusGroups, maxExercises, usedIds, restrictions = []) {
+function emergencyFallback(focusGroups, maxExercises, usedIds, restrictions = [], dayType = 'FullBody') {
   const selected = []
   const byFocus = exercises.filter(
     (ex) => focusGroups.includes(normalizeCategory(ex.category)) && !isRestricted(ex, restrictions),
   )
   const any = exercises.filter((ex) => !isRestricted(ex, restrictions))
+  const target = Math.max(3, maxExercises)
+
   for (const ex of [...shuffle(byFocus), ...shuffle(any)]) {
-    if (selected.length >= Math.max(3, Math.min(maxExercises, 5))) break
+    if (selected.length >= target) break
     if (selected.find((s) => s.id === ex.id)) continue
     const cat = normalizeCategory(ex.category)
+    if (dayType === 'Pull' && cat === 'Peitoral') continue
+    if (dayType === 'Push' && ['Costas', 'Bíceps'].includes(cat) && selected.length > 0) continue
     if (focusGroups.includes('Costas') && !focusGroups.includes('Peitoral') && cat === 'Peitoral') continue
     if (
       (focusGroups.includes('Pernas') || focusGroups.includes('Glúteos')) &&
@@ -427,13 +581,25 @@ export function pickExercisesForDay(dayTemplate, options, usedIds = new Set()) {
   const focusGroups = normalizeFocus(dayTemplate.focus || [])
   const dayType = inferDayType(dayTemplate.name, focusGroups)
   const minutes = options.minutesPerWorkout || options.duration || 45
-  const scopedQuotas = buildScopedQuotas(dayType, focusGroups, options.maxExercises, minutes)
+  const level = options.level || 'Intermediário'
+  const restrictions = options.restrictions || []
+  const effectiveFocus = expandFocusForQuotas(dayType, focusGroups, level, restrictions)
+  const scopedQuotas = buildScopedQuotas(
+    dayType,
+    focusGroups,
+    options.maxExercises,
+    minutes,
+    level,
+    restrictions,
+  )
+  const requiredGroups = REQUIRED_GROUPS[dayType] || []
 
   const pool = buildPool(options)
-  let selected = pickByQuotas(pool, scopedQuotas, options.maxExercises, usedIds, false)
+  let selected = pickByQuotas(pool, scopedQuotas, options.maxExercises, usedIds, false, requiredGroups)
 
-  if (selected.length < Math.min(4, options.maxExercises)) {
-    const more = pickByQuotas(pool, scopedQuotas, options.maxExercises, usedIds, true)
+  // Sempre completar até a meta (antes só preenchia se < 3–4 — causa de Advanced sub-gerar)
+  if (selected.length < options.maxExercises) {
+    const more = pickByQuotas(pool, scopedQuotas, options.maxExercises, usedIds, true, requiredGroups)
     for (const ex of more) {
       if (selected.length >= options.maxExercises) break
       if (selected.find((s) => s.id === ex.id)) continue
@@ -442,14 +608,20 @@ export function pickExercisesForDay(dayTemplate, options, usedIds = new Set()) {
     }
   }
 
-  if (selected.length < Math.min(3, options.maxExercises)) {
-    selected = fillRemaining(pool, selected, focusGroups, options.maxExercises, usedIds)
+  if (selected.length < options.maxExercises) {
+    selected = fillRemaining(pool, selected, effectiveFocus, options.maxExercises, usedIds, dayType)
   }
 
   let usedFallback = false
-  if (selected.length < 3 || !validateDayComposition(selected, dayType, focusGroups)) {
+  if (selected.length < 3 || !validateDayComposition(selected, dayType, effectiveFocus)) {
     usedFallback = true
-    const repaired = emergencyFallback(focusGroups, options.maxExercises, usedIds, options.restrictions)
+    const repaired = emergencyFallback(
+      effectiveFocus,
+      options.maxExercises,
+      usedIds,
+      restrictions,
+      dayType,
+    )
     const merged = []
     const seen = new Set()
     for (const ex of [...selected, ...repaired]) {
@@ -475,6 +647,27 @@ export function pickExercisesForDay(dayTemplate, options, usedIds = new Set()) {
     }
   }
 
+  // Garante ombros e tríceps no Push quando possível
+  if (dayType === 'Push') {
+    for (const group of ['Ombros', 'Tríceps']) {
+      if (selected.some((ex) => normalizeCategory(ex.category) === group)) continue
+      const candidate = pool.find(
+        (ex) => normalizeCategory(ex.category) === group && !selected.find((s) => s.id === ex.id),
+      )
+      if (!candidate) continue
+      if (selected.length >= options.maxExercises) {
+        const replaceIdx = [...selected]
+          .map((ex, i) => ({ ex, i }))
+          .reverse()
+          .find(({ ex }) => normalizeCategory(ex.category) === 'Peitoral' && selected.filter((s) => normalizeCategory(s.category) === 'Peitoral').length > 1)
+        if (replaceIdx) selected.splice(replaceIdx.i, 1)
+        else selected.pop()
+      }
+      selected.push(candidate)
+      usedIds.add(candidate.id)
+    }
+  }
+
   const unique = []
   const seenIds = new Set()
   for (const ex of selected) {
@@ -483,7 +676,12 @@ export function pickExercisesForDay(dayTemplate, options, usedIds = new Set()) {
     unique.push(ex)
   }
 
-  return { selected: unique.slice(0, options.maxExercises), usedFallback, dayType, focusGroups }
+  return {
+    selected: unique.slice(0, options.maxExercises),
+    usedFallback,
+    dayType,
+    focusGroups: effectiveFocus.length ? effectiveFocus : focusGroups,
+  }
 }
 
 function clamp(n, min, max) {
@@ -612,6 +810,8 @@ function resolveIntensity(level, goal, dayType, intensityBias = 0) {
   if (score <= 1) return 'Leve'
   if (score === 2) return 'Moderada'
   if (score === 3) return 'Moderada-Alta'
+  // Avançado em dias de força/hipertrofia: intensidade alta com controle
+  if (level === 'Avançado') return 'Alta controlada'
   return 'Alta'
 }
 

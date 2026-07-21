@@ -7,8 +7,8 @@ export const splitTemplates = {
   ],
   3: [
     { day: 1, name: 'Push', focus: ['Peitoral', 'Ombros', 'Tríceps'] },
-    { day: 2, name: 'Pull', focus: ['Costas', 'Bíceps', 'Trapézio'] },
-    { day: 3, name: 'Legs', focus: ['Pernas', 'Glúteos', 'Panturrilha'] },
+    { day: 2, name: 'Pull', focus: ['Costas', 'Bíceps', 'Trapézio', 'Lombar'] },
+    { day: 3, name: 'Legs', focus: ['Pernas', 'Glúteos', 'Panturrilha', 'Abdômen'] },
   ],
   '3_beginner': [
     { day: 1, name: 'Full Body A', focus: ['Peitoral', 'Costas', 'Pernas', 'Abdômen'] },
@@ -23,8 +23,8 @@ export const splitTemplates = {
   ],
   5: [
     { day: 1, name: 'Push', focus: ['Peitoral', 'Ombros', 'Tríceps'] },
-    { day: 2, name: 'Pull', focus: ['Costas', 'Bíceps', 'Trapézio'] },
-    { day: 3, name: 'Legs', focus: ['Pernas', 'Glúteos', 'Panturrilha'] },
+    { day: 2, name: 'Pull', focus: ['Costas', 'Bíceps', 'Trapézio', 'Lombar'] },
+    { day: 3, name: 'Legs', focus: ['Pernas', 'Glúteos', 'Panturrilha', 'Abdômen'] },
     { day: 4, name: 'Upper', focus: ['Peitoral', 'Costas', 'Ombros', 'Bíceps'] },
     { day: 5, name: 'Core + Cardio + Mobilidade', focus: ['Abdômen', 'Cardio', 'Mobilidade'] },
   ],
@@ -33,8 +33,8 @@ export const splitTemplates = {
     { day: 2, name: 'Pull A', focus: ['Costas', 'Bíceps', 'Trapézio'] },
     { day: 3, name: 'Legs A', focus: ['Pernas', 'Glúteos', 'Panturrilha'] },
     { day: 4, name: 'Push B', focus: ['Peitoral', 'Ombros', 'Tríceps'] },
-    { day: 5, name: 'Pull B', focus: ['Costas', 'Bíceps', 'Lombar'] },
-    { day: 6, name: 'Legs B', focus: ['Pernas', 'Glúteos', 'Abdômen', 'Mobilidade'] },
+    { day: 5, name: 'Pull B', focus: ['Costas', 'Bíceps', 'Trapézio', 'Lombar'] },
+    { day: 6, name: 'Legs B', focus: ['Pernas', 'Glúteos', 'Panturrilha', 'Abdômen', 'Mobilidade'] },
   ],
   7: [
     { day: 1, name: 'Push A', focus: ['Peitoral', 'Ombros', 'Tríceps'] },
@@ -42,7 +42,7 @@ export const splitTemplates = {
     { day: 3, name: 'Legs A', focus: ['Pernas', 'Glúteos', 'Panturrilha'] },
     { day: 4, name: 'Mobilidade / Recuperação ativa', focus: ['Mobilidade', 'Alongamento', 'Abdômen'] },
     { day: 5, name: 'Push B', focus: ['Peitoral', 'Ombros', 'Tríceps'] },
-    { day: 6, name: 'Pull B', focus: ['Costas', 'Bíceps', 'Trapézio'] },
+    { day: 6, name: 'Pull B', focus: ['Costas', 'Bíceps', 'Trapézio', 'Lombar'] },
     { day: 7, name: 'Legs leve ou Core + Cardio', focus: ['Pernas', 'Glúteos', 'Abdômen', 'Cardio'] },
   ],
 }
@@ -104,7 +104,7 @@ export const levelConfig = {
   Avançado: {
     setsMultiplier: 1.1,
     restBonus: -5,
-    maxExercises: 8,
+    maxExercises: 9,
     setsMin: 3,
     setsMax: 5,
     restMin: 60,
