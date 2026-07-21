@@ -36,6 +36,7 @@ export default function CollapsibleWorkoutCard({
   onDelete,
 }) {
   const [open, setOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const panelId = useId()
   const type = inferWorkoutType(workout)
   const exerciseCount = workout.exercises?.length || 0
@@ -51,6 +52,25 @@ export default function CollapsibleWorkoutCard({
       toggle()
     }
   }
+
+  const secondaryActions = (
+    <>
+      <button type="button" className="btn btn--ghost btn--sm" onClick={(e) => onStartEdit(workout, e)}>
+        Editar
+      </button>
+      <button type="button" className="btn btn--ghost btn--sm" onClick={() => onDuplicate(workout.id)}>
+        Duplicar
+      </button>
+      {workout.status !== 'Realizado' && (
+        <button type="button" className="btn btn--ghost btn--sm" onClick={(e) => onMarkDone(workout, e)}>
+          Marcar realizado
+        </button>
+      )}
+      <button type="button" className="btn btn--danger btn--sm" onClick={() => onDelete(workout.id)}>
+        Excluir
+      </button>
+    </>
+  )
 
   return (
     <article
@@ -127,6 +147,16 @@ export default function CollapsibleWorkoutCard({
         </button>
         <button
           type="button"
+          className="btn btn--ghost btn--sm workout-card__view"
+          onClick={(e) => {
+            e.stopPropagation()
+            onView(workout)
+          }}
+        >
+          Ver treino
+        </button>
+        <button
+          type="button"
           className="workout-card__toggle"
           onClick={toggle}
           aria-expanded={open}
@@ -164,24 +194,20 @@ export default function CollapsibleWorkoutCard({
             </ul>
           )}
 
-          <div className="workout-card__actions workout-card__actions--extra">
-            <button type="button" className="btn btn--ghost btn--sm" onClick={() => onView(workout)}>
-              Ver treino
+          <div className="workout-card__actions workout-card__actions--extra workout-card__actions--desktop">
+            {secondaryActions}
+          </div>
+
+          <div className="workout-card__more">
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm workout-card__more-toggle"
+              aria-expanded={moreOpen}
+              onClick={() => setMoreOpen((v) => !v)}
+            >
+              Mais opções {moreOpen ? '▲' : '▼'}
             </button>
-            <button type="button" className="btn btn--ghost btn--sm" onClick={(e) => onStartEdit(workout, e)}>
-              Editar
-            </button>
-            <button type="button" className="btn btn--ghost btn--sm" onClick={() => onDuplicate(workout.id)}>
-              Duplicar
-            </button>
-            {workout.status !== 'Realizado' && (
-              <button type="button" className="btn btn--ghost btn--sm" onClick={(e) => onMarkDone(workout, e)}>
-                Marcar realizado
-              </button>
-            )}
-            <button type="button" className="btn btn--danger btn--sm" onClick={() => onDelete(workout.id)}>
-              Excluir
-            </button>
+            {moreOpen && <div className="workout-card__more-panel">{secondaryActions}</div>}
           </div>
         </div>
       </div>

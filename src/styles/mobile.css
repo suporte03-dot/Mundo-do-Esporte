@@ -393,8 +393,14 @@
   }
 
   .workout-card__primary .btn--start-workout {
+    flex: 1 1 100%;
     min-height: 48px;
     font-size: 0.95rem;
+  }
+
+  .workout-card__view {
+    flex: 1 1 auto;
+    min-height: 44px;
   }
 
   .workout-card__toggle {
@@ -402,23 +408,13 @@
     height: 48px;
   }
 
-  .workout-card__actions--extra {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-  }
-
-  .workout-card__actions--extra .btn {
-    width: 100%;
-    min-height: 44px;
-  }
-
-  .workout-card__actions--extra .btn--danger {
-    grid-column: 1 / -1;
+  .workout-card__actions--extra,
+  .workout-card__actions--desktop {
+    display: none;
   }
 
   .workout-card__more {
-    display: none;
+    display: block;
   }
 
   .empty-state--premium {
@@ -525,8 +521,30 @@
   }
 
   /* Treino em andamento */
+  .active-workout-modal.modal--lg {
+    width: 100%;
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 16px 16px 0 0;
+  }
+
   .active-workout-modal .modal__body {
-    padding-bottom: 1rem;
+    padding-bottom: 1.25rem;
+    max-height: calc(100vh - 4.5rem);
+    overflow-y: auto;
+  }
+
+  .set-checklist__form input {
+    min-height: 48px;
+    font-size: 1rem;
+  }
+
+  .exercise-session-card__header {
+    padding: 0.95rem;
+  }
+
+  .workout-session__nav .btn {
+    min-height: 52px;
   }
 
   .workout-session__media {

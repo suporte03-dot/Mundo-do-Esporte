@@ -77,7 +77,7 @@ export default function MyWorkouts() {
         </div>
       </div>
       <WorkoutDetailModal
-        workout={detailWorkout}
+        workout={detailWorkout ? workouts.find((w) => w.id === detailWorkout.id) || detailWorkout : null}
         isOpen={Boolean(detailWorkout)}
         onClose={() => setDetailWorkout(null)}
       />

@@ -9,6 +9,11 @@ import {
   mirrorCalendar,
   toPersistedStatus,
 } from '../utils/calendarUtils'
+import {
+  appendProgressEntries,
+  buildProgressEntriesFromSession,
+  clearActiveSession,
+} from '../utils/progressStorage'
 
 const FitnessContext = createContext(null)
 
@@ -101,6 +106,18 @@ export function FitnessProvider({ children }) {
       // Persisted via localStorage (evoluafit-data). Future: sync to Supabase workout_history + workout_sets.
       const entry = buildHistoryEntry(workoutId, sessionData)
       const isPartial = Boolean(sessionData?.partial)
+      const workout = data.workouts.find((w) => w.id === workoutId)
+
+      const progressRows = buildProgressEntriesFromSession(
+        workout || { id: workoutId, name: sessionData?.name },
+        (sessionData?.exercises || []).map((ex) => ({
+          ...ex,
+          setsLog: ex.setsLog || [],
+        })),
+        { date: entry.completedAt, workoutId, workoutName: sessionData?.name },
+      )
+      if (progressRows.length) appendProgressEntries(progressRows)
+      clearActiveSession()
 
       persist((prev) => ({
         ...prev,
@@ -111,6 +128,7 @@ export function FitnessProvider({ children }) {
                 ...w,
                 status: isPartial ? toPersistedStatus('partial') : toPersistedStatus('completed'),
                 completedAt: entry.completedAt,
+                date: entry.completedAt.split('T')[0],
                 exercises: sessionData.exercises,
                 estimatedMinutes: sessionData.durationMinutes ?? w.estimatedMinutes,
                 notes: sessionData.notes != null ? sessionData.notes : w.notes,
@@ -121,7 +139,7 @@ export function FitnessProvider({ children }) {
       setActiveWorkout(null)
       showToast(isPartial ? 'Treino marcado como parcial.' : 'Treino finalizado com sucesso!')
     },
-    [persist, showToast],
+    [persist, showToast, data.workouts],
   )
 
   const savePlan = useCallback(

@@ -1,0 +1,445 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useFitness } from '../context/FitnessContext'
+import {
+  buildCompletionPayload,
+  completeSetOnExercise,
+  createSessionExercises,
+  getSessionProgress,
+  inferWorkoutType,
+  parseRestFromExercise,
+  restoreSessionExercises,
+} from '../utils/workoutSession'
+import {
+  clearActiveSession,
+  loadActiveSession,
+  saveActiveSession,
+} from '../utils/progressStorage'
+import { replaceExerciseInList } from '../utils/exerciseSubstitution'
+import ExerciseSessionCard from './ExerciseSessionCard'
+import ExerciseSubstitutionModal from './ExerciseSubstitutionModal'
+import Modal from './Modal'
+import RestTimer from './RestTimer'
+import WorkoutProgressBar from './WorkoutProgressBar'
+import WorkoutSummaryModal from './WorkoutSummaryModal'
+
+const SAFETY_NOTE =
+  'Priorize técnica e recuperação. Pare se sentir dor aguda e consulte um profissional se o desconforto persistir.'
+
+export default function ActiveWorkoutModal() {
+  const {
+    activeWorkout,
+    setActiveWorkout,
+    completeWorkout,
+    updateWorkout,
+    showToast,
+  } = useFitness()
+
+  const [exerciseIndex, setExerciseIndex] = useState(0)
+  const [expandedIndex, setExpandedIndex] = useState(0)
+  const [sessionExercises, setSessionExercises] = useState([])
+  const [drafts, setDrafts] = useState({})
+  const [restTimer, setRestTimer] = useState(0)
+  const [timerActive, setTimerActive] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const [sessionNotes, setSessionNotes] = useState('')
+  const [showSummary, setShowSummary] = useState(false)
+  const [pendingPayload, setPendingPayload] = useState(null)
+  const [substituteIndex, setSubstituteIndex] = useState(null)
+  const [restDoneToast, setRestDoneToast] = useState(false)
+
+  const startTimeRef = useRef(Date.now())
+  const pausedMsRef = useRef(0)
+  const pauseStartedRef = useRef(null)
+  const restoredRef = useRef(false)
+
+  const isOpen = Boolean(activeWorkout) && !showSummary
+  const workoutType = activeWorkout ? inferWorkoutType(activeWorkout) : ''
+  const progress = getSessionProgress(sessionExercises)
+
+  const persistSession = useCallback(
+    (overrides = {}) => {
+      if (!activeWorkout) return
+      saveActiveSession({
+        workoutId: activeWorkout.id,
+        workoutName: activeWorkout.name,
+        startedAt: startTimeRef.current,
+        pausedMs: pausedMsRef.current,
+        exerciseIndex,
+        expandedIndex,
+        sessionExercises,
+        sessionNotes,
+        restRemaining: restTimer,
+        timerActive,
+        drafts,
+        ...overrides,
+      })
+    },
+    [activeWorkout, exerciseIndex, expandedIndex, sessionExercises, sessionNotes, restTimer, timerActive, drafts],
+  )
+
+  // Init / restore session when workout starts
+  useEffect(() => {
+    if (!activeWorkout) {
+      restoredRef.current = false
+      return
+    }
+
+    const saved = loadActiveSession()
+    const canRestore =
+      saved &&
+      saved.workoutId === activeWorkout.id &&
+      Array.isArray(saved.sessionExercises) &&
+      saved.sessionExercises.length > 0 &&
+      !restoredRef.current
+
+    if (canRestore) {
+      restoredRef.current = true
+      const restored = restoreSessionExercises(saved.sessionExercises)
+      setSessionExercises(restored)
+      setExerciseIndex(saved.exerciseIndex ?? 0)
+      setExpandedIndex(saved.expandedIndex ?? saved.exerciseIndex ?? 0)
+      setSessionNotes(saved.sessionNotes || '')
+      setDrafts(saved.drafts || {})
+      startTimeRef.current = saved.startedAt || Date.now()
+      pausedMsRef.current = saved.pausedMs || 0
+      if (saved.timerActive && saved.restRemaining > 0) {
+        setRestTimer(saved.restRemaining)
+        setTimerActive(true)
+      } else {
+        setRestTimer(0)
+        setTimerActive(false)
+      }
+      setIsPaused(false)
+      setShowSummary(false)
+      setPendingPayload(null)
+      showToast('Sessão anterior restaurada.', 'info')
+      return
+    }
+
+    restoredRef.current = true
+    const exs = createSessionExercises(activeWorkout)
+    setExerciseIndex(0)
+    setExpandedIndex(0)
+    setSessionExercises(exs)
+    setDrafts({})
+    setRestTimer(0)
+    setTimerActive(false)
+    setIsPaused(false)
+    setSessionNotes('')
+    setShowSummary(false)
+    setPendingPayload(null)
+    startTimeRef.current = Date.now()
+    pausedMsRef.current = 0
+    pauseStartedRef.current = null
+    saveActiveSession({
+      workoutId: activeWorkout.id,
+      workoutName: activeWorkout.name,
+      startedAt: startTimeRef.current,
+      pausedMs: 0,
+      exerciseIndex: 0,
+      expandedIndex: 0,
+      sessionExercises: exs,
+      sessionNotes: '',
+      restRemaining: 0,
+      timerActive: false,
+      drafts: {},
+    })
+  }, [activeWorkout?.id])
+
+  // Autosave session
+  useEffect(() => {
+    if (!activeWorkout || showSummary) return
+    if (!sessionExercises.length) return
+    persistSession()
+  }, [sessionExercises, exerciseIndex, expandedIndex, sessionNotes, restTimer, timerActive, drafts, activeWorkout, showSummary, persistSession])
+
+  // Rest countdown
+  useEffect(() => {
+    if (!timerActive || restTimer <= 0 || isPaused) return undefined
+    const interval = setInterval(() => {
+      setRestTimer((t) => {
+        if (t <= 1) {
+          setTimerActive(false)
+          setRestDoneToast(true)
+          showToast('Descanso concluído. Próxima série pronta.', 'info')
+          return 0
+        }
+        return t - 1
+      })
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [timerActive, restTimer, isPaused, showToast])
+
+  useEffect(() => {
+    if (!restDoneToast) return undefined
+    const t = setTimeout(() => setRestDoneToast(false), 2800)
+    return () => clearTimeout(t)
+  }, [restDoneToast])
+
+  const handleClose = () => {
+    if (window.confirm('Deseja sair do treino? O progresso desta sessão ficará salvo para continuar depois.')) {
+      persistSession()
+      setActiveWorkout(null)
+    }
+  }
+
+  const togglePause = () => {
+    if (isPaused) {
+      if (pauseStartedRef.current) {
+        pausedMsRef.current += Date.now() - pauseStartedRef.current
+        pauseStartedRef.current = null
+      }
+      setIsPaused(false)
+    } else {
+      pauseStartedRef.current = Date.now()
+      setIsPaused(true)
+    }
+  }
+
+  const handleCompleteSet = (exIndex, setNumber, draft) => {
+    if (!draft?.reps || isPaused) return
+
+    const updated = sessionExercises.map((ex, i) => {
+      if (i !== exIndex) return ex
+      return completeSetOnExercise(ex, setNumber, {
+        weight: draft.weight,
+        reps: draft.reps,
+      })
+    })
+
+    setSessionExercises(updated)
+
+    const ex = updated[exIndex]
+    const stillMore = (ex.completedSets || 0) < (ex.targetSets || ex.sets || 3)
+    if (stillMore) {
+      setRestTimer(parseRestFromExercise(ex))
+      setTimerActive(true)
+    }
+
+    setExerciseIndex(getSessionProgress(updated).currentExerciseIndex)
+    setDrafts((d) => ({
+      ...d,
+      [exIndex]: { weight: draft.weight, reps: '' },
+    }))
+  }
+
+  const openSummary = (forcePartial = false) => {
+    const pausedExtra = pauseStartedRef.current ? Date.now() - pauseStartedRef.current : 0
+    const payload = buildCompletionPayload(
+      activeWorkout,
+      sessionExercises,
+      startTimeRef.current,
+      sessionNotes,
+      pausedMsRef.current + pausedExtra,
+    )
+    if (forcePartial) payload.partial = true
+    setPendingPayload(payload)
+    setShowSummary(true)
+  }
+
+  const confirmFinish = () => {
+    if (!pendingPayload || !activeWorkout) return
+    completeWorkout(activeWorkout.id, pendingPayload)
+    clearActiveSession()
+    setShowSummary(false)
+    setPendingPayload(null)
+  }
+
+  const handleSummaryClose = () => {
+    setShowSummary(false)
+    setPendingPayload(null)
+  }
+
+  const handleSubstitute = (catalogEx) => {
+    if (substituteIndex == null) return
+    setSessionExercises((prev) => replaceExerciseInList(prev, substituteIndex, catalogEx, true))
+    setDrafts((d) => ({ ...d, [substituteIndex]: { weight: '', reps: '' } }))
+
+    if (activeWorkout?.id) {
+      const nextExercises = replaceExerciseInList(
+        activeWorkout.exercises || sessionExercises,
+        substituteIndex,
+        catalogEx,
+        true,
+      )
+      updateWorkout(activeWorkout.id, {
+        exercises: nextExercises.map((ex) => ({
+          exerciseId: ex.exerciseId,
+          name: ex.name,
+          muscleGroup: ex.muscleGroup,
+          sets: ex.sets,
+          reps: ex.reps,
+          restSeconds: ex.restSeconds,
+          load: ex.load || '',
+        })),
+      })
+      setActiveWorkout((prev) =>
+        prev
+          ? {
+              ...prev,
+              exercises: nextExercises.map((ex) => ({
+                exerciseId: ex.exerciseId,
+                name: ex.name,
+                muscleGroup: ex.muscleGroup,
+                sets: ex.sets,
+                reps: ex.reps,
+                restSeconds: ex.restSeconds,
+                load: ex.load || '',
+              })),
+            }
+          : prev,
+      )
+    }
+
+    setSubstituteIndex(null)
+    showToast('Exercício substituído com sucesso!')
+  }
+
+  const skipRest = () => {
+    setTimerActive(false)
+    setRestTimer(0)
+    setRestDoneToast(true)
+    showToast('Descanso concluído. Próxima série pronta.', 'info')
+  }
+
+  const adjustRest = (delta) => {
+    setRestTimer((t) => Math.max(0, t + delta))
+  }
+
+  if (!activeWorkout) return null
+
+  const current = sessionExercises[exerciseIndex] || sessionExercises[expandedIndex]
+
+  return (
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Treino em andamento"
+        size="lg"
+        className="active-workout-modal"
+      >
+        <div className={`workout-session workout-session--active ${isPaused ? 'workout-session--paused' : ''}`}>
+          <div className="workout-session__header">
+            <div className="workout-session__meta">
+              <h3 className="workout-session__name">{activeWorkout.name}</h3>
+              <span className="workout-session__type">{workoutType}</span>
+              <div className="workout-session__muscles">
+                {activeWorkout.muscleGroups?.map((g) => (
+                  <span key={g} className="muscle-tag muscle-tag--sm">
+                    {g}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {isPaused && (
+              <span className="workout-session__pause-badge" role="status">
+                Treino pausado
+              </span>
+            )}
+          </div>
+
+          <WorkoutProgressBar
+            percent={progress.percent}
+            completedSets={progress.completedSets}
+            totalSets={progress.totalSets}
+            currentExercise={current?.name || progress.currentExerciseName}
+          />
+
+          {current && (
+            <p className="workout-session__now">
+              Agora: <strong>{current.name}</strong>
+              {current.muscleGroup ? ` · ${current.muscleGroup}` : ''}
+            </p>
+          )}
+
+          {timerActive && restTimer > 0 && (
+            <RestTimer
+              seconds={restTimer}
+              onSkip={skipRest}
+              onAdjust={adjustRest}
+              isPaused={isPaused}
+              soundEnabled={false}
+            />
+          )}
+          {restDoneToast && (
+            <div className="rest-timer rest-timer--done" role="status">
+              <div className="rest-timer__info">
+                <span className="rest-timer__label">Pronto</span>
+                <strong className="rest-timer__time">✓</strong>
+              </div>
+              <p className="rest-timer__done-msg">Descanso concluído. Próxima série pronta.</p>
+            </div>
+          )}
+
+          <div className="workout-session__exercise-list">
+            {sessionExercises.map((ex, i) => (
+              <ExerciseSessionCard
+                key={`${ex.exerciseId || ex.name}-${i}`}
+                exercise={ex}
+                index={i}
+                isCurrent={i === exerciseIndex}
+                expanded={expandedIndex === i}
+                onToggle={() => setExpandedIndex((cur) => (cur === i ? -1 : i))}
+                draft={drafts[i] || { weight: '', reps: '' }}
+                onDraftChange={(d) => setDrafts((prev) => ({ ...prev, [i]: d }))}
+                onCompleteSet={(setNumber, draft) => handleCompleteSet(i, setNumber, draft)}
+                onSubstitute={() => setSubstituteIndex(i)}
+                disabled={isPaused}
+              />
+            ))}
+          </div>
+
+          {!sessionExercises.length && (
+            <p className="empty-text">Este treino não possui exercícios cadastrados.</p>
+          )}
+
+          <label className="form-field workout-session__notes">
+            <span>Observações da sessão</span>
+            <textarea
+              rows={2}
+              value={sessionNotes}
+              onChange={(e) => setSessionNotes(e.target.value)}
+              placeholder="Como foi o treino hoje?"
+              disabled={isPaused}
+            />
+          </label>
+
+          <div className="workout-session__toolbar">
+            <button type="button" className="btn btn--ghost btn--sm" onClick={togglePause}>
+              {isPaused ? 'Retomar' : 'Pausar'}
+            </button>
+          </div>
+
+          <div className="workout-session__nav">
+            <button
+              type="button"
+              className="btn btn--primary btn--lg"
+              onClick={() => openSummary(false)}
+              disabled={isPaused || progress.completedSets === 0}
+            >
+              Finalizar treino
+            </button>
+          </div>
+
+          <p className="safety-note">{SAFETY_NOTE}</p>
+        </div>
+      </Modal>
+
+      <WorkoutSummaryModal
+        isOpen={showSummary}
+        onClose={handleSummaryClose}
+        onConfirm={confirmFinish}
+        sessionData={pendingPayload}
+        workoutName={activeWorkout.name}
+      />
+
+      <ExerciseSubstitutionModal
+        isOpen={substituteIndex != null}
+        onClose={() => setSubstituteIndex(null)}
+        currentExercise={substituteIndex != null ? sessionExercises[substituteIndex] : null}
+        onSelect={handleSubstitute}
+      />
+    </>
+  )
+}
