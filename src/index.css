@@ -1,50 +1,96 @@
 :root {
-  /* ===== New brand identity tokens ===== */
-  --color-bg: #050B18;
-  --color-surface: #071426;
-  --color-surface-soft: #0B2238;
-  --color-primary: #00E58F;
-  --color-secondary: #00D9FF;
-  --color-coach: #8B5CF6;
-  --color-energy: #F59E0B;
-  --color-danger: #EF4444;
-  --color-text: #F8FAFC;
-  --color-muted: #9CA3AF;
-  --color-perf: #3B82F6;
+  /* ===== EvoluaFit premium dark palette ===== */
+  --bg-main: #050B18;
+  --bg-section: #071426;
+  --bg-card: #0B1220;
+  --bg-card-soft: #0B2238;
+  --primary: #00E58F;
+  --primary-soft: rgba(0, 229, 143, 0.14);
+  --primary-border: rgba(0, 229, 143, 0.45);
+  --secondary: #00D9FF;
+  --secondary-soft: rgba(0, 217, 255, 0.14);
+  --coach: #8B5CF6;
+  --coach-soft: rgba(139, 92, 246, 0.16);
+  --energy: #F59E0B;
+  --energy-soft: rgba(245, 158, 11, 0.16);
+  --performance: #3B82F6;
+  --performance-soft: rgba(59, 130, 246, 0.16);
+  --danger: #EF4444;
+  --danger-soft: rgba(239, 68, 68, 0.14);
+  --text-main: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --border-soft: rgba(255, 255, 255, 0.08);
 
-  /* Function colors (dashboard / planilha / calendar) */
-  --fn-week: #00D9FF;        /* week volume = cyan */
-  --fn-month: #00E58F;       /* monthly perf = green */
-  --fn-next: #F59E0B;        /* next workout = orange */
-  --fn-muscle: #8B5CF6;      /* muscle groups = purple */
-  --fn-streak: #FB7185;      /* streak = red/orange */
-  --fn-avgtime: #3B82F6;     /* avg time = blue */
+  /* Gradients & glow (moderate — hover/active only) */
+  --gradient-primary: linear-gradient(135deg, #00E58F, #00D9FF);
+  --gradient-coach: linear-gradient(135deg, #8B5CF6, #00D9FF);
+  --glow-primary: 0 0 28px rgba(0, 229, 143, 0.22);
+  --glow-secondary: 0 0 28px rgba(0, 217, 255, 0.18);
+  --glow-coach: 0 0 28px rgba(139, 92, 246, 0.22);
+  --glow-energy: 0 0 24px rgba(245, 158, 11, 0.18);
 
-  /* ===== Backward-compatible aliases (existing code depends on these) ===== */
-  --bg-primary: var(--color-bg);
+  /* Workout type accents */
+  --type-push: var(--primary);
+  --type-push-soft: var(--primary-soft);
+  --type-pull: var(--performance);
+  --type-pull-soft: var(--performance-soft);
+  --type-legs: var(--energy);
+  --type-legs-soft: var(--energy-soft);
+  --type-full: var(--coach);
+  --type-full-soft: var(--coach-soft);
+  --type-core: #A78BFA;
+  --type-core-soft: rgba(167, 139, 250, 0.16);
+  --type-cardio: #F97316;
+  --type-cardio-soft: rgba(249, 115, 22, 0.16);
+  --type-mobility: var(--secondary);
+  --type-mobility-soft: var(--secondary-soft);
+  --type-rest: var(--text-muted);
+  --type-rest-soft: rgba(148, 163, 184, 0.14);
+
+  /* ===== Legacy aliases (app-wide inheritance) ===== */
+  --color-bg: var(--bg-main);
+  --color-surface: var(--bg-section);
+  --color-surface-soft: var(--bg-card-soft);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-coach: var(--coach);
+  --color-energy: var(--energy);
+  --color-danger: var(--danger);
+  --color-text: var(--text-main);
+  --color-muted: var(--text-muted);
+  --color-perf: var(--performance);
+
+  --fn-week: var(--secondary);
+  --fn-month: var(--performance);
+  --fn-next: var(--energy);
+  --fn-muscle: var(--secondary);
+  --fn-streak: var(--energy);
+  --fn-avgtime: var(--performance);
+  --fn-volume: var(--primary);
+  --fn-goals: var(--energy);
+
+  --bg-primary: var(--bg-main);
   --bg-deep: #04101f;
-  --bg-card: var(--color-surface);
-  --graphite: var(--color-surface);
-  --green: var(--color-primary);
+  --graphite: var(--bg-section);
+  --green: var(--primary);
   --green-secondary: #00C97B;
-  --accent: var(--color-primary);
-  --blue: var(--color-perf);
+  --accent: var(--primary);
+  --blue: var(--performance);
   --blue-deep: #12304f;
-  --cyan: var(--color-secondary);
-  --purple: #A78BFA;
-  --orange: var(--color-energy);
-  --red: var(--color-danger);
-  --snow: var(--color-text);
-  --gray: var(--color-muted);
+  --cyan: var(--secondary);
+  --purple: var(--coach);
+  --orange: var(--energy);
+  --red: var(--danger);
+  --snow: var(--text-main);
+  --gray: var(--text-muted);
 
-  --bg-page: var(--color-bg);
-  --bg-glass: rgba(9, 22, 42, 0.72);
+  --bg-page: var(--bg-main);
+  --bg-glass: rgba(11, 18, 32, 0.78);
   --bg-glass-soft: rgba(11, 34, 56, 0.55);
-  --border: rgba(148, 163, 184, 0.14);
-  --border-strong: rgba(0, 229, 143, 0.28);
-  --text-primary: var(--color-text);
-  --text-secondary: #B3BECC;
-  --text-muted: rgba(156, 163, 175, 0.82);
+  --border: var(--border-soft);
+  --border-strong: var(--primary-border);
+  --text-primary: var(--text-main);
 
   --radius: 16px;
   --radius-sm: 10px;
@@ -53,12 +99,11 @@
   --font-brand: 'Manrope', 'Sora', system-ui, sans-serif;
   --font: 'Inter', system-ui, sans-serif;
   --header-h: 96px;
-  /* Disclaimer lives in footer only — no header banner strip */
   --header-banner-h: 0px;
   --container: 1140px;
   --shadow: 0 10px 38px rgba(0, 0, 0, 0.45);
-  --glow-green: 0 0 40px rgba(0, 229, 143, 0.18);
-  --glow-cyan: 0 0 36px rgba(0, 217, 255, 0.18);
+  --glow-green: var(--glow-primary);
+  --glow-cyan: var(--glow-secondary);
 }
 
 *,
@@ -78,8 +123,8 @@ html {
 
 body {
   font-family: var(--font);
-  background: var(--bg-page);
-  color: var(--text-primary);
+  background: var(--bg-main);
+  color: var(--text-main);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -91,10 +136,10 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 70% 45% at 15% -5%, rgba(0, 217, 255, 0.10), transparent 60%),
-    radial-gradient(ellipse 60% 40% at 85% 5%, rgba(0, 229, 143, 0.10), transparent 60%),
-    radial-gradient(ellipse 90% 60% at 50% 110%, rgba(11, 34, 56, 0.5), transparent 70%),
-    linear-gradient(180deg, #050B18 0%, #04101f 100%);
+    radial-gradient(ellipse 70% 45% at 15% -5%, rgba(0, 217, 255, 0.08), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 85% 5%, rgba(0, 229, 143, 0.09), transparent 60%),
+    radial-gradient(ellipse 90% 60% at 50% 110%, rgba(11, 34, 56, 0.45), transparent 70%),
+    linear-gradient(180deg, var(--bg-main) 0%, #04101f 100%);
   pointer-events: none;
   z-index: -1;
 }
@@ -108,6 +153,7 @@ h1, h2, h3, h4 {
   line-height: 1.2;
   font-weight: 800;
   letter-spacing: -0.02em;
+  color: var(--text-main);
 }
 
 ::selection {
@@ -151,3 +197,12 @@ ul {
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
+
+/* ===== Shared accent utilities ===== */
+.accent-primary { --tone: var(--primary); --tone-soft: var(--primary-soft); }
+.accent-secondary { --tone: var(--secondary); --tone-soft: var(--secondary-soft); }
+.accent-coach { --tone: var(--coach); --tone-soft: var(--coach-soft); }
+.accent-energy { --tone: var(--energy); --tone-soft: var(--energy-soft); }
+.accent-performance { --tone: var(--performance); --tone-soft: var(--performance-soft); }
+.accent-danger { --tone: var(--danger); --tone-soft: var(--danger-soft); }
+.accent-muted { --tone: var(--text-muted); --tone-soft: rgba(148, 163, 184, 0.14); }

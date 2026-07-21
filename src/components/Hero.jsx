@@ -23,7 +23,7 @@ export default function Hero() {
             <button type="button" className="btn btn--primary btn--lg" onClick={() => scrollToSection('planilha')}>
               Criar minha planilha
             </button>
-            <button type="button" className="btn btn--ghost btn--lg" onClick={() => scrollToSection('desempenho')}>
+            <button type="button" className="btn btn--outline btn--lg" onClick={() => scrollToSection('desempenho')}>
               Ver desempenho
             </button>
           </div>

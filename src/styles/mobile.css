@@ -137,7 +137,7 @@
   }
 
   .mobile-nav__item--active {
-    color: var(--accent);
+    color: var(--primary);
   }
 
   .mobile-nav__item--active::before {
@@ -149,8 +149,8 @@
     width: 26px;
     height: 3px;
     border-radius: 0 0 3px 3px;
-    background: var(--accent);
-    box-shadow: 0 0 12px rgba(0, 229, 143, 0.5);
+    background: var(--primary);
+    box-shadow: 0 0 10px rgba(0, 229, 143, 0.4);
   }
 
   .mobile-nav__item--active .mobile-nav__icon {
@@ -1042,13 +1042,13 @@
   }
 
   .mobile-nav__item--coach.mobile-nav__item--active::before {
-    background: #8b5cf6;
-    box-shadow: 0 0 12px rgba(139, 92, 246, 0.55);
+    background: var(--coach);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.45);
   }
 
   .mobile-nav__item--coach.mobile-nav__item--active .mobile-nav__icon {
-    color: #8b5cf6;
-    text-shadow: 0 0 12px rgba(139, 92, 246, 0.45);
+    color: var(--coach);
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
   }
 
   /* Calendário premium — lista mobile */

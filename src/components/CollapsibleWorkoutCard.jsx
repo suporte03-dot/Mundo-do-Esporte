@@ -8,6 +8,21 @@ const statusClass = {
   Realizado: 'status--done',
   Parcial: 'status--partial',
   Pulado: 'status--skipped',
+  'Em andamento': 'status--in-progress',
+  Pausado: 'status--paused',
+}
+
+function workoutTypeClass(type) {
+  const t = String(type || '').toLowerCase()
+  if (t.includes('push')) return 'push'
+  if (t.includes('pull')) return 'pull'
+  if (t.includes('leg')) return 'legs'
+  if (t.includes('full')) return 'full'
+  if (t.includes('cardio')) return 'cardio'
+  if (t.includes('mobil')) return 'mobility'
+  if (t.includes('core') || t.includes('condic')) return 'core'
+  if (t.includes('descanso') || t.includes('rest')) return 'rest'
+  return 'full'
 }
 
 function formatExerciseRest(ex) {
@@ -40,6 +55,7 @@ export default function CollapsibleWorkoutCard({
 }) {
   const panelId = useId()
   const type = inferWorkoutType(workout)
+  const typeTone = workoutTypeClass(type)
   const exerciseCount = workout.exercises?.length || 0
   const duration = workout.estimatedMinutes || 45
   const dateLabel = workout.dayLabel || formatDateShort(workout.date)
@@ -58,7 +74,7 @@ export default function CollapsibleWorkoutCard({
 
   return (
     <article
-      className={`workout-card glass-card workout-card--accordion${isOpen ? ' workout-card--expanded' : ''}`}
+      className={`workout-card glass-card workout-card--accordion workout-card--${typeTone}${isOpen ? ' workout-card--expanded' : ''}`}
       style={{ '--card-delay': `${Math.min(index, 8) * 40}ms` }}
     >
       <div

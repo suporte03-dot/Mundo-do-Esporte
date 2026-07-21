@@ -18,6 +18,7 @@ const HERO_METRICS = [
     icon: '📅',
     section: 'calendario',
     linkLabel: 'Ver calendário',
+    tone: 'week',
   },
   {
     key: 'streak',
@@ -25,6 +26,7 @@ const HERO_METRICS = [
     icon: '🔥',
     section: 'desempenho',
     linkLabel: 'Ver desempenho',
+    tone: 'streak',
   },
   {
     key: 'nextWorkout',
@@ -32,6 +34,7 @@ const HERO_METRICS = [
     icon: '⚡',
     section: 'calendario',
     linkLabel: 'Abrir agenda',
+    tone: 'next',
   },
   {
     key: 'monthlyPerformancePct',
@@ -39,6 +42,7 @@ const HERO_METRICS = [
     icon: '📈',
     section: 'desempenho',
     linkLabel: 'Ver gráficos',
+    tone: 'month',
   },
 ]
 
@@ -50,7 +54,7 @@ function MetricCard({ card, metrics }) {
   return (
     <button
       type="button"
-      className={`dash-metric glass-card${ready ? '' : ' dash-metric--empty'}`}
+      className={`dash-metric glass-card dash-metric--${card.tone}${ready ? '' : ' dash-metric--empty'}`}
       onClick={() => scrollToSection(card.section)}
       aria-label={`${card.label}: ${value || 'sem dados'}. ${card.linkLabel}`}
     >

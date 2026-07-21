@@ -26,7 +26,7 @@ export default function EmptyState({
           {secondaryCtaLabel && secondaryCtaSection && (
             <button
               type="button"
-              className="btn btn--ghost"
+              className="btn btn--outline"
               onClick={() => scrollToSection(secondaryCtaSection)}
             >
               {secondaryCtaLabel}
