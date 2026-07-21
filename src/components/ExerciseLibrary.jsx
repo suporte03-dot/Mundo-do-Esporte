@@ -3,6 +3,7 @@ import { equipmentTypes as defaultEquipment, levelTypes as defaultLevels, exerci
 import { GDT_FILTER_GROUPS, matchesGdtChip, countExercisesByChip, muscleGroupLabel } from '../data/exerciseMediaMap'
 import { useFitness } from '../context/FitnessContext'
 import { useExercises } from '../hooks/useExercises'
+import { getMuscleGroupVisual } from './icons/muscleGroupIcons'
 import SectionTitle from './SectionTitle'
 import ExerciseCard from './ExerciseCard'
 import ExerciseDetailModal from './ExerciseDetailModal'
@@ -21,25 +22,6 @@ const PRIMARY_GROUP_IDS = [
   'Cardio',
   'Mobilidade',
 ]
-
-const GROUP_META = {
-  Peitoral: { icon: '🫁', tone: 'peito' },
-  Costas: { icon: '🔼', tone: 'costas' },
-  Pernas: { icon: '🦵', tone: 'pernas' },
-  Glúteos: { icon: '◇', tone: 'gluteos' },
-  Ombros: { icon: '🔶', tone: 'ombros' },
-  Bíceps: { icon: '💪', tone: 'biceps' },
-  Tríceps: { icon: '🦾', tone: 'triceps' },
-  Antebraço: { icon: '✊', tone: 'antebraco' },
-  Trapézio: { icon: '△', tone: 'trapezio' },
-  Lombar: { icon: '🦴', tone: 'lombar' },
-  Abdômen: { icon: '◎', tone: 'abdomen' },
-  Panturrilha: { icon: '🦿', tone: 'panturrilha' },
-  Cardio: { icon: '♥', tone: 'cardio' },
-  Mobilidade: { icon: '〜', tone: 'mobilidade' },
-  Funcional: { icon: '⚡', tone: 'funcional' },
-  Alongamento: { icon: '∿', tone: 'alongamento' },
-}
 
 /** Groups with thinner catalogs get an “em expansão” badge instead of looking broken */
 const EXPANDING_THRESHOLD = 8
@@ -207,32 +189,37 @@ export default function ExerciseLibrary() {
       : 'Exercícios'
 
   const renderGroupCard = (group) => {
-    const meta = GROUP_META[group.id] || {
-      icon: '◆',
-      tone: 'default',
-    }
+    const { letter, tone, subtitle } = getMuscleGroupVisual(group.id)
     const count = chipCounts[group.id] ?? 0
     const expanding = count > 0 && count < EXPANDING_THRESHOLD
+    const isActive = selectedGroup === group.id
     return (
       <button
         key={group.id}
         type="button"
-        className={`muscle-group-card muscle-group-card--${meta.tone} muscle-group-card--compact`}
+        className={`muscle-group-card muscle-group-card--${tone}${isActive ? ' is-active' : ''}`}
         onClick={() => openGroup(group.id)}
+        aria-pressed={isActive}
+        aria-label={`${group.label}: ${count} ${count === 1 ? 'exercício' : 'exercícios'}`}
       >
-        <span className="muscle-group-card__accent" aria-hidden="true" />
-        <span className="muscle-group-card__icon muscle-group-card__icon--symbol" aria-hidden="true">
-          {meta.icon}
+        <span className="muscle-group-card__badge" aria-hidden="true">
+          {count}
+        </span>
+        <span className="muscle-group-card__letter" aria-hidden="true">
+          {letter}
         </span>
         <span className="muscle-group-card__body">
-          <span className="muscle-group-card__top">
-            <span className="muscle-group-card__name">{group.label}</span>
-            <span className="muscle-group-card__count">
-              {count}
-              {expanding ? <em className="muscle-group-card__expanding"> em expansão</em> : ''}
+          <span className="muscle-group-card__name">{group.label}</span>
+          <span className="muscle-group-card__subtitle">{subtitle}</span>
+          {expanding ? (
+            <em className="muscle-group-card__expanding">em expansão</em>
+          ) : null}
+          <span className="muscle-group-card__cta">
+            Ver exercícios
+            <span className="muscle-group-card__cta-arrow" aria-hidden="true">
+              →
             </span>
           </span>
-          <span className="muscle-group-card__cta">Ver exercícios →</span>
         </span>
       </button>
     )
