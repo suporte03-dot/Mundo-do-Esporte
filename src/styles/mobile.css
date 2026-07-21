@@ -600,9 +600,9 @@
 
   .muscle-group-card {
     min-height: 96px;
-    padding: 16px;
-    padding-right: 3rem;
-    gap: 14px;
+    padding: 16px 14px;
+    padding-right: 2.6rem;
+    gap: 12px;
     border-radius: 18px;
   }
 
@@ -614,10 +614,10 @@
   }
 
   .muscle-group-card__letter {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    font-size: 1.05rem;
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    font-size: 1rem;
   }
 
   .muscle-group-card:hover .muscle-group-card__letter {
@@ -626,6 +626,7 @@
 
   .muscle-group-card__name {
     font-size: 1.2rem;
+    letter-spacing: -0.045em;
   }
 
   .muscle-group-card__subtitle {

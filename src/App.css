@@ -5289,12 +5289,12 @@ main {
   --mg-rgb: 45, 212, 191;
   position: relative;
   display: flex;
-  gap: 18px;
+  gap: 14px;
   align-items: center;
   width: 100%;
   min-height: 120px;
-  padding: 24px;
-  padding-right: 3.4rem;
+  padding: 22px 18px;
+  padding-right: 2.75rem;
   border-radius: 22px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-top: 3px solid var(--mg-accent);
@@ -5336,14 +5336,14 @@ main {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 58px;
-  height: 58px;
-  border-radius: 16px;
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
   border: 1px solid rgba(var(--mg-rgb), 0.48);
   background: rgba(var(--mg-rgb), 0.12);
   color: var(--mg-accent);
   box-shadow: 0 0 24px rgba(var(--mg-rgb), 0.22);
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 900;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -5357,30 +5357,28 @@ main {
   flex-direction: column;
   gap: 0.2rem;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 auto;
   justify-content: center;
-  padding-right: 0.25rem;
+  padding-right: 0.15rem;
 }
 
 .muscle-group-card__name {
-  font-size: 1.5rem;
+  font-size: clamp(1.15rem, 1.05rem + 0.55vw, 1.4rem);
   font-weight: 900;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  letter-spacing: -0.04em;
+  line-height: 1.18;
   color: #f8fafc;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
 }
 
 .muscle-group-card__subtitle {
-  font-size: 0.94rem;
+  font-size: clamp(0.82rem, 0.78rem + 0.25vw, 0.94rem);
   font-weight: 500;
   line-height: 1.35;
   color: #cbd5e1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
 }
 
 .muscle-group-card__expanding {
