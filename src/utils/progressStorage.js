@@ -1,6 +1,6 @@
 /**
- * Set-level progress + active session persistence (separate from evoluafit-data).
- * Keys: workout_progress_history, active_workout_session
+ * Set-level progress + active session persistence.
+ * Primary writes go to dedicated keys; storageService folds them into evoluafit-data on save.
  */
 
 export const PROGRESS_HISTORY_KEY = 'workout_progress_history'
@@ -72,7 +72,14 @@ export function getExerciseProgressStats(exerciseId, exerciseName) {
   )
 
   if (!history.length) {
-    return { lastWeight: null, bestWeight: null, lastReps: null, avgReps: null, points: [] }
+    return {
+      lastWeight: null,
+      lastWeightLabel: null,
+      bestWeight: null,
+      lastReps: null,
+      avgReps: null,
+      points: [],
+    }
   }
 
   const weights = history.map((e) => e.weight).filter((w) => w > 0)
@@ -87,8 +94,11 @@ export function getExerciseProgressStats(exerciseId, exerciseName) {
     }
   })
 
+  const newest = history[0]
+
   return {
     lastWeight: weights.length ? weights[0] : null,
+    lastWeightLabel: newest?.weightLabel || (weights[0] != null ? String(weights[0]) : null),
     bestWeight: weights.length ? Math.max(...weights) : null,
     lastReps: reps.length ? reps[0] : null,
     avgReps: reps.length ? Math.round(reps.reduce((a, b) => a + b, 0) / reps.length) : null,

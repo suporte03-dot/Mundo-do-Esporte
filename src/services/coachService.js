@@ -357,6 +357,148 @@ export function clearCoachMessages() {
 }
 
 /**
+ * Short recommendation cards for Coach UI — grounded in profile/history.
+ * Never auto-applies; caller must confirm via apply/ignore.
+ */
+export function getContextualRecommendations(context = {}) {
+  const { profile = {}, workouts = [], history = [], performance, goals = [] } = context
+  const last = getLastSession(history)
+  const lastMuscles = getLastSessionMuscles(history)
+  const lastSplit = detectSplit(lastMuscles)
+  const streak = performance?.streak ?? 0
+  const days = daysSince(last?.completedAt || last?.date)
+  const pending = workouts.filter((w) => w.status === 'Pendente')
+  const weeklyGoal =
+    goals.find((g) => g.type === 'weekly_workouts')?.target || profile.daysPerWeek || 3
+  const weeklyDone = performance?.weeklyWorkouts ?? 0
+  const cards = []
+
+  if (!workouts.length && !history.length) {
+    cards.push({
+      id: 'rec-start-plan',
+      title: 'Montar primeira planilha',
+      reason: 'Ainda não há rotina salva neste aparelho.',
+      impact: 'Você ganha treinos claros por dia, com grupos e duração definidos.',
+      action: 'plan',
+      suggestion: null,
+    })
+    return cards
+  }
+
+  if (streak >= 4 || days < 1) {
+    const workout = createQuickWorkout({
+      profile,
+      focus: ['Mobilidade', 'Alongamento'],
+      minutes: 25,
+      name: 'Mobilidade e recuperação',
+    })
+    cards.push({
+      id: 'rec-recovery',
+      title: 'Priorizar recuperação hoje',
+      reason:
+        days < 1
+          ? 'Você já treinou recentemente.'
+          : `Sequência de ${streak} dias — o corpo precisa de descanso ativo.`,
+      impact: 'Reduz sobrecarga e ajuda a manter o hábito sem exagerar no volume.',
+      action: 'save_workout',
+      suggestion: { type: 'workout', data: workout },
+    })
+  } else if (pending.length) {
+    const next = performance?.nextWorkout || pending[0]
+    cards.push({
+      id: 'rec-pending',
+      title: `Seguir: ${next.name}`,
+      reason: 'Há treino pendente na sua planilha.',
+      impact: `Mantém a frequência alinhada à meta de ${weeklyGoal}x/semana (${weeklyDone} feitos).`,
+      action: 'start_workout',
+      suggestion: { type: 'workout', data: next },
+    })
+  } else if (lastSplit === 'push') {
+    const workout = createQuickWorkout({
+      profile,
+      focus: ['Costas', 'Bíceps'],
+      minutes: profile.duration || 45,
+      name: 'Pull — costas e bíceps',
+    })
+    cards.push({
+      id: 'rec-pull',
+      title: 'Equilibrar com Pull',
+      reason: 'Última sessão enfatizou empurrar (peito/ombros/tríceps).',
+      impact: 'Balanceia volume entre empurrar e puxar na semana.',
+      action: 'save_workout',
+      suggestion: { type: 'workout', data: workout },
+    })
+  } else if (lastSplit === 'pull') {
+    const workout = createQuickWorkout({
+      profile,
+      focus: ['Quadríceps', 'Posterior', 'Glúteos'],
+      minutes: profile.duration || 45,
+      name: 'Legs — inferiores',
+    })
+    cards.push({
+      id: 'rec-legs',
+      title: 'Incluir dia de pernas',
+      reason: 'Última sessão foi de puxar (costas/bíceps).',
+      impact: 'Completa o ciclo de grupos principais com volume moderado.',
+      action: 'save_workout',
+      suggestion: { type: 'workout', data: workout },
+    })
+  } else if (lastSplit === 'legs') {
+    const workout = createQuickWorkout({
+      profile,
+      focus: ['Peitoral', 'Ombros', 'Tríceps'],
+      minutes: profile.duration || 45,
+      name: 'Push — peito e tríceps',
+    })
+    cards.push({
+      id: 'rec-push',
+      title: 'Retomar Push',
+      reason: 'Última sessão foi de inferiores.',
+      impact: 'Alterna estímulos e evita repetir o mesmo grupo em sequência.',
+      action: 'save_workout',
+      suggestion: { type: 'workout', data: workout },
+    })
+  }
+
+  if (days >= 5 && last) {
+    cards.push({
+      id: 'rec-return',
+      title: 'Retomar com volume confortável',
+      reason: `Há ${days} dias sem treino registrado.`,
+      impact: 'Recomeço gradual favorece técnica e adesão — sem pressa por carga alta.',
+      action: 'short',
+      suggestion: null,
+    })
+  }
+
+  if (weeklyDone >= weeklyGoal && weeklyGoal > 0) {
+    cards.push({
+      id: 'rec-week-done',
+      title: 'Meta semanal atingida',
+      reason: `Você já concluiu ${weeklyDone} de ${weeklyGoal} treinos nesta semana.`,
+      impact: 'Pode priorizar mobilidade ou manter leveza até a próxima semana.',
+      action: 'recovery',
+      suggestion: null,
+    })
+  }
+
+  // Soft volume note — non-alarmist
+  const heavyPending = pending.find((w) => (w.exercises || []).length >= 8)
+  if (heavyPending) {
+    cards.push({
+      id: 'rec-volume',
+      title: 'Volume alto em um dia',
+      reason: `"${heavyPending.name}" tem ${heavyPending.exercises.length} exercícios.`,
+      impact: 'Se sentir fadiga excessiva, reduza 1–2 movimentos ou aumente o descanso entre séries.',
+      action: 'adjust',
+      suggestion: { type: 'workout', data: heavyPending },
+    })
+  }
+
+  return cards.slice(0, 4)
+}
+
+/**
  * Resumo inteligente para os cards da UI (sem chamar “IA”).
  */
 export function getCoachSummary(context = {}) {

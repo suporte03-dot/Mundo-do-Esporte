@@ -1615,4 +1615,61 @@
   .calendar--mobile-month {
     display: block;
   }
+
+  /* Coach FAB — above bottom nav */
+  .coach-fab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+    position: fixed;
+    right: 14px;
+    bottom: calc(var(--mobile-nav-h) + var(--safe-bottom) + 14px);
+    z-index: 95;
+    width: 58px;
+    height: 58px;
+    border: none;
+    border-radius: 18px;
+    background: var(--gradient-coach);
+    color: #fff;
+    box-shadow: var(--glow-coach), 0 8px 24px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+  }
+
+  .coach-fab__icon {
+    font-size: 1.15rem;
+    line-height: 1;
+  }
+
+  .coach-fab__label {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .coach-fab.is-active {
+    outline: 2px solid var(--secondary);
+    outline-offset: 2px;
+  }
+
+  .mobile-nav--five .mobile-nav__item {
+    flex: 1 1 20%;
+  }
+
+  .mobile-nav--five .mobile-nav__label {
+    font-size: 0.52rem;
+  }
+
+  .home-today {
+    margin-top: 0.25rem;
+  }
+
+  .workout-session__session-header {
+    flex-wrap: wrap;
+  }
+
+  .workout-session__exit {
+    min-height: 44px;
+  }
 }

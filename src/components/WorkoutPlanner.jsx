@@ -41,7 +41,7 @@ const STEPS = [
 ]
 
 export default function WorkoutPlanner() {
-  const { profile, savePlan, addPlanWorkouts, showToast } = useFitness()
+  const { profile, savePlan, addPlanWorkouts, showToast, generatedPlan } = useFitness()
   const [form, setForm] = useState({
     objective: profile.objective || 'saude',
     level: profile.level || 'Iniciante',
@@ -51,7 +51,7 @@ export default function WorkoutPlanner() {
     equipment: profile.equipment || ['Academia completa'],
     restrictions: profile.restrictions || [],
   })
-  const [plan, setPlan] = useState(null)
+  const [plan, setPlan] = useState(() => generatedPlan || null)
   const [noRestrictions, setNoRestrictions] = useState(!(profile.restrictions || []).length)
   const [step, setStep] = useState(1)
   const [generating, setGenerating] = useState(false)

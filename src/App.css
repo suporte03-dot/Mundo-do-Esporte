@@ -8878,3 +8878,294 @@ main {
     display: none;
   }
 }
+
+/* ===== Home action-first ===== */
+.hero--action {
+  padding-bottom: 1.5rem;
+}
+
+.hero__inner--action {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.hero__content--compact .hero__title {
+  margin-bottom: 0.35rem;
+}
+
+.hero__content--compact .hero__subtitle {
+  margin-bottom: 0;
+  max-width: 36ch;
+}
+
+.home-today {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem 1.35rem;
+  border: 1px solid var(--primary-border);
+  background:
+    linear-gradient(145deg, rgba(0, 229, 143, 0.08), transparent 42%),
+    var(--bg-card);
+}
+
+.home-today__label {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 0.35rem;
+}
+
+.home-today__week {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.home-today__week-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+}
+
+.home-today__week-fill {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: inherit;
+  transition: width 0.35s ease;
+}
+
+.home-today__name {
+  font-size: 1.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.home-today__desc {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.home-today__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 0.75rem 0;
+}
+
+.home-today__meta li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-soft);
+}
+
+.home-today__meta span {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.home-today__meta strong {
+  font-size: 0.92rem;
+  color: var(--text-main);
+  font-weight: 650;
+}
+
+.home-today__progress-note {
+  font-size: 0.85rem;
+  color: var(--energy);
+}
+
+.home-today__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.home-today__actions .btn {
+  min-height: var(--touch-min, 44px);
+}
+
+.week-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.95rem 1.1rem;
+}
+
+.week-strip__sentence {
+  font-weight: 650;
+  color: var(--text-main);
+  margin-bottom: 0.2rem;
+}
+
+.week-strip__hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.week-strip__actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+/* Plan day accordion */
+.plan-day__accordion-trigger {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  min-height: var(--touch-min, 44px);
+}
+
+.plan-day__chevron {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding-top: 0.35rem;
+}
+
+.plan-day__panel[hidden] {
+  display: none;
+}
+
+/* Workout session header */
+.workout-session__session-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.workout-session__eyebrow {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+  margin-bottom: 0.2rem;
+}
+
+.workout-session__session-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+}
+
+.workout-session__elapsed {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--secondary);
+}
+
+.exercise-session-card__last-weight {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.65rem;
+}
+
+/* Coach recommendation cards */
+.coach-recs {
+  margin: 1rem 0 1.25rem;
+}
+
+.coach-recs__label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.65rem;
+}
+
+.coach-recs__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.coach-rec-card {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem;
+}
+
+.coach-rec-card__title {
+  font-size: 1.05rem;
+}
+
+.coach-rec-card__reason,
+.coach-rec-card__impact {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.coach-rec-card__k {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.15rem;
+}
+
+.coach-rec-card__actions {
+  display: flex;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+}
+
+.coach-fab {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .home-today__meta {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .home-today__actions {
+    flex-direction: column;
+  }
+
+  .home-today__actions .btn {
+    width: 100%;
+  }
+
+  .week-strip {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .week-strip__actions {
+    width: 100%;
+  }
+
+  .week-strip__actions .btn {
+    flex: 1;
+    min-height: 44px;
+  }
+}

@@ -18,6 +18,7 @@ import {
   generateVariation,
   generateWorkoutSuggestion,
   getCoachSummary,
+  getContextualRecommendations,
   getTodaySuggestion,
   loadCoachMessages,
   QUICK_CHIPS,
@@ -109,6 +110,11 @@ export default function CoachIA() {
   )
 
   const summary = useMemo(() => getCoachSummary(context), [context])
+  const [ignoredRecs, setIgnoredRecs] = useState(() => new Set())
+  const recommendations = useMemo(
+    () => getContextualRecommendations(context).filter((c) => !ignoredRecs.has(c.id)),
+    [context, ignoredRecs],
+  )
 
   const mainChips = useMemo(
     () => QUICK_CHIPS.filter((c) => MAIN_CHIP_IDS.includes(c.id)),
@@ -426,6 +432,78 @@ export default function CoachIA() {
             </span>
           </div>
         </div>
+
+        {recommendations.length > 0 && (
+          <div className="coach-recs" aria-label="Recomendações do Coach">
+            <p className="coach-recs__label">Recomendações com base no seu histórico</p>
+            <div className="coach-recs__grid">
+              {recommendations.map((rec) => (
+                <article key={rec.id} className="coach-rec-card glass-card">
+                  <h3 className="coach-rec-card__title">{rec.title}</h3>
+                  <p className="coach-rec-card__reason">
+                    <span className="coach-rec-card__k">Por quê</span>
+                    {rec.reason}
+                  </p>
+                  <p className="coach-rec-card__impact">
+                    <span className="coach-rec-card__k">Impacto</span>
+                    {rec.impact}
+                  </p>
+                  <div className="coach-rec-card__actions">
+                    <button
+                      type="button"
+                      className="btn btn--primary btn--sm"
+                      onClick={() => {
+                        if (rec.suggestion) {
+                          if (
+                            window.confirm(
+                              'Aplicar esta sugestão à sua planilha? Nada é alterado sem a sua confirmação.',
+                            )
+                          ) {
+                            applySuggestion(
+                              rec.suggestion,
+                              rec.action === 'start_workout' ? 'start' : 'save',
+                            )
+                          }
+                          return
+                        }
+                        if (rec.action === 'plan') {
+                          scrollToSection('planilha')
+                          return
+                        }
+                        if (rec.action === 'short') {
+                          fillAndAsk(QUICK_CHIPS.find((c) => c.id === 'rapido30')?.prompt || 'Treino rápido', () =>
+                            createShortWorkoutSuggestion(context, 30),
+                          )
+                          return
+                        }
+                        if (rec.action === 'recovery') {
+                          fillAndAsk(QUICK_CHIPS.find((c) => c.id === 'descanso')?.prompt || 'Descanso', () =>
+                            createRecoverySuggestion(context),
+                          )
+                          return
+                        }
+                        if (rec.action === 'adjust') {
+                          fillAndAsk(QUICK_CHIPS.find((c) => c.id === 'ajustar')?.prompt || 'Ajustar', () =>
+                            adjustWorkoutPlan(context, 'trocar'),
+                          )
+                        }
+                      }}
+                    >
+                      Aplicar
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--sm"
+                      onClick={() => setIgnoredRecs((prev) => new Set([...prev, rec.id]))}
+                    >
+                      Ignorar
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="coach-ia__main glass-card">
           <form className="coach-ia__form" onSubmit={handleSubmit}>

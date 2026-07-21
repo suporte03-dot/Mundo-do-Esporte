@@ -1,110 +1,47 @@
-import { useMemo, useState } from 'react'
+/**
+ * Compact weekly strip under hero — real data only (no fake suggestions).
+ * Heavy "what to train" UX lives on the home today card + Coach.
+ */
+import { useMemo } from 'react'
 import { useFitness } from '../context/FitnessContext'
 import { scrollToSection } from '../utils/scrollToSection'
-import WorkoutDetailModal from './WorkoutDetailModal'
-
-const suggestions = {
-  push: { title: 'Dia de Push', desc: 'Foque em peito, ombros e tríceps com cargas moderadas.', muscles: ['Peito', 'Ombros', 'Tríceps'] },
-  pull: { title: 'Dia de Pull', desc: 'Trabalhe costas e bíceps com amplitude controlada.', muscles: ['Costas', 'Bíceps'] },
-  legs: { title: 'Dia de Pernas', desc: 'Priorize quadríceps, posterior e glúteos com aquecimento adequado.', muscles: ['Quadríceps', 'Posterior', 'Glúteos'] },
-  rest: { title: 'Dia de descanso ativo', desc: 'Caminhada leve, alongamento ou mobilidade. Seu corpo precisa recuperar.', muscles: [] },
-}
+import { getWeeklyProgress, weeklyProgressSentence } from '../utils/todayWorkout'
 
 export default function TodaySuggestion() {
-  const { workouts, history, performance, startWorkout } = useFitness()
-  const [detailWorkout, setDetailWorkout] = useState(null)
+  const { workouts, history, profile, goals, performance } = useFitness()
 
-  const suggestion = useMemo(() => {
-    const lastSession = history[0]
-    const lastMuscles = lastSession?.exercises?.map((e) => e.muscleGroup).filter(Boolean) || []
-    const hasLegs = lastMuscles.some((m) => ['Quadríceps', 'Posterior', 'Glúteos'].includes(m))
-    const hasPush = lastMuscles.some((m) => ['Peito', 'Ombros', 'Tríceps'].includes(m))
-    const hasPull = lastMuscles.some((m) => ['Costas', 'Bíceps'].includes(m))
-
-    const daysSinceLast =
-      lastSession?.completedAt
-        ? Math.floor((Date.now() - new Date(lastSession.completedAt)) / (1000 * 60 * 60 * 24))
-        : 7
-
-    if (daysSinceLast < 1) return suggestions.rest
-    if (hasLegs) return suggestions.push
-    if (hasPush) return suggestions.pull
-    if (hasPull) return suggestions.legs
-
-    const next = performance.nextWorkout
-    if (next) {
-      return {
-        title: `Próximo: ${next.name}`,
-        desc: `Treino agendado para ${new Date(next.date + 'T12:00:00').toLocaleDateString('pt-BR')}. Aqueça bem antes de começar.`,
-        muscles: next.muscleGroups || [],
-      }
-    }
-
-    return suggestions.push
-  }, [history, performance.nextWorkout])
-
-  const matchingWorkout = workouts.find(
-    (w) =>
-      w.status === 'Pendente' &&
-      suggestion.muscles.some((m) => w.muscleGroups?.includes(m)),
+  const weekly = useMemo(
+    () => getWeeklyProgress({ workouts, history, profile, goals }),
+    [workouts, history, profile, goals],
   )
 
-  const handleCta = () => {
-    if (matchingWorkout) {
-      setDetailWorkout(matchingWorkout)
-    } else {
-      scrollToSection('planilha')
-    }
-  }
-
-  const handleStartWorkout = () => {
-    if (matchingWorkout) {
-      startWorkout(matchingWorkout)
-    }
-  }
+  const next = performance?.nextWorkout
+  const streak = performance?.streak || 0
 
   return (
-    <section className="today-suggestion">
+    <section className="today-suggestion today-suggestion--compact" aria-label="Resumo da semana">
       <div className="container">
-        <div className="suggestion-card glass-card">
-          <div className="suggestion-card__icon" aria-hidden="true">
-            💡
-          </div>
-          <div className="suggestion-card__content">
-            <span className="suggestion-card__label">Sugestão rápida do dia</span>
-            <h3>{suggestion.title}</h3>
-            <p>{suggestion.desc}</p>
-            <p className="suggestion-card__coach-hint">
-              Quer ajustar com conversa? Use o Coach IA.
+        <div className="week-strip glass-card">
+          <div className="week-strip__main">
+            <p className="week-strip__sentence">{weeklyProgressSentence(weekly)}</p>
+            <p className="week-strip__hint">
+              {streak > 0
+                ? `Sequência atual: ${streak} ${streak === 1 ? 'dia' : 'dias'}.`
+                : next
+                  ? `Próximo agendado: ${next.name}.`
+                  : 'Acompanhe a rotina no calendário e no Coach.'}
             </p>
-            {suggestion.muscles.length > 0 && (
-              <div className="suggestion-card__muscles">
-                {suggestion.muscles.map((m) => (
-                  <span key={m} className="muscle-tag">
-                    {m}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
-          <div className="suggestion-card__actions">
-            {matchingWorkout && (
-              <button type="button" className="btn btn--primary btn--start-workout" onClick={handleStartWorkout}>
-                Iniciar treino
-              </button>
-            )}
-            <button type="button" className="btn btn--ghost" onClick={handleCta}>
-              {matchingWorkout ? 'Ver detalhes' : 'Criar planilha'}
+          <div className="week-strip__actions">
+            <button type="button" className="btn btn--ghost btn--sm" onClick={() => scrollToSection('calendario')}>
+              Calendário
+            </button>
+            <button type="button" className="btn btn--ghost btn--sm" onClick={() => scrollToSection('coach-ia')}>
+              Coach IA
             </button>
           </div>
         </div>
       </div>
-
-      <WorkoutDetailModal
-        workout={detailWorkout}
-        isOpen={Boolean(detailWorkout)}
-        onClose={() => setDetailWorkout(null)}
-      />
     </section>
   )
 }

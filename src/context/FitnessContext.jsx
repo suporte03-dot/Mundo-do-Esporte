@@ -21,7 +21,10 @@ export function FitnessProvider({ children }) {
   const [data, setData] = useState(() => storageService.load())
   const [toasts, setToasts] = useState([])
   const [activeWorkout, setActiveWorkout] = useState(null)
-  const [generatedPlan, setGeneratedPlan] = useState(null)
+  const [generatedPlan, setGeneratedPlan] = useState(() => {
+    const loaded = storageService.load()
+    return loaded.plans?.[0] || null
+  })
 
   useEffect(() => {
     ensureCalendarMirror(data.workouts)
@@ -30,9 +33,19 @@ export function FitnessProvider({ children }) {
   const persist = useCallback((updater) => {
     setData((prev) => {
       const next = typeof updater === 'function' ? updater(prev) : updater
-      storageService.save(next)
-      mirrorCalendar(next.workouts)
-      return next
+      // Preserve nested satellite fields when updater only touches core slices
+      const merged = {
+        ...prev,
+        ...next,
+        progressHistory: next.progressHistory ?? prev.progressHistory,
+        activeSession: next.activeSession !== undefined ? next.activeSession : prev.activeSession,
+        calendarMirror: next.calendarMirror ?? prev.calendarMirror,
+        coachMessages: next.coachMessages ?? prev.coachMessages,
+        preferences: next.preferences ?? prev.preferences,
+      }
+      storageService.save(merged)
+      mirrorCalendar(merged.workouts)
+      return merged
     })
   }, [])
 
@@ -119,23 +132,39 @@ export function FitnessProvider({ children }) {
       if (progressRows.length) appendProgressEntries(progressRows)
       clearActiveSession()
 
-      persist((prev) => ({
-        ...prev,
-        history: [entry, ...prev.history],
-        workouts: prev.workouts.map((w) =>
-          w.id === workoutId
-            ? {
-                ...w,
-                status: isPartial ? toPersistedStatus('partial') : toPersistedStatus('completed'),
-                completedAt: entry.completedAt,
-                date: entry.completedAt.split('T')[0],
-                exercises: sessionData.exercises,
-                estimatedMinutes: sessionData.durationMinutes ?? w.estimatedMinutes,
-                notes: sessionData.notes != null ? sessionData.notes : w.notes,
-              }
-            : w,
-        ),
-      }))
+      persist((prev) => {
+        const exists = prev.workouts.some((w) => w.id === workoutId)
+        const updatedFields = {
+          status: isPartial ? toPersistedStatus('partial') : toPersistedStatus('completed'),
+          completedAt: entry.completedAt,
+          date: entry.completedAt.split('T')[0],
+          exercises: sessionData.exercises,
+          estimatedMinutes: sessionData.durationMinutes ?? workout?.estimatedMinutes,
+          notes: sessionData.notes != null ? sessionData.notes : workout?.notes,
+          name: sessionData.name || workout?.name,
+          muscleGroups: sessionData.muscleGroups || workout?.muscleGroups,
+        }
+
+        const workouts = exists
+          ? prev.workouts.map((w) => (w.id === workoutId ? { ...w, ...updatedFields } : w))
+          : [
+              {
+                id: workoutId,
+                name: sessionData.name || 'Treino',
+                muscleGroups: sessionData.muscleGroups || [],
+                createdAt: new Date().toISOString(),
+                ...updatedFields,
+              },
+              ...prev.workouts,
+            ]
+
+        return {
+          ...prev,
+          history: [entry, ...prev.history],
+          workouts,
+          activeSession: null,
+        }
+      })
       setActiveWorkout(null)
       showToast(isPartial ? 'Treino marcado como parcial.' : 'Treino finalizado com sucesso!')
     },
@@ -144,20 +173,70 @@ export function FitnessProvider({ children }) {
 
   const savePlan = useCallback(
     (plan) => {
-      persist((prev) => ({ ...prev, plans: [plan, ...prev.plans] }))
+      persist((prev) => {
+        const withoutDup = (prev.plans || []).filter((p) => p.id !== plan.id)
+        return { ...prev, plans: [plan, ...withoutDup] }
+      })
       setGeneratedPlan(plan)
-      showToast('Planilha gerada com sucesso!')
     },
-    [persist, showToast],
+    [persist],
+  )
+
+  const updatePlanDay = useCallback(
+    (planId, dayNumber, dayUpdates) => {
+      let updatedPlan = null
+      persist((prev) => {
+        const plans = (prev.plans || []).map((plan) => {
+          if (plan.id !== planId) return plan
+          const days = plan.weeklyPlan || plan.schedule || []
+          const key = plan.weeklyPlan ? 'weeklyPlan' : 'schedule'
+          const nextPlan = {
+            ...plan,
+            [key]: days.map((day) =>
+              day.day === dayNumber || day.dayNumber === dayNumber
+                ? { ...day, ...dayUpdates }
+                : day,
+            ),
+          }
+          updatedPlan = nextPlan
+          return nextPlan
+        })
+        const workouts = prev.workouts.map((w) => {
+          if (w.planId !== planId) return w
+          if (w.dayNumber !== dayNumber) return w
+          return {
+            ...w,
+            name: dayUpdates.workoutName || dayUpdates.name || w.name,
+            exercises: dayUpdates.exercises
+              ? dayUpdates.exercises.map((ex) => ({ ...ex }))
+              : w.exercises,
+            muscleGroups: dayUpdates.muscleGroups || dayUpdates.focus || w.muscleGroups,
+            estimatedMinutes:
+              dayUpdates.estimatedDuration || dayUpdates.estimatedMinutes || w.estimatedMinutes,
+            volumeSummary: dayUpdates.volumeSummary || w.volumeSummary,
+          }
+        })
+        return { ...prev, plans, workouts }
+      })
+      if (updatedPlan) setGeneratedPlan(updatedPlan)
+    },
+    [persist],
   )
 
   const addPlanWorkouts = useCallback(
     (workouts) => {
-      persist((prev) => ({
-        ...prev,
-        workouts: [...workouts, ...prev.workouts],
-      }))
-      showToast(`${workouts.length} treinos adicionados à sua lista!`)
+      persist((prev) => {
+        const planId = workouts[0]?.planId
+        // Replace previous workouts from the same plan so re-save doesn't duplicate / wipe edits oddly
+        const kept = planId
+          ? prev.workouts.filter((w) => w.planId !== planId)
+          : prev.workouts
+        return {
+          ...prev,
+          workouts: [...workouts.map((w) => ({ ...w, exercises: (w.exercises || []).map((ex) => ({ ...ex })) })), ...kept],
+        }
+      })
+      showToast(`${workouts.length} treinos salvos na sua planilha!`)
     },
     [persist, showToast],
   )
@@ -315,6 +394,7 @@ export function FitnessProvider({ children }) {
     duplicateWorkout,
     completeWorkout,
     savePlan,
+    updatePlanDay,
     addPlanWorkouts,
     startWorkout,
     replaceWorkouts,

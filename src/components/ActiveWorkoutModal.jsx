@@ -65,6 +65,7 @@ export default function ActiveWorkoutModal() {
   const [substituteIndex, setSubstituteIndex] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
   const [restDoneToast, setRestDoneToast] = useState(false)
+  const [elapsedSec, setElapsedSec] = useState(0)
 
   const isAdvanced = profile?.level === 'Avançado'
   const muscleOptions = useMemo(() => {
@@ -182,6 +183,19 @@ export default function ActiveWorkoutModal() {
     if (!sessionExercises.length) return
     persistSession()
   }, [sessionExercises, exerciseIndex, expandedIndex, sessionNotes, restTimer, timerActive, drafts, activeWorkout, showSummary, persistSession])
+
+  // Elapsed session clock
+  useEffect(() => {
+    if (!activeWorkout || showSummary) return undefined
+    const tick = () => {
+      const pausedExtra = pauseStartedRef.current ? Date.now() - pauseStartedRef.current : 0
+      const ms = Date.now() - startTimeRef.current - pausedMsRef.current - (isPaused ? pausedExtra : 0)
+      setElapsedSec(Math.max(0, Math.floor(ms / 1000)))
+    }
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [activeWorkout, showSummary, isPaused])
 
   // Rest countdown
   useEffect(() => {
@@ -326,17 +340,37 @@ export default function ActiveWorkoutModal() {
   if (!activeWorkout) return null
 
   const current = sessionExercises[exerciseIndex] || sessionExercises[expandedIndex]
+  const elapsedLabel = `${String(Math.floor(elapsedSec / 60)).padStart(2, '0')}:${String(elapsedSec % 60).padStart(2, '0')}`
 
   return (
     <>
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        title="Treino em andamento"
+        title=""
         size="lg"
         className="active-workout-modal"
       >
         <div className={`workout-session workout-session--active ${isPaused ? 'workout-session--paused' : ''}`}>
+          <header className="workout-session__session-header">
+            <div className="workout-session__session-titles">
+              <p className="workout-session__eyebrow">Sessão em andamento</p>
+              <h3 className="workout-session__name">{activeWorkout.name}</h3>
+              <div className="workout-session__session-meta">
+                <span className="workout-session__elapsed" aria-label={`Tempo decorrido ${elapsedLabel}`}>
+                  {elapsedLabel}
+                </span>
+                <span className="workout-session__type">{workoutType}</span>
+                <span>
+                  {progress.completedSets}/{progress.totalSets} séries · {progress.percent}%
+                </span>
+              </div>
+            </div>
+            <button type="button" className="btn btn--ghost btn--sm workout-session__exit" onClick={handleClose}>
+              Sair
+            </button>
+          </header>
+
           <div className="workout-session__topbar">
             <WorkoutProgressBar
               percent={progress.percent}
@@ -359,24 +393,11 @@ export default function ActiveWorkoutModal() {
             </div>
           </div>
 
-          <div className="workout-session__header">
-            <div className="workout-session__meta">
-              <h3 className="workout-session__name">{activeWorkout.name}</h3>
-              <span className="workout-session__type">{workoutType}</span>
-              <div className="workout-session__muscles">
-                {activeWorkout.muscleGroups?.map((g) => (
-                  <span key={g} className="muscle-tag muscle-tag--sm">
-                    {g}
-                  </span>
-                ))}
-              </div>
-            </div>
-            {isPaused && (
-              <span className="workout-session__pause-badge" role="status">
-                Treino pausado
-              </span>
-            )}
-          </div>
+          {isPaused && (
+            <span className="workout-session__pause-badge" role="status">
+              Treino pausado
+            </span>
+          )}
 
           {current && (
             <p className="workout-session__now">

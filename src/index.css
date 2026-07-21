@@ -206,3 +206,24 @@ ul {
 .accent-performance { --tone: var(--performance); --tone-soft: var(--performance-soft); }
 .accent-danger { --tone: var(--danger); --tone-soft: var(--danger-soft); }
 .accent-muted { --tone: var(--text-muted); --tone-soft: rgba(148, 163, 184, 0.14); }
+
+/* Design-system spacing & type scale */
+:root {
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --touch-min: 44px;
+}
+
+.text-muted { color: var(--text-muted); }
+.text-secondary { color: var(--text-secondary); }
+.bg-card { background: var(--bg-card); }
+.border-soft { border: 1px solid var(--border-soft); }

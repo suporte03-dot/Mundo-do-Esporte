@@ -49,11 +49,13 @@ function getPlanDays(plan) {
 }
 
 export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
-  const { addPlanWorkouts, startWorkout, showToast } = useFitness()
+  const { addPlanWorkouts, addWorkoutToPlan, startWorkout, showToast } = useFitness()
   const [detailWorkout, setDetailWorkout] = useState(null)
-  const [expandedDays, setExpandedDays] = useState(() => new Set())
-
   const days = getPlanDays(plan)
+  const firstDay = days[0]?.day
+  const [expandedDays, setExpandedDays] = useState(() =>
+    firstDay != null ? new Set([firstDay]) : new Set(),
+  )
 
   const toggleDay = (dayNum) => {
     setExpandedDays((prev) => {
@@ -78,6 +80,8 @@ export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
     return (
       workouts.find((w) => w.dayNumber === day.day || w.name === (day.workoutName || day.name)) || {
         id: `preview-${plan.id}-${day.day}`,
+        planId: plan.id,
+        dayNumber: day.day,
         name: day.workoutName || day.name,
         date: new Date().toISOString().split('T')[0],
         muscleGroups: day.muscleGroups || day.focus,
@@ -104,6 +108,8 @@ export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
       showToast?.('Este dia ainda não tem exercícios para iniciar.', 'info')
       return
     }
+    // Ensure the day exists in planilha so finalize writes history against a real workout
+    addWorkoutToPlan(workout)
     startWorkout(workout)
   }
 
@@ -131,20 +137,28 @@ export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
         </div>
       </div>
 
-      <div className="generated-plan__days">
+      <div className="generated-plan__days" role="list">
         {days.map((day) => {
           const type = resolveDayType(day)
           const exerciseCount = (day.exercises || []).length
           const duration = estimateDuration(day)
           const muscleGroups = day.muscleGroups || day.focus || []
           const isExpanded = expandedDays.has(day.day)
+          const panelId = `plan-day-panel-${plan.id}-${day.day}`
 
           return (
             <article
               key={day.day}
-              className={`plan-day plan-day--${type.tone}${isExpanded ? ' is-expanded' : ' is-collapsed'}`}
+              role="listitem"
+              className={`plan-day plan-day--accordion plan-day--${type.tone}${isExpanded ? ' is-expanded' : ' is-collapsed'}`}
             >
-              <header className="plan-day__header">
+              <button
+                type="button"
+                className="plan-day__accordion-trigger"
+                onClick={() => toggleDay(day.day)}
+                aria-expanded={isExpanded}
+                aria-controls={panelId}
+              >
                 <div className="plan-day__head-main">
                   <div className="plan-day__daytag">
                     <span className="plan-day__daynum">Dia {day.day}</span>
@@ -155,7 +169,10 @@ export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
                   <h4 className="plan-day__name">{day.workoutName || day.name}</h4>
                   <p className="plan-day__weekday">{weekdayForDay(day.day)}</p>
                 </div>
-              </header>
+                <span className="plan-day__chevron" aria-hidden="true">
+                  {isExpanded ? '▲' : '▼'}
+                </span>
+              </button>
 
               <div className="plan-day__stats">
                 <span className="plan-day__stat">
@@ -176,39 +193,41 @@ export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
                 </span>
               </div>
 
-              {isExpanded && (
-                <>
-                  <DayVolumeSummary
-                    exercises={day.exercises}
-                    dayType={day.workoutType || type.label}
-                    volumeSummary={day.volumeSummary}
-                  />
-                  <ul className="plan-day__exercises">
-                    {(day.exercises || []).map((ex) => (
-                      <li key={ex.exerciseId || ex.name}>
-                        <div className="plan-day__ex-main">
-                          <strong>{ex.name}</strong>
-                          <span className="plan-day__ex-group">{ex.muscleGroup}</span>
-                        </div>
-                        <span className="plan-day__ex-meta">
-                          {ex.sets}x {ex.reps} · descanso {ex.rest ?? ex.restSeconds}s
-                          {ex.equipment ? ` · ${ex.equipment}` : ''}
-                        </span>
-                        {ex.observation && (
-                          <span className="plan-day__ex-note">
-                            <em>Obs:</em> {ex.observation}
+              <div id={panelId} className="plan-day__panel" hidden={!isExpanded}>
+                {isExpanded && (
+                  <>
+                    <DayVolumeSummary
+                      exercises={day.exercises}
+                      dayType={day.workoutType || type.label}
+                      volumeSummary={day.volumeSummary}
+                    />
+                    <ul className="plan-day__exercises">
+                      {(day.exercises || []).map((ex) => (
+                        <li key={ex.exerciseId || ex.name}>
+                          <div className="plan-day__ex-main">
+                            <strong>{ex.name}</strong>
+                            <span className="plan-day__ex-group">{ex.muscleGroup}</span>
+                          </div>
+                          <span className="plan-day__ex-meta">
+                            {ex.sets}x {ex.reps} · descanso {ex.rest ?? ex.restSeconds}s
+                            {ex.equipment ? ` · ${ex.equipment}` : ''}
                           </span>
-                        )}
-                        {ex.safetyTip && (
-                          <span className="plan-day__ex-care">
-                            <em>Cuidado:</em> {ex.safetyTip}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
+                          {ex.observation && (
+                            <span className="plan-day__ex-note">
+                              <em>Obs:</em> {ex.observation}
+                            </span>
+                          )}
+                          {ex.safetyTip && (
+                            <span className="plan-day__ex-care">
+                              <em>Cuidado:</em> {ex.safetyTip}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
 
               <div className="plan-day__actions">
                 <button
@@ -218,21 +237,9 @@ export default function GeneratedPlan({ plan, onDownloadExcel, onSaveToPlan }) {
                 >
                   Iniciar treino
                 </button>
-                <button
-                  type="button"
-                  className="btn btn--outline btn--sm"
-                  onClick={() => {
-                    if (!isExpanded) toggleDay(day.day)
-                    else openDayDetail(day)
-                  }}
-                >
-                  {isExpanded ? 'Detalhes' : 'Ver treino'}
+                <button type="button" className="btn btn--outline btn--sm" onClick={() => openDayDetail(day)}>
+                  Ver detalhes
                 </button>
-                {isExpanded && (
-                  <button type="button" className="btn btn--ghost btn--sm" onClick={() => toggleDay(day.day)}>
-                    Recolher
-                  </button>
-                )}
               </div>
             </article>
           )

@@ -26,9 +26,15 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', c
         aria-labelledby="modal-title"
       >
         <div className="modal__header">
-          <h2 id="modal-title" className="modal__title">
-            {title}
-          </h2>
+          {title ? (
+            <h2 id="modal-title" className="modal__title">
+              {title}
+            </h2>
+          ) : (
+            <span id="modal-title" className="sr-only">
+              Diálogo
+            </span>
+          )}
           <button type="button" className="modal__close" onClick={onClose} aria-label="Fechar">
             ×
           </button>

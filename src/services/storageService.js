@@ -1,5 +1,15 @@
 const STORAGE_KEY = 'evoluafit-data'
-const VERSION = 1
+const VERSION = 2
+
+/** Legacy satellite keys — migrated into evoluafit-data on load */
+const LEGACY_KEYS = {
+  progress: 'workout_progress_history',
+  session: 'active_workout_session',
+  calendar: 'training_calendar',
+  coach: 'coach_messages_local',
+  coachLegacy: 'evoluafit-coach-messages',
+  coachTts: 'evoluafit-coach-tts-enabled',
+}
 
 const defaultProfile = {
   name: 'Atleta',
@@ -145,6 +155,16 @@ function createDefaultHistory() {
   ]
 }
 
+function readLegacyJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return fallback
+    return JSON.parse(raw)
+  } catch {
+    return fallback
+  }
+}
+
 function getDefaultData() {
   return {
     version: VERSION,
@@ -153,6 +173,13 @@ function getDefaultData() {
     plans: [],
     history: createDefaultHistory(),
     goals: defaultGoals.map((g) => ({ ...g })),
+    progressHistory: [],
+    activeSession: null,
+    calendarMirror: [],
+    coachMessages: [],
+    preferences: {
+      coachTtsEnabled: true,
+    },
   }
 }
 
@@ -167,26 +194,143 @@ function loadRaw() {
 }
 
 function saveRaw(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, version: VERSION }))
+  // Always fold latest satellite keys so out-of-band writers (progressStorage) aren't wiped
+  const merged = {
+    ...data,
+    version: VERSION,
+    progressHistory: readLegacyJson(LEGACY_KEYS.progress, data.progressHistory || []),
+    activeSession:
+      data.activeSession !== undefined
+        ? data.activeSession
+        : readLegacyJson(LEGACY_KEYS.session, null),
+  }
+  // If activeSession explicitly null, clear; else prefer explicit or legacy
+  if (data.activeSession === null) {
+    merged.activeSession = null
+  } else if (data.activeSession) {
+    merged.activeSession = data.activeSession
+  } else {
+    merged.activeSession = readLegacyJson(LEGACY_KEYS.session, null)
+  }
+  if (!Array.isArray(merged.progressHistory) || !merged.progressHistory.length) {
+    const fromData = Array.isArray(data.progressHistory) ? data.progressHistory : []
+    const fromLegacy = readLegacyJson(LEGACY_KEYS.progress, [])
+    merged.progressHistory = fromLegacy.length >= fromData.length ? fromLegacy : fromData
+  } else {
+    const fromLegacy = readLegacyJson(LEGACY_KEYS.progress, [])
+    if (fromLegacy.length > merged.progressHistory.length) {
+      merged.progressHistory = fromLegacy
+    }
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
+  syncLegacyMirrors(merged)
+  return merged
+}
+
+/**
+ * Migrate v1 → v2: fold satellite localStorage keys into evoluafit-data.
+ * Keeps legacy keys in sync for readers that still use them (progressStorage, calendar).
+ */
+function migrateToV2(data) {
+  const next = {
+    ...getDefaultData(),
+    ...data,
+    profile: { ...defaultProfile, ...(data.profile || {}) },
+    workouts: Array.isArray(data.workouts) ? data.workouts : getDefaultData().workouts,
+    plans: Array.isArray(data.plans) ? data.plans : [],
+    history: Array.isArray(data.history) ? data.history : [],
+    goals: Array.isArray(data.goals) ? data.goals : getDefaultData().goals,
+    version: VERSION,
+  }
+
+  if (!Array.isArray(next.progressHistory) || !next.progressHistory.length) {
+    const legacy = readLegacyJson(LEGACY_KEYS.progress, [])
+    if (Array.isArray(legacy) && legacy.length) next.progressHistory = legacy
+  }
+
+  if (next.activeSession == null) {
+    const legacy = readLegacyJson(LEGACY_KEYS.session, null)
+    if (legacy) next.activeSession = legacy
+  }
+
+  if (!Array.isArray(next.calendarMirror) || !next.calendarMirror.length) {
+    const legacy = readLegacyJson(LEGACY_KEYS.calendar, [])
+    if (Array.isArray(legacy) && legacy.length) next.calendarMirror = legacy
+  }
+
+  if (!Array.isArray(next.coachMessages) || !next.coachMessages.length) {
+    const coach =
+      readLegacyJson(LEGACY_KEYS.coach, null) || readLegacyJson(LEGACY_KEYS.coachLegacy, [])
+    if (Array.isArray(coach) && coach.length) next.coachMessages = coach
+  }
+
+  if (!next.preferences) next.preferences = { coachTtsEnabled: true }
+  const ttsRaw = localStorage.getItem(LEGACY_KEYS.coachTts)
+  if (ttsRaw === '0' || ttsRaw === '1') {
+    next.preferences.coachTtsEnabled = ttsRaw === '1'
+  }
+
+  return next
+}
+
+/** Mirror nested fields back to legacy keys so older modules keep working */
+function syncLegacyMirrors(data) {
+  try {
+    if (Array.isArray(data.progressHistory)) {
+      localStorage.setItem(LEGACY_KEYS.progress, JSON.stringify(data.progressHistory.slice(0, 2000)))
+    }
+    if (data.activeSession) {
+      localStorage.setItem(LEGACY_KEYS.session, JSON.stringify(data.activeSession))
+    } else {
+      localStorage.removeItem(LEGACY_KEYS.session)
+    }
+    if (Array.isArray(data.calendarMirror)) {
+      localStorage.setItem(LEGACY_KEYS.calendar, JSON.stringify(data.calendarMirror))
+    }
+    if (Array.isArray(data.coachMessages)) {
+      localStorage.setItem(LEGACY_KEYS.coach, JSON.stringify(data.coachMessages.slice(0, 80)))
+    }
+    if (data.preferences?.coachTtsEnabled != null) {
+      localStorage.setItem(LEGACY_KEYS.coachTts, data.preferences.coachTtsEnabled ? '1' : '0')
+    }
+  } catch {
+    /* quota / private mode */
+  }
 }
 
 export const storageService = {
+  STORAGE_KEY,
+  VERSION,
+  LEGACY_KEYS,
+
   load() {
-    const data = loadRaw()
-    if (!data) {
+    const raw = loadRaw()
+    if (!raw) {
       const defaults = getDefaultData()
-      saveRaw(defaults)
-      return defaults
+      // First visit: still migrate any orphan legacy keys
+      const migrated = migrateToV2(defaults)
+      saveRaw(migrated)
+      syncLegacyMirrors(migrated)
+      return migrated
     }
-    return {
-      ...getDefaultData(),
-      ...data,
-      profile: { ...defaultProfile, ...data.profile },
+
+    const version = Number(raw.version) || 1
+    const migrated = version < 2 ? migrateToV2(raw) : migrateToV2(raw)
+    if (version < 2 || !Array.isArray(raw.progressHistory)) {
+      saveRaw(migrated)
+      syncLegacyMirrors(migrated)
     }
+    return migrated
   },
 
   save(data) {
-    saveRaw(data)
+    return saveRaw({ ...data, version: VERSION })
+  },
+
+  /** Patch nested satellite fields without clobbering workouts/history */
+  patchMeta(partial) {
+    const data = this.load()
+    return this.save({ ...data, ...partial, version: VERSION })
   },
 
   getProfile() {
@@ -220,6 +364,26 @@ export const storageService = {
     data.plans = [plan, ...data.plans]
     this.save(data)
     return plan
+  },
+
+  /** Replace a single day inside a saved plan without touching other days */
+  updatePlanDay(planId, dayNumber, dayUpdates) {
+    const data = this.load()
+    data.plans = data.plans.map((plan) => {
+      if (plan.id !== planId) return plan
+      const days = plan.weeklyPlan || plan.schedule || []
+      const key = plan.weeklyPlan ? 'weeklyPlan' : 'schedule'
+      return {
+        ...plan,
+        [key]: days.map((day) =>
+          day.day === dayNumber || day.dayNumber === dayNumber
+            ? { ...day, ...dayUpdates }
+            : day,
+        ),
+      }
+    })
+    this.save(data)
+    return data.plans.find((p) => p.id === planId) || null
   },
 
   getHistory() {
@@ -262,8 +426,9 @@ export const storageService = {
       reader.onload = (e) => {
         try {
           const parsed = JSON.parse(e.target.result)
-          saveRaw({ ...getDefaultData(), ...parsed })
-          resolve(parsed)
+          const migrated = migrateToV2({ ...getDefaultData(), ...parsed })
+          this.save(migrated)
+          resolve(migrated)
         } catch (err) {
           reject(err)
         }
@@ -275,7 +440,16 @@ export const storageService = {
 
   clearAll() {
     localStorage.removeItem(STORAGE_KEY)
-    return getDefaultData()
+    Object.values(LEGACY_KEYS).forEach((key) => {
+      try {
+        localStorage.removeItem(key)
+      } catch {
+        /* ignore */
+      }
+    })
+    const defaults = getDefaultData()
+    saveRaw(defaults)
+    return defaults
   },
 }
 

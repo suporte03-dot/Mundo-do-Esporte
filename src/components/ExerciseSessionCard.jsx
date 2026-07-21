@@ -27,9 +27,15 @@ export default function ExerciseSessionCard({
   const targetSets = getTargetSets(exercise)
   const done = isExerciseComplete(exercise)
   const status = done ? 'done' : exercise.completedSets > 0 ? 'partial' : 'pending'
-  const stats = showChart
-    ? getExerciseProgressStats(exercise.exerciseId, exercise.name)
-    : null
+  const stats = getExerciseProgressStats(exercise.exerciseId, exercise.name)
+  const lastHint =
+    stats.lastWeightLabel || (stats.lastWeight != null ? `${stats.lastWeight}` : null)
+
+  // Prefill weight from last session when draft is empty
+  const effectiveDraft = {
+    weight: draft?.weight || lastHint || '',
+    reps: draft?.reps || '',
+  }
 
   return (
     <article
@@ -37,13 +43,14 @@ export default function ExerciseSessionCard({
         done ? ' is-done' : ''
       }`}
     >
-      <button type="button" className="exercise-session-card__header" onClick={onToggle}>
+      <button type="button" className="exercise-session-card__header" onClick={onToggle} aria-expanded={expanded}>
         <div className="exercise-session-card__title-row">
           <span className="exercise-session-card__index">{index + 1}</span>
           <div>
             <strong className="exercise-session-card__name">{exercise.name}</strong>
             <p className="exercise-session-card__meta">
               {targetSets} séries · {exercise.reps} reps · Descanso {exercise.restSeconds || 60}s
+              {lastHint ? ` · Último peso: ${lastHint}${/kg/i.test(String(lastHint)) ? '' : ' kg'}` : ''}
             </p>
           </div>
         </div>
@@ -67,10 +74,16 @@ export default function ExerciseSessionCard({
             </p>
           )}
 
+          {lastHint && (
+            <p className="exercise-session-card__last-weight">
+              Último peso registrado: <strong>{lastHint}{/kg/i.test(String(lastHint)) ? '' : ' kg'}</strong>
+            </p>
+          )}
+
           <SetChecklist
             slots={exercise.setSlots}
             targetSets={targetSets}
-            draft={draft}
+            draft={effectiveDraft}
             onDraftChange={onDraftChange}
             onCompleteSet={onCompleteSet}
             disabled={disabled || done}
@@ -89,7 +102,7 @@ export default function ExerciseSessionCard({
             </button>
           </div>
 
-          {showChart && stats && <ExerciseProgressChart {...stats} />}
+          {showChart && <ExerciseProgressChart {...stats} />}
         </div>
       )}
     </article>
