@@ -317,12 +317,11 @@ export default function ExerciseLibrary() {
             {showGroups && (
               <div className="muscle-browse">
                 <div className="muscle-group-grid">
-                  {primaryGroups.map((group, index) => (
+                  {primaryGroups.map((group) => (
                     <MuscleGroupCard
                       key={group.id}
                       group={group}
                       count={chipCounts[group.id] ?? 0}
-                      index={index}
                       isActive={selectedGroup === group.id}
                       onSelect={openGroup}
                     />
@@ -342,12 +341,11 @@ export default function ExerciseLibrary() {
                     </button>
                     {moreGroupsOpen && (
                       <div className="muscle-group-grid">
-                        {extraGroups.map((group, index) => (
+                        {extraGroups.map((group) => (
                           <MuscleGroupCard
                             key={group.id}
                             group={group}
                             count={chipCounts[group.id] ?? 0}
-                            index={primaryGroups.length + index}
                             isActive={selectedGroup === group.id}
                             onSelect={openGroup}
                           />

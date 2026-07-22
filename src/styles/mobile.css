@@ -727,22 +727,25 @@
   }
 
   .exercise-library .muscle-group-card {
-    min-height: 168px;
+    min-height: 108px;
     padding: 0.95rem;
+    padding-right: 2.5rem;
     border-radius: 18px;
   }
 
-  .exercise-library .mg-illust-wrap {
-    width: 92px;
+  .exercise-library .muscle-group-card__letter {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
   }
 
   .exercise-library .muscle-group-card__name {
-    font-size: 1.18rem;
+    font-size: 1.12rem;
     letter-spacing: -0.04em;
   }
 
   .exercise-library .muscle-group-card__subtitle {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
   }
 
   .exercise-library .muscle-group-card__cta {
