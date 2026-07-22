@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { scrollToSection } from '../../utils/scrollToSection'
-import { EvolutionChartVisual, IconChevron, IconTrend } from './icons'
+import { EvolutionChartVisual, IconChevron } from './icons'
 import { weeklyActivitySeries } from './dashboardUtils'
 import {
   formatDashboardValue,
@@ -16,22 +16,17 @@ export default function ProgressOverviewCard({ metrics, history = [], workouts =
 
   const chartSeries = useMemo(() => {
     if (!hasData) return []
-    // Soften binary activity into a readable curve for the area chart
     return series.map((v, i, arr) => {
       const prev = arr[i - 1] ?? v
       const next = arr[i + 1] ?? v
-      return 0.15 + (prev + v * 2 + next) / 4 * 0.85
+      return 0.15 + ((prev + v * 2 + next) / 4) * 0.85
     })
   }, [series, hasData])
 
   return (
-    <article className="dash-module dash-module--purple dash-module--split">
+    <article className="dash-module dash-module--purple">
       <div className="dash-module__body">
         <div className="dash-module__copy">
-          <p className="dash-module__eyebrow">
-            <IconTrend size={14} />
-            Evolução
-          </p>
           <h3 className="dash-module__title">Evolução</h3>
           <p className="dash-module__desc">
             {hasData
@@ -55,17 +50,21 @@ export default function ProgressOverviewCard({ metrics, history = [], workouts =
               {monthReady && monthPct != null ? (
                 <p className="dash-evo-badge">
                   {formatDashboardValue('monthlyPerformancePct', metrics)}
-                  <span> vs. mês anterior</span>
+                  <span>Melhoria no último mês</span>
                 </p>
-              ) : null}
+              ) : (
+                <p className="dash-evo-badge dash-evo-badge--soft">
+                  <span>Comparativo mensal disponível após 2 meses de volume</span>
+                </p>
+              )}
             </>
           ) : (
             <div className="dash-module__empty-visual">
               <EvolutionChartVisual
-                series={[0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]}
+                series={[0.2, 0.22, 0.2, 0.24, 0.22, 0.26, 0.24]}
                 className="dash-visual-evo is-muted"
               />
-              <p>Sem dados suficientes ainda</p>
+              <p>Sem dados suficientes ainda. Conclua treinos para ver a curva.</p>
             </div>
           )}
         </div>

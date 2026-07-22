@@ -79,12 +79,10 @@ export function IndicatorCard({ card, metrics }) {
       onClick={() => scrollToSection(card.section)}
       aria-label={`${card.label}: ${value || 'sem dados'}`}
     >
-      <span className="dash-indicator__top">
-        <span className="dash-indicator__icon" aria-hidden="true">
-          <Icon size={18} />
-        </span>
-        <span className="dash-indicator__label">{card.label}</span>
+      <span className="dash-indicator__icon-wrap" aria-hidden="true">
+        <Icon size={18} />
       </span>
+      <span className="dash-indicator__label">{card.label}</span>
       <span className="dash-indicator__value">{value}</span>
       {pct != null && (
         <span className="dash-indicator__bar" aria-hidden="true">
@@ -93,7 +91,7 @@ export function IndicatorCard({ card, metrics }) {
       )}
       <span className="dash-indicator__hint">{hint}</span>
       {card.linkLabel && (
-        <span className="dash-indicator__link">
+        <span className="dash-indicator__cta">
           {card.linkLabel}
           <IconChevron size={14} />
         </span>
@@ -105,24 +103,27 @@ export function IndicatorCard({ card, metrics }) {
 export default function IndicatorsSection({ metrics }) {
   return (
     <section id="dash-indicadores" className="dash-indicators" aria-labelledby="dash-indicadores-title">
-      <div className="dash-section-head dash-section-head--row">
-        <h2 id="dash-indicadores-title" className="dash-section-head__eyebrow dash-section-head__eyebrow--lg">
-          <IconChart size={16} />
-          Indicadores
-        </h2>
-        <button
-          type="button"
-          className="dash-section-head__link"
-          onClick={() => scrollToSection('desempenho')}
-        >
-          Ver todos
-          <IconChevron size={16} />
-        </button>
-      </div>
-      <div className="dash-indicators__grid">
-        {INDICATORS.map((card) => (
-          <IndicatorCard key={card.key} card={card} metrics={metrics} />
-        ))}
+      <div className="dash-indicators__panel">
+        <header className="dash-indicators__head">
+          <h2 id="dash-indicadores-title" className="dash-indicators__title">
+            <IconChart size={18} />
+            Indicadores
+          </h2>
+          <button
+            type="button"
+            className="dash-section-head__link"
+            onClick={() => scrollToSection('desempenho')}
+          >
+            Ver todos
+            <IconChevron size={16} />
+          </button>
+        </header>
+
+        <div className="dash-indicators__grid">
+          {INDICATORS.map((card) => (
+            <IndicatorCard key={card.key} card={card} metrics={metrics} />
+          ))}
+        </div>
       </div>
     </section>
   )

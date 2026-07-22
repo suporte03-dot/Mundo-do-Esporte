@@ -22,12 +22,9 @@ const MAIN_NAV = [
   { id: 'calendario', label: 'Calendário', Icon: IconCalendar, tone: 'blue' },
   { id: 'desempenho', label: 'Evolução', Icon: IconTrend, tone: 'purple' },
   { id: 'coach-ia', label: 'Coach IA', Icon: IconSpark, tone: 'cyan' },
-]
-
-const UTILITY_NAV = [
-  { id: 'perfil', label: 'Notificações', Icon: IconBell, badge: 2 },
-  { id: 'coach-ia', label: 'Mensagens', Icon: IconMessage },
-  { id: 'perfil', label: 'Configurações', Icon: IconSettings },
+  { id: 'perfil', label: 'Notificações', Icon: IconBell, badge: 2, tone: 'blue' },
+  { id: 'coach-ia', label: 'Mensagens', Icon: IconMessage, tone: 'cyan' },
+  { id: 'perfil', label: 'Configurações', Icon: IconSettings, tone: 'blue' },
 ]
 
 function navTarget(item) {
@@ -55,11 +52,13 @@ export default function DashboardSidebar({
   const name = profile?.name || 'Atleta'
   const levelLabel = profile?.level ? `Nível ${profile.level}` : `Nível ${xp.levelNumber}`
   const initials = initialsFromName(name)
-  const xpLabel = `${xp.xp.toLocaleString('pt-BR')} / ${(xp.xp - xp.intoLevel + xp.nextLevelAt).toLocaleString('pt-BR')} XP`
+  const xpCeiling = xp.xp - xp.intoLevel + xp.nextLevelAt
+  const xpLabel = `${xp.xp.toLocaleString('pt-BR')} / ${xpCeiling.toLocaleString('pt-BR')} XP`
 
   const isActive = (item) => {
     if (item.label === 'Dashboard') return activeSection === 'inicio' && !item.hash
     if (item.hash) return false
+    if (['Notificações', 'Mensagens', 'Configurações'].includes(item.label)) return false
     return activeSection === item.id
   }
 
@@ -135,26 +134,6 @@ export default function DashboardSidebar({
                     }`}
                     onClick={() => go(item)}
                     aria-current={active ? 'page' : undefined}
-                    title={item.label}
-                  >
-                    <Icon size={18} className="dash-sidebar__icon" />
-                    {!collapsed && <span>{item.label}</span>}
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-
-          <p className="dash-sidebar__group-label">{collapsed ? '···' : 'Conta'}</p>
-          <ul className="dash-sidebar__list">
-            {UTILITY_NAV.map((item) => {
-              const Icon = item.Icon
-              return (
-                <li key={item.label}>
-                  <button
-                    type="button"
-                    className="dash-sidebar__link"
-                    onClick={() => go(item)}
                     title={item.label}
                   >
                     <Icon size={18} className="dash-sidebar__icon" />

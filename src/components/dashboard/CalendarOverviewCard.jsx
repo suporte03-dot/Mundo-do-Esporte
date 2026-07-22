@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { scrollToSection } from '../../utils/scrollToSection'
-import { IconCalendar, IconChevron } from './icons'
+import { IconChevron } from './icons'
 
 const WEEKDAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
 const MONTHS = [
@@ -13,7 +13,10 @@ function toKey(value) {
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10)
   const d = new Date(value)
   if (Number.isNaN(d.getTime())) return null
-  return d.toISOString().slice(0, 10)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 function isEval(w) {
@@ -25,7 +28,10 @@ function dayStatus(workouts, key) {
   const dayItems = (workouts || []).filter((w) => toKey(w.date) === key || toKey(w.completedAt) === key)
   if (!dayItems.length) return null
   if (dayItems.some(isEval)) return 'eval'
-  if (dayItems.some((w) => String(w.status).toLowerCase() === 'realizado' || String(w.status).toLowerCase() === 'completed')) {
+  if (dayItems.some((w) => {
+    const s = String(w.status || '').toLowerCase()
+    return s === 'realizado' || s === 'completed' || s === 'done'
+  })) {
     return 'done'
   }
   if (dayItems.some((w) => w.isRest)) return 'rest'
@@ -54,13 +60,9 @@ export default function CalendarOverviewCard({ workouts = [] }) {
   const scheduledCount = (workouts || []).filter((w) => w && !w.isRest).length
 
   return (
-    <article className="dash-module dash-module--blue dash-module--split">
+    <article className="dash-module dash-module--blue">
       <div className="dash-module__body">
         <div className="dash-module__copy">
-          <p className="dash-module__eyebrow">
-            <IconCalendar size={14} />
-            Calendário
-          </p>
           <h3 className="dash-module__title">Calendário</h3>
           <p className="dash-module__desc">
             {scheduledCount > 0

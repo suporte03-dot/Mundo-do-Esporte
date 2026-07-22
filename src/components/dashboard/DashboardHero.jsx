@@ -1,3 +1,4 @@
+import heroAthlete from '../../assets/dashboard/hero-athlete-back.webp'
 import { greetingParts, weeklyActivitySeries } from './dashboardUtils'
 import { IconChevron, IconFlame } from './icons'
 import { scrollToSection } from '../../utils/scrollToSection'
@@ -7,8 +8,8 @@ import {
 } from '../../utils/dashboardMetrics'
 
 function Sparkline({ series }) {
-  const w = 140
-  const h = 40
+  const w = 148
+  const h = 36
   const max = Math.max(1, ...series)
   const step = series.length > 1 ? w / (series.length - 1) : w
   const pts = series.map((v, i) => {
@@ -30,11 +31,11 @@ function Sparkline({ series }) {
     >
       <defs>
         <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.45" />
+          <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.5" />
           <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
         </linearGradient>
       </defs>
-      {hasActivity && <path d={area} fill="url(#sparkFill)" opacity="0.9" />}
+      {hasActivity && <path d={area} fill="url(#sparkFill)" />}
       <polyline
         fill="none"
         stroke="#60A5FA"
@@ -49,7 +50,7 @@ function Sparkline({ series }) {
           key={i}
           cx={x}
           cy={y}
-          r={series[i] > 0 ? 2.6 : 1.5}
+          r={series[i] > 0 ? 2.5 : 1.4}
           fill="#93C5FD"
           opacity={series[i] > 0 ? 1 : 0.35}
         />
@@ -60,20 +61,31 @@ function Sparkline({ series }) {
 
 export default function DashboardHero({ profile, metrics, history, workouts }) {
   const { hello } = greetingParts()
-  const name = profile?.name || metrics?.profileName || 'Atleta'
+  const name = profile?.name || metrics?.profileName || 'atleta'
   const streakReady = metricAvailability('streak', metrics)
   const streakDays = streakReady ? metrics.streak : null
   const series = weeklyActivitySeries(history, workouts, 7)
 
   return (
     <header className="dash-hero">
-      <div className="dash-hero__bg" aria-hidden="true" />
+      <div className="dash-hero__media" aria-hidden="true">
+        <img
+          src={heroAthlete}
+          alt=""
+          className="dash-hero__photo"
+          width={960}
+          height={540}
+          decoding="async"
+        />
+        <div className="dash-hero__fade" />
+      </div>
+
       <div className="dash-hero__copy">
         <h1 className="dash-hero__title">
           {hello}, {name}! <span aria-hidden="true">👊</span>
         </h1>
         <p className="dash-hero__subtitle">
-          Fluxo simples para organizar sua rotina com equilíbrio
+          Fluxo simples para organizar sua rotina com equilíbrio.
         </p>
         <button
           type="button"

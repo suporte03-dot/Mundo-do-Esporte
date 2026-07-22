@@ -166,65 +166,85 @@ export function IconShield(props) {
   )
 }
 
+export function IconCheck(props) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M8.2 12.2 10.8 14.7 15.8 9.4" />
+    </Icon>
+  )
+}
+
 /** Large 3D-like dumbbells composition for Meus Treinos module. */
 export function DumbbellsVisual({ className = '' }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 280 200"
+      viewBox="0 0 320 320"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
       <defs>
-        <linearGradient id="dbPlateA" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id="dbPlateLite" x1="40" y1="40" x2="120" y2="160" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#7CFFC4" />
+          <stop offset="35%" stopColor="#1AE88F" />
+          <stop offset="70%" stopColor="#00B86B" />
+          <stop offset="100%" stopColor="#046B3E" />
+        </linearGradient>
+        <linearGradient id="dbPlateDeep" x1="200" y1="60" x2="280" y2="180" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#34F5A5" />
-          <stop offset="45%" stopColor="#00C97B" />
-          <stop offset="100%" stopColor="#067A4A" />
+          <stop offset="40%" stopColor="#00C97B" />
+          <stop offset="100%" stopColor="#035C35" />
         </linearGradient>
-        <linearGradient id="dbPlateB" x1="1" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1AE88F" />
-          <stop offset="55%" stopColor="#00A86B" />
-          <stop offset="100%" stopColor="#045C38" />
+        <linearGradient id="dbBarMetal" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#E5E7EB" />
+          <stop offset="45%" stopColor="#9CA3AF" />
+          <stop offset="100%" stopColor="#4B5563" />
         </linearGradient>
-        <linearGradient id="dbBar" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#9CA3AF" />
-          <stop offset="50%" stopColor="#6B7280" />
+        <linearGradient id="dbCollar" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#F3F4F6" />
+          <stop offset="55%" stopColor="#9CA3AF" />
           <stop offset="100%" stopColor="#374151" />
         </linearGradient>
-        <linearGradient id="dbGlow" x1="0.5" y1="0" x2="0.5" y2="1">
-          <stop offset="0%" stopColor="#00E58F" stopOpacity="0.35" />
+        <radialGradient id="dbFloorGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#00E58F" stopOpacity="0.38" />
+          <stop offset="55%" stopColor="#00E58F" stopOpacity="0.12" />
           <stop offset="100%" stopColor="#00E58F" stopOpacity="0" />
-        </linearGradient>
-        <filter id="dbSoft" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#00E58F" floodOpacity="0.35" />
+        </radialGradient>
+        <filter id="dbSoftGlow" x="-35%" y="-35%" width="170%" height="170%">
+          <feDropShadow dx="0" dy="14" stdDeviation="16" floodColor="#00E58F" floodOpacity="0.42" />
+        </filter>
+        <filter id="dbInnerSoft" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#00E58F" floodOpacity="0.28" />
         </filter>
       </defs>
 
-      <ellipse cx="140" cy="168" rx="96" ry="14" fill="url(#dbGlow)" />
+      <ellipse cx="160" cy="268" rx="118" ry="28" fill="url(#dbFloorGlow)" />
 
-      {/* Back dumbbell (tilted) */}
-      <g filter="url(#dbSoft)" transform="translate(28 36) rotate(-18 112 64)">
-        <rect x="78" y="58" width="68" height="12" rx="6" fill="url(#dbBar)" />
-        <rect x="28" y="46" width="28" height="36" rx="7" fill="url(#dbPlateB)" />
-        <rect x="48" y="50" width="18" height="28" rx="5" fill="url(#dbPlateA)" />
-        <rect x="158" y="50" width="18" height="28" rx="5" fill="url(#dbPlateA)" />
-        <rect x="168" y="46" width="28" height="36" rx="7" fill="url(#dbPlateB)" />
-        <rect x="72" y="55" width="10" height="18" rx="3" fill="#4B5563" />
-        <rect x="142" y="55" width="10" height="18" rx="3" fill="#4B5563" />
+      <g filter="url(#dbSoftGlow)" transform="translate(160 148) rotate(-28)">
+        <rect x="-58" y="-7" width="116" height="14" rx="7" fill="url(#dbBarMetal)" />
+        <rect x="-118" y="-28" width="28" height="56" rx="9" fill="url(#dbPlateDeep)" />
+        <rect x="-96" y="-22" width="20" height="44" rx="7" fill="url(#dbPlateLite)" />
+        <rect x="-78" y="-14" width="12" height="28" rx="4" fill="url(#dbCollar)" />
+        <rect x="66" y="-14" width="12" height="28" rx="4" fill="url(#dbCollar)" />
+        <rect x="76" y="-22" width="20" height="44" rx="7" fill="url(#dbPlateLite)" />
+        <rect x="90" y="-28" width="28" height="56" rx="9" fill="url(#dbPlateDeep)" />
+        <ellipse cx="-104" cy="-14" rx="8" ry="3.5" fill="#B8FFE0" opacity="0.45" />
+        <ellipse cx="104" cy="-14" rx="8" ry="3.5" fill="#B8FFE0" opacity="0.4" />
       </g>
 
-      {/* Front dumbbell */}
-      <g filter="url(#dbSoft)" transform="translate(42 58) rotate(12 112 64)">
-        <rect x="78" y="58" width="68" height="14" rx="7" fill="url(#dbBar)" />
-        <rect x="22" y="42" width="32" height="46" rx="8" fill="url(#dbPlateA)" />
-        <rect x="46" y="48" width="20" height="34" rx="6" fill="url(#dbPlateB)" />
-        <rect x="158" y="48" width="20" height="34" rx="6" fill="url(#dbPlateB)" />
-        <rect x="170" y="42" width="32" height="46" rx="8" fill="url(#dbPlateA)" />
-        <rect x="70" y="54" width="12" height="22" rx="3" fill="#4B5563" />
-        <rect x="142" y="54" width="12" height="22" rx="3" fill="#4B5563" />
-        <ellipse cx="38" cy="52" rx="10" ry="4" fill="#7CFFC4" opacity="0.35" />
-        <ellipse cx="186" cy="52" rx="10" ry="4" fill="#7CFFC4" opacity="0.35" />
+      <g filter="url(#dbInnerSoft)" transform="translate(160 168) rotate(22)">
+        <rect x="-62" y="-8" width="124" height="16" rx="8" fill="url(#dbBarMetal)" />
+        <rect x="-28" y="-5" width="56" height="10" rx="4" fill="#6B7280" opacity="0.55" />
+        <rect x="-128" y="-32" width="32" height="64" rx="10" fill="url(#dbPlateLite)" />
+        <rect x="-104" y="-25" width="22" height="50" rx="8" fill="url(#dbPlateDeep)" />
+        <rect x="-84" y="-15" width="14" height="30" rx="4" fill="url(#dbCollar)" />
+        <rect x="70" y="-15" width="14" height="30" rx="4" fill="url(#dbCollar)" />
+        <rect x="82" y="-25" width="22" height="50" rx="8" fill="url(#dbPlateDeep)" />
+        <rect x="96" y="-32" width="32" height="64" rx="10" fill="url(#dbPlateLite)" />
+        <ellipse cx="-112" cy="-16" rx="10" ry="4" fill="#D4FFE9" opacity="0.5" />
+        <ellipse cx="112" cy="-16" rx="10" ry="4" fill="#D4FFE9" opacity="0.45" />
       </g>
     </svg>
   )

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
+import dumbbellsGreen from '../../assets/dashboard/dumbbells-green.webp'
 import { scrollToSection } from '../../utils/scrollToSection'
-import { DumbbellsVisual, IconChevron, IconDumbbell } from './icons'
+import { IconChevron } from './icons'
 import { getWeeklyProgress } from '../../utils/todayWorkout'
 
 export default function TrainingOverviewCard({ workouts = [], history = [], profile, goals }) {
@@ -15,13 +16,9 @@ export default function TrainingOverviewCard({ workouts = [], history = [], prof
   const hasPlan = (workouts || []).some((w) => w && !w.isRest)
 
   return (
-    <article className="dash-module dash-module--green dash-module--split">
+    <article className="dash-module dash-module--green">
       <div className="dash-module__body">
         <div className="dash-module__copy">
-          <p className="dash-module__eyebrow">
-            <IconDumbbell size={14} />
-            Meus treinos
-          </p>
           <h3 className="dash-module__title">Meus treinos</h3>
           <p className="dash-module__desc">
             {hasPlan
@@ -30,7 +27,7 @@ export default function TrainingOverviewCard({ workouts = [], history = [], prof
           </p>
           <button
             type="button"
-            className="dash-module__btn dash-module__btn--solid"
+            className="dash-module__btn dash-module__btn--outline"
             onClick={() => scrollToSection(hasPlan ? 'treinos' : 'planilha')}
           >
             Ver treinos
@@ -39,7 +36,14 @@ export default function TrainingOverviewCard({ workouts = [], history = [], prof
         </div>
 
         <div className="dash-module__visual dash-module__visual--dumbbells" aria-hidden="true">
-          <DumbbellsVisual className="dash-visual-dumbbells" />
+          <img
+            src={dumbbellsGreen}
+            alt=""
+            className="dash-visual-dumbbells"
+            width={320}
+            height={320}
+            decoding="async"
+          />
         </div>
       </div>
 

@@ -6,7 +6,7 @@ import {
   weeklyProgressSentence,
 } from '../../utils/todayWorkout'
 import { formatDateShort } from '../../utils/dateFormat'
-import { IconChevron, IconShield } from './icons'
+import { IconCheck, IconChevron, IconShield } from './icons'
 
 export default function WeeklySummaryBar({
   workouts,
@@ -39,6 +39,10 @@ export default function WeeklySummaryBar({
 
   return (
     <section className="dash-weekbar" aria-label="Resumo semanal">
+      <span className="dash-weekbar__watermark" aria-hidden="true">
+        <IconCheck size={120} />
+      </span>
+
       <div className="dash-weekbar__main">
         <span className="dash-weekbar__icon" aria-hidden="true">
           <IconShield size={22} />

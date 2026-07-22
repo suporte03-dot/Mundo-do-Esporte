@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
+import coachOrb from '../../assets/dashboard/coach-ai-orb.svg'
 import { scrollToSection } from '../../utils/scrollToSection'
-import { IconChevron, IconSpark, RadarVisual } from './icons'
+import { IconChevron } from './icons'
 import { resolveTodayWorkout, situationCopy } from '../../utils/todayWorkout'
 import { formatDateShort } from '../../utils/dateFormat'
 
@@ -57,10 +58,6 @@ export default function CoachOverviewCard({ workouts, history, plans, generatedP
     <article className="dash-module dash-module--cyan dash-module--coach">
       <div className="dash-module__body dash-module__body--coach">
         <div className="dash-module__copy">
-          <p className="dash-module__eyebrow">
-            <IconSpark size={14} />
-            Coach IA
-          </p>
           <h3 className="dash-module__title">Coach IA</h3>
           <p className="dash-module__desc">
             {profile?.level
@@ -77,8 +74,8 @@ export default function CoachOverviewCard({ workouts, history, plans, generatedP
           </button>
         </div>
 
-        <div className="dash-module__visual dash-module__visual--radar" aria-hidden="true">
-          <RadarVisual className="dash-visual-radar" />
+        <div className="dash-module__visual dash-module__visual--orb" aria-hidden="true">
+          <img src={coachOrb} alt="" className="dash-visual-orb" width={160} height={160} />
         </div>
 
         <aside className="dash-coach-bubble" aria-label="Dica do Coach">
