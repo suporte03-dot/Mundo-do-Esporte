@@ -1,0 +1,457 @@
+/* =========================================================
+   Biblioteca de Exercícios — reference-faithful browse cards
+   Scoped under .exercise-library (imported only from library)
+   ========================================================= */
+
+.exercise-library {
+  position: relative;
+  overflow-x: clip;
+}
+
+.exercise-library--browse {
+  padding-bottom: 5rem;
+}
+
+/* ----- Header ----- */
+.el-header {
+  margin-bottom: 1.5rem;
+}
+
+.el-header__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(186, 198, 216, 0.95);
+}
+
+.el-header__marker {
+  display: inline-block;
+  width: 1.65rem;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22d3ee, #3b82f6 45%, #a855f7);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.45);
+}
+
+.el-header__title {
+  margin: 0;
+  font-size: clamp(1.55rem, 1.2rem + 1.4vw, 2.15rem);
+  font-weight: 850;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  color: #f8fafc;
+}
+
+.el-header__gradient {
+  background: linear-gradient(105deg, #22d3ee 0%, #3b82f6 48%, #a855f7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ----- Search / filters ----- */
+.exercise-library .library-control-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.35rem;
+}
+
+.exercise-library .gdt-library-toolbar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.exercise-library .gdt-library-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.exercise-library .gdt-library-search-icon {
+  position: absolute;
+  left: 1.05rem;
+  top: 50%;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1.5px solid rgba(125, 211, 252, 0.75);
+  border-radius: 50%;
+  transform: translateY(-55%);
+  pointer-events: none;
+}
+
+.exercise-library .gdt-library-search-icon::after {
+  content: '';
+  position: absolute;
+  right: -0.3rem;
+  bottom: -0.24rem;
+  width: 0.42rem;
+  height: 1.5px;
+  background: rgba(125, 211, 252, 0.75);
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+
+.exercise-library .gdt-library-search {
+  flex: 1;
+  width: 100%;
+  margin: 0;
+  min-height: 3.25rem;
+  padding: 0.85rem 1.1rem 0.85rem 2.85rem;
+  border-radius: 16px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  background: linear-gradient(180deg, rgba(10, 18, 36, 0.98), rgba(6, 12, 26, 0.99));
+  color: #e8eef8;
+  font-size: 0.95rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 10px 28px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(37, 99, 235, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.exercise-library .gdt-library-search:focus {
+  outline: none;
+  border-color: rgba(34, 211, 238, 0.65);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 3px rgba(59, 130, 246, 0.16),
+    0 12px 32px rgba(0, 0, 0, 0.32);
+}
+
+.exercise-library .gdt-library-search::placeholder {
+  color: rgba(148, 163, 184, 0.72);
+}
+
+.exercise-library .gdt-library-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.35rem;
+  border-radius: 16px;
+  border: 1px solid rgba(56, 189, 248, 0.32);
+  background: linear-gradient(180deg, rgba(14, 28, 52, 0.98), rgba(8, 16, 34, 0.99));
+  color: #e8eef8;
+  font-weight: 780;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.26);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.exercise-library .gdt-library-filters-btn:hover,
+.exercise-library .gdt-library-filters-btn.is-open {
+  border-color: rgba(59, 130, 246, 0.55);
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.18), rgba(10, 22, 44, 0.98));
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.14), 0 12px 28px rgba(0, 0, 0, 0.3);
+}
+
+.exercise-library .gdt-library-filters-btn:active {
+  transform: translateY(1px);
+}
+
+.exercise-library .gdt-library-filters-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.3rem;
+  height: 1.3rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #22d3ee, #6366f1);
+  color: #04101f;
+  font-size: 0.7rem;
+  font-weight: 800;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+}
+
+/* ----- Browse grid — uniform 4-col cards ----- */
+.exercise-library .muscle-browse {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.exercise-library .muscle-group-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.1rem;
+  align-items: stretch;
+}
+
+@media (max-width: 1100px) {
+  .exercise-library .muscle-group-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .exercise-library .muscle-group-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ----- Cards (letter-badge / sigla) ----- */
+.exercise-library .muscle-group-card {
+  --mg-accent: #2dd4bf;
+  --mg-rgb: 45, 212, 191;
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 120px;
+  height: auto;
+  padding: 22px 18px;
+  padding-right: 2.75rem;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 3px solid var(--mg-accent);
+  background: linear-gradient(145deg, rgba(15, 30, 52, 0.96), rgba(8, 16, 32, 0.96));
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.exercise-library .muscle-group-card__letter {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+  border: 1px solid rgba(var(--mg-rgb), 0.48);
+  background: rgba(var(--mg-rgb), 0.12);
+  color: var(--mg-accent);
+  box-shadow: 0 0 24px rgba(var(--mg-rgb), 0.22);
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+  user-select: none;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.exercise-library .muscle-group-card__badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 1.75rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--mg-rgb), 0.4);
+  background: rgba(var(--mg-rgb), 0.14);
+  color: var(--mg-accent);
+  font-size: 0.72rem;
+  font-weight: 780;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.exercise-library .muscle-group-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1 1 auto;
+  justify-content: center;
+  padding-right: 0.15rem;
+}
+
+.exercise-library .muscle-group-card__name {
+  font-size: clamp(1.15rem, 1.05rem + 0.55vw, 1.4rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.18;
+  color: #f8fafc;
+}
+
+.exercise-library .muscle-group-card__subtitle {
+  font-size: clamp(0.82rem, 0.78rem + 0.25vw, 0.94rem);
+  font-weight: 500;
+  line-height: 1.35;
+  color: #cbd5e1;
+}
+
+.exercise-library .muscle-group-card__expanding {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  margin-top: 0.1rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(148, 163, 184, 0.1);
+  font-style: normal;
+  font-size: 0.62rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: rgba(186, 198, 216, 0.95);
+  white-space: nowrap;
+}
+
+.exercise-library .muscle-group-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+  padding-top: 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  color: var(--mg-accent);
+}
+
+.exercise-library .muscle-group-card__cta-arrow {
+  display: inline-block;
+  opacity: 0.85;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.exercise-library .muscle-group-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--mg-rgb), 0.35);
+  background: linear-gradient(145deg, rgba(15, 30, 52, 0.96), rgba(8, 16, 32, 0.96));
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28), 0 0 20px rgba(var(--mg-rgb), 0.16);
+}
+
+.exercise-library .muscle-group-card:hover .muscle-group-card__cta-arrow {
+  transform: translateX(3px);
+  opacity: 1;
+}
+
+.exercise-library .muscle-group-card:hover .muscle-group-card__letter {
+  transform: scale(1.06);
+  border-color: rgba(var(--mg-rgb), 0.65);
+  box-shadow: 0 0 28px rgba(var(--mg-rgb), 0.32);
+}
+
+.exercise-library .muscle-group-card.is-active {
+  border-color: rgba(var(--mg-rgb), 0.45);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(var(--mg-rgb), 0.14),
+      rgba(8, 16, 32, 0.96) 55%
+    );
+  box-shadow:
+    0 0 0 1px rgba(var(--mg-rgb), 0.22),
+    0 16px 36px rgba(var(--mg-rgb), 0.16);
+}
+
+.exercise-library .muscle-group-card:focus-visible {
+  outline: 2px solid rgba(var(--mg-rgb), 0.65);
+  outline-offset: 2px;
+  border-color: rgba(var(--mg-rgb), 0.5);
+}
+
+.exercise-library .muscle-browse__more {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.exercise-library .disclose-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 280px;
+  padding: 0.7rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  background: rgba(10, 18, 36, 0.85);
+  color: #e2e8f0;
+  font-size: 0.84rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.exercise-library .disclose-toggle:hover,
+.exercise-library .disclose-toggle.is-open {
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.exercise-library .library-loading {
+  margin: 1.5rem 0;
+  color: rgba(186, 198, 216, 0.95);
+}
+
+.exercise-library .library-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1.25rem 0 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exercise-library .muscle-group-card,
+  .exercise-library .muscle-group-card__cta-arrow,
+  .exercise-library .gdt-library-search,
+  .exercise-library .gdt-library-filters-btn {
+    transition: none !important;
+  }
+
+  .exercise-library .muscle-group-card:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .exercise-library .gdt-library-toolbar {
+    flex-direction: column;
+  }
+
+  .exercise-library .gdt-library-filters-btn {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .exercise-library .muscle-group-card {
+    min-height: 188px;
+    padding: 1.25rem;
+    grid-template-columns: minmax(0, 1.1fr) minmax(88px, 0.9fr);
+  }
+
+  .exercise-library .mg-illust-wrap {
+    width: 100px;
+  }
+
+  .exercise-library .muscle-group-card:hover {
+    transform: none;
+  }
+
+  .exercise-library .muscle-group-card:active {
+    border-color: rgba(var(--mg-rgb), 0.55);
+    box-shadow:
+      0 0 0 1px rgba(var(--mg-rgb), 0.22),
+      0 0 22px rgba(var(--mg-rgb), 0.18);
+  }
+}

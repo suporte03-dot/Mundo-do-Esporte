@@ -715,65 +715,46 @@
     flex: 1 1 30%;
   }
 
-  /* Biblioteca browse */
+  /* Biblioteca browse — anatomical cards (scoped) */
   .library-stats {
     margin-bottom: 1rem;
     font-size: 0.76rem;
   }
 
-  .muscle-group-grid {
-    grid-template-columns: 1fr;
+  .exercise-library .muscle-group-grid {
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.75rem;
   }
 
-  .muscle-group-card {
-    min-height: 96px;
-    padding: 16px 14px;
-    padding-right: 2.6rem;
-    gap: 12px;
+  .exercise-library .muscle-group-card {
+    min-height: 168px;
+    padding: 0.95rem;
     border-radius: 18px;
   }
 
-  .muscle-group-card__badge {
-    top: 10px;
-    right: 10px;
-    padding: 0.16rem 0.45rem;
-    font-size: 0.66rem;
+  .exercise-library .mg-illust-wrap {
+    width: 92px;
   }
 
-  .muscle-group-card__letter {
-    width: 46px;
-    height: 46px;
-    border-radius: 13px;
-    font-size: 1rem;
+  .exercise-library .muscle-group-card__name {
+    font-size: 1.18rem;
+    letter-spacing: -0.04em;
   }
 
-  .muscle-group-card:hover .muscle-group-card__letter {
-    transform: none;
+  .exercise-library .muscle-group-card__subtitle {
+    font-size: 0.82rem;
   }
 
-  .muscle-group-card__name {
-    font-size: 1.2rem;
-    letter-spacing: -0.045em;
-  }
-
-  .muscle-group-card__subtitle {
-    font-size: 0.85rem;
-  }
-
-  .muscle-group-card__cta {
+  .exercise-library .muscle-group-card__cta {
     font-size: 0.75rem;
-    margin-top: 0.2rem;
+    margin-top: 0.28rem;
   }
 
-  .muscle-group-card:hover {
+  .exercise-library .muscle-group-card:hover {
     transform: none;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.04),
-      0 8px 24px rgba(0, 0, 0, 0.2);
   }
 
-  .muscle-group-card:active {
+  .exercise-library .muscle-group-card:active {
     border-color: rgba(var(--mg-rgb), 0.4);
     box-shadow:
       0 0 0 1px rgba(var(--mg-rgb), 0.18),

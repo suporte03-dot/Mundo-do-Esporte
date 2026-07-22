@@ -3,10 +3,10 @@ import { equipmentTypes as defaultEquipment, levelTypes as defaultLevels, exerci
 import { GDT_FILTER_GROUPS, matchesGdtChip, countExercisesByChip, muscleGroupLabel } from '../data/exerciseMediaMap'
 import { useFitness } from '../context/FitnessContext'
 import { useExercises } from '../hooks/useExercises'
-import { getMuscleGroupVisual } from './icons/muscleGroupIcons'
-import SectionTitle from './SectionTitle'
 import ExerciseCard from './ExerciseCard'
 import ExerciseDetailModal from './ExerciseDetailModal'
+import MuscleGroupCard from './exercises/MuscleGroupCard'
+import '../styles/exercise-library.css'
 
 /** Spec order — primary browse groups */
 const PRIMARY_GROUP_IDS = [
@@ -22,9 +22,6 @@ const PRIMARY_GROUP_IDS = [
   'Cardio',
   'Mobilidade',
 ]
-
-/** Groups with thinner catalogs get an “em expansão” badge instead of looking broken */
-const EXPANDING_THRESHOLD = 8
 
 const ALL_GROUPS = GDT_FILTER_GROUPS.flatMap((section) => section.chips.filter((c) => c.id !== 'Todos'))
 
@@ -74,8 +71,7 @@ export default function ExerciseLibrary() {
   )
 
   const primaryGroups = useMemo(
-    () =>
-      PRIMARY_GROUP_IDS.map((id) => ALL_GROUPS.find((g) => g.id === id)).filter(Boolean),
+    () => PRIMARY_GROUP_IDS.map((id) => ALL_GROUPS.find((g) => g.id === id)).filter(Boolean),
     [],
   )
   const extraGroups = useMemo(
@@ -188,51 +184,21 @@ export default function ExerciseLibrary() {
       ? `Exercícios de ${muscleGroupLabel(selectedGroup)}`
       : 'Exercícios'
 
-  const renderGroupCard = (group) => {
-    const { letter, tone, subtitle } = getMuscleGroupVisual(group.id)
-    const count = chipCounts[group.id] ?? 0
-    const expanding = count > 0 && count < EXPANDING_THRESHOLD
-    const isActive = selectedGroup === group.id
-    return (
-      <button
-        key={group.id}
-        type="button"
-        className={`muscle-group-card muscle-group-card--${tone}${isActive ? ' is-active' : ''}`}
-        onClick={() => openGroup(group.id)}
-        aria-pressed={isActive}
-        aria-label={`${group.label}: ${count} ${count === 1 ? 'exercício' : 'exercícios'}`}
-      >
-        <span className="muscle-group-card__badge" aria-hidden="true">
-          {count}
-        </span>
-        <span className="muscle-group-card__letter" aria-hidden="true">
-          {letter}
-        </span>
-        <span className="muscle-group-card__body">
-          <span className="muscle-group-card__name">{group.label}</span>
-          <span className="muscle-group-card__subtitle">{subtitle}</span>
-          {expanding ? (
-            <em className="muscle-group-card__expanding">em expansão</em>
-          ) : null}
-          <span className="muscle-group-card__cta">
-            Ver exercícios
-            <span className="muscle-group-card__cta-arrow" aria-hidden="true">
-              →
-            </span>
-          </span>
-        </span>
-      </button>
-    )
-  }
-
   return (
-    <section id="exercicios" className="section section--alt exercise-library--gdt exercise-library--browse">
+    <section
+      id="exercicios"
+      className="section section--alt exercise-library exercise-library--gdt exercise-library--browse"
+    >
       <div className="container">
-        <SectionTitle
-          tag="Biblioteca"
-          title="Biblioteca de Exercícios"
-          subtitle="Escolha um grupo muscular e explore exercícios com instruções claras."
-        />
+        <header className="el-header">
+          <p className="el-header__eyebrow">
+            <span className="el-header__marker" aria-hidden="true" />
+            Exercícios
+          </p>
+          <h2 className="el-header__title">
+            Explore por <span className="el-header__gradient">grupo muscular</span>
+          </h2>
+        </header>
 
         <div className="library-control-panel">
           <div className="gdt-library-toolbar">
@@ -351,7 +317,16 @@ export default function ExerciseLibrary() {
             {showGroups && (
               <div className="muscle-browse">
                 <div className="muscle-group-grid">
-                  {primaryGroups.map(renderGroupCard)}
+                  {primaryGroups.map((group, index) => (
+                    <MuscleGroupCard
+                      key={group.id}
+                      group={group}
+                      count={chipCounts[group.id] ?? 0}
+                      index={index}
+                      isActive={selectedGroup === group.id}
+                      onSelect={openGroup}
+                    />
+                  ))}
                 </div>
 
                 {extraGroups.length > 0 && (
@@ -366,7 +341,18 @@ export default function ExerciseLibrary() {
                       <span aria-hidden="true">{moreGroupsOpen ? '▲' : '▼'}</span>
                     </button>
                     {moreGroupsOpen && (
-                      <div className="muscle-group-grid">{extraGroups.map(renderGroupCard)}</div>
+                      <div className="muscle-group-grid">
+                        {extraGroups.map((group, index) => (
+                          <MuscleGroupCard
+                            key={group.id}
+                            group={group}
+                            count={chipCounts[group.id] ?? 0}
+                            index={primaryGroups.length + index}
+                            isActive={selectedGroup === group.id}
+                            onSelect={openGroup}
+                          />
+                        ))}
+                      </div>
                     )}
                   </div>
                 )}

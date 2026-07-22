@@ -1,73 +1,163 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" fill="none" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" aria-hidden="true">
   <defs>
-    <linearGradient id="dbPlateLite" x1="40" y1="40" x2="120" y2="160" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#7CFFC4"/>
-      <stop offset="35%" stop-color="#1AE88F"/>
-      <stop offset="70%" stop-color="#00B86B"/>
-      <stop offset="100%" stop-color="#046B3E"/>
+    <!-- Matte black facets -->
+    <linearGradient id="hexFace" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1A1F1C"/>
+      <stop offset="45%" stop-color="#0B0E0C"/>
+      <stop offset="100%" stop-color="#050706"/>
     </linearGradient>
-    <linearGradient id="dbPlateDeep" x1="200" y1="60" x2="280" y2="180" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#34F5A5"/>
-      <stop offset="40%" stop-color="#00C97B"/>
-      <stop offset="100%" stop-color="#035C35"/>
+    <linearGradient id="hexFaceLite" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#242A26"/>
+      <stop offset="100%" stop-color="#0C100E"/>
     </linearGradient>
-    <linearGradient id="dbBarMetal" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#E5E7EB"/>
-      <stop offset="45%" stop-color="#9CA3AF"/>
-      <stop offset="100%" stop-color="#4B5563"/>
+    <linearGradient id="hexSide" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#101412"/>
+      <stop offset="100%" stop-color="#050706"/>
     </linearGradient>
-    <linearGradient id="dbCollar" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#F3F4F6"/>
-      <stop offset="55%" stop-color="#9CA3AF"/>
-      <stop offset="100%" stop-color="#374151"/>
+    <!-- Neon rim -->
+    <linearGradient id="neonEdge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#B8FF6A"/>
+      <stop offset="40%" stop-color="#7CFF2E"/>
+      <stop offset="100%" stop-color="#39C900"/>
     </linearGradient>
-    <radialGradient id="dbFloorGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#00E58F" stop-opacity="0.38"/>
-      <stop offset="55%" stop-color="#00E58F" stop-opacity="0.12"/>
-      <stop offset="100%" stop-color="#00E58F" stop-opacity="0"/>
+    <linearGradient id="barMetal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3A3F3C"/>
+      <stop offset="35%" stop-color="#1C211E"/>
+      <stop offset="70%" stop-color="#2E3431"/>
+      <stop offset="100%" stop-color="#0E1210"/>
+    </linearGradient>
+    <linearGradient id="knurlLite" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7CFF2E" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#9AFF4A" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#7CFF2E" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="floorGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6BFF28" stop-opacity="0.55"/>
+      <stop offset="35%" stop-color="#39C900" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#39C900" stop-opacity="0"/>
     </radialGradient>
-    <filter id="dbSoftGlow" x="-35%" y="-35%" width="170%" height="170%">
-      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#00E58F" flood-opacity="0.42"/>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#6BFF28" flood-opacity="0.55"/>
     </filter>
-    <filter id="dbInnerSoft" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#00E58F" flood-opacity="0.28"/>
+    <filter id="textGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
+    <filter id="edgeBloom" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Regular hexagon path helper: flat-top, r=radius -->
+    <!-- Pointy-top hex centered at 0,0 with outer radius ~42 -->
   </defs>
 
-  <!-- Soft green floor glow (true alpha) -->
-  <ellipse cx="160" cy="268" rx="118" ry="28" fill="url(#dbFloorGlow)"/>
+  <!-- Soft green surface glow (true alpha) -->
+  <ellipse cx="256" cy="420" rx="168" ry="42" fill="url(#floorGlow)"/>
 
-  <!-- Back dumbbell -->
-  <g filter="url(#dbSoftGlow)" transform="translate(160 148) rotate(-28)">
-    <rect x="-58" y="-7" width="116" height="14" rx="7" fill="url(#dbBarMetal)"/>
-    <!-- left plates -->
-    <rect x="-118" y="-28" width="28" height="56" rx="9" fill="url(#dbPlateDeep)"/>
-    <rect x="-96" y="-22" width="20" height="44" rx="7" fill="url(#dbPlateLite)"/>
-    <rect x="-78" y="-14" width="12" height="28" rx="4" fill="url(#dbCollar)"/>
-    <!-- right plates -->
-    <rect x="66" y="-14" width="12" height="28" rx="4" fill="url(#dbCollar)"/>
-    <rect x="76" y="-22" width="20" height="44" rx="7" fill="url(#dbPlateLite)"/>
-    <rect x="90" y="-28" width="28" height="56" rx="9" fill="url(#dbPlateDeep)"/>
-    <!-- plate highlights -->
-    <ellipse cx="-104" cy="-14" rx="8" ry="3.5" fill="#B8FFE0" opacity="0.45"/>
-    <ellipse cx="104" cy="-14" rx="8" ry="3.5" fill="#B8FFE0" opacity="0.4"/>
+  <!-- ========== BACK / DIAGONAL DUMBBELL ========== -->
+  <g filter="url(#softGlow)" transform="translate(268 228) rotate(-38)">
+    <!-- Left hex head (3D-ish: side + face) -->
+    <g transform="translate(-118 0)">
+      <!-- depth side -->
+      <path d="M-20 -36 L8 -48 L36 -36 L36 20 L8 32 L-20 20 Z" fill="url(#hexSide)" opacity="0.95"/>
+      <!-- front face (pointy-top hex) -->
+      <path d="M0 -44 L38 -22 L38 22 L0 44 L-38 22 L-38 -22 Z" fill="url(#hexFace)"/>
+      <!-- facet lines -->
+      <path d="M0 -44 L38 -22 L38 22 L0 44 L-38 22 L-38 -22 Z" stroke="url(#neonEdge)" stroke-width="2.2" fill="none" filter="url(#edgeBloom)" opacity="0.95"/>
+      <path d="M-38 -22 L0 0 L38 -22" stroke="#6BFF28" stroke-width="1" opacity="0.35"/>
+      <path d="M-38 22 L0 0 L38 22" stroke="#6BFF28" stroke-width="1" opacity="0.25"/>
+      <path d="M0 -44 L0 44" stroke="#6BFF28" stroke-width="1" opacity="0.2"/>
+    </g>
+
+    <!-- Handle -->
+    <g>
+      <rect x="-78" y="-10" width="156" height="20" rx="6" fill="url(#barMetal)"/>
+      <!-- knurl pattern -->
+      <g stroke="#6BFF28" stroke-width="0.7" opacity="0.35">
+        <line x1="-60" y1="-6" x2="-48" y2="6"/><line x1="-50" y1="-6" x2="-38" y2="6"/>
+        <line x1="-40" y1="-6" x2="-28" y2="6"/><line x1="-30" y1="-6" x2="-18" y2="6"/>
+        <line x1="-20" y1="-6" x2="-8" y2="6"/><line x1="-10" y1="-6" x2="2" y2="6"/>
+        <line x1="0" y1="-6" x2="12" y2="6"/><line x1="10" y1="-6" x2="22" y2="6"/>
+        <line x1="20" y1="-6" x2="32" y2="6"/><line x1="30" y1="-6" x2="42" y2="6"/>
+        <line x1="40" y1="-6" x2="52" y2="6"/><line x1="50" y1="-6" x2="62" y2="6"/>
+        <line x1="-48" y1="-6" x2="-60" y2="6"/><line x1="-38" y1="-6" x2="-50" y2="6"/>
+        <line x1="-28" y1="-6" x2="-40" y2="6"/><line x1="-18" y1="-6" x2="-30" y2="6"/>
+        <line x1="-8" y1="-6" x2="-20" y2="6"/><line x1="2" y1="-6" x2="-10" y2="6"/>
+        <line x1="12" y1="-6" x2="0" y2="6"/><line x1="22" y1="-6" x2="10" y2="6"/>
+        <line x1="32" y1="-6" x2="20" y2="6"/><line x1="42" y1="-6" x2="30" y2="6"/>
+        <line x1="52" y1="-6" x2="40" y2="6"/><line x1="62" y1="-6" x2="50" y2="6"/>
+      </g>
+      <rect x="-70" y="-8" width="140" height="16" rx="4" fill="url(#knurlLite)" opacity="0.35"/>
+      <!-- collars -->
+      <rect x="-84" y="-14" width="10" height="28" rx="2" fill="#1A1F1C" stroke="#6BFF28" stroke-width="1.2" opacity="0.95"/>
+      <rect x="74" y="-14" width="10" height="28" rx="2" fill="#1A1F1C" stroke="#6BFF28" stroke-width="1.2" opacity="0.95"/>
+    </g>
+
+    <!-- Right hex head -->
+    <g transform="translate(118 0)">
+      <path d="M-20 -36 L8 -48 L36 -36 L36 20 L8 32 L-20 20 Z" fill="url(#hexSide)" opacity="0.9"/>
+      <path d="M0 -44 L38 -22 L38 22 L0 44 L-38 22 L-38 -22 Z" fill="url(#hexFaceLite)"/>
+      <path d="M0 -44 L38 -22 L38 22 L0 44 L-38 22 L-38 -22 Z" stroke="url(#neonEdge)" stroke-width="2.2" fill="none" filter="url(#edgeBloom)" opacity="0.95"/>
+      <path d="M-38 -22 L0 0 L38 -22" stroke="#6BFF28" stroke-width="1" opacity="0.3"/>
+      <path d="M-38 22 L0 0 L38 22" stroke="#6BFF28" stroke-width="1" opacity="0.22"/>
+    </g>
   </g>
 
-  <!-- Front dumbbell -->
-  <g filter="url(#dbInnerSoft)" transform="translate(160 168) rotate(22)">
-    <rect x="-62" y="-8" width="124" height="16" rx="8" fill="url(#dbBarMetal)"/>
-    <!-- knurl suggestion -->
-    <rect x="-28" y="-5" width="56" height="10" rx="4" fill="#6B7280" opacity="0.55"/>
-    <!-- left plates -->
-    <rect x="-128" y="-32" width="32" height="64" rx="10" fill="url(#dbPlateLite)"/>
-    <rect x="-104" y="-25" width="22" height="50" rx="8" fill="url(#dbPlateDeep)"/>
-    <rect x="-84" y="-15" width="14" height="30" rx="4" fill="url(#dbCollar)"/>
-    <!-- right plates -->
-    <rect x="70" y="-15" width="14" height="30" rx="4" fill="url(#dbCollar)"/>
-    <rect x="82" y="-25" width="22" height="50" rx="8" fill="url(#dbPlateDeep)"/>
-    <rect x="96" y="-32" width="32" height="64" rx="10" fill="url(#dbPlateLite)"/>
-    <!-- plate highlights -->
-    <ellipse cx="-112" cy="-16" rx="10" ry="4" fill="#D4FFE9" opacity="0.5"/>
-    <ellipse cx="112" cy="-16" rx="10" ry="4" fill="#D4FFE9" opacity="0.45"/>
+  <!-- ========== FRONT / FLAT DUMBBELL ========== -->
+  <g filter="url(#softGlow)" transform="translate(248 292) rotate(8)">
+    <!-- Left hex head with 10 KG -->
+    <g transform="translate(-132 0)">
+      <path d="M-24 -42 L10 -56 L44 -42 L44 24 L10 38 L-24 24 Z" fill="url(#hexSide)"/>
+      <path d="M0 -52 L45 -26 L45 26 L0 52 L-45 26 L-45 -26 Z" fill="url(#hexFace)"/>
+      <path d="M0 -52 L45 -26 L45 26 L0 52 L-45 26 L-45 -26 Z" stroke="url(#neonEdge)" stroke-width="2.6" fill="none" filter="url(#edgeBloom)"/>
+      <!-- inner facet glow -->
+      <path d="M-45 -26 L0 0 L45 -26" stroke="#8FFF40" stroke-width="1.1" opacity="0.4"/>
+      <path d="M-45 26 L0 0 L45 26" stroke="#8FFF40" stroke-width="1.1" opacity="0.28"/>
+      <path d="M0 -52 L0 52" stroke="#8FFF40" stroke-width="1" opacity="0.22"/>
+      <!-- 10 KG label -->
+      <g filter="url(#textGlow)" text-anchor="middle" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-weight="800">
+        <text x="0" y="-2" fill="#9AFF4A" font-size="18" letter-spacing="1.5">10</text>
+        <text x="0" y="18" fill="#7CFF2E" font-size="13" letter-spacing="2.5">KG</text>
+      </g>
+    </g>
+
+    <!-- Handle -->
+    <g>
+      <rect x="-86" y="-11" width="172" height="22" rx="7" fill="url(#barMetal)"/>
+      <g stroke="#9AFF4A" stroke-width="0.85" opacity="0.42">
+        <line x1="-68" y1="-7" x2="-54" y2="7"/><line x1="-56" y1="-7" x2="-42" y2="7"/>
+        <line x1="-44" y1="-7" x2="-30" y2="7"/><line x1="-32" y1="-7" x2="-18" y2="7"/>
+        <line x1="-20" y1="-7" x2="-6" y2="7"/><line x1="-8" y1="-7" x2="6" y2="7"/>
+        <line x1="4" y1="-7" x2="18" y2="7"/><line x1="16" y1="-7" x2="30" y2="7"/>
+        <line x1="28" y1="-7" x2="42" y2="7"/><line x1="40" y1="-7" x2="54" y2="7"/>
+        <line x1="52" y1="-7" x2="66" y2="7"/>
+        <line x1="-54" y1="-7" x2="-68" y2="7"/><line x1="-42" y1="-7" x2="-56" y2="7"/>
+        <line x1="-30" y1="-7" x2="-44" y2="7"/><line x1="-18" y1="-7" x2="-32" y2="7"/>
+        <line x1="-6" y1="-7" x2="-20" y2="7"/><line x1="6" y1="-7" x2="-8" y2="7"/>
+        <line x1="18" y1="-7" x2="4" y2="7"/><line x1="30" y1="-7" x2="16" y2="7"/>
+        <line x1="42" y1="-7" x2="28" y2="7"/><line x1="54" y1="-7" x2="40" y2="7"/>
+        <line x1="66" y1="-7" x2="52" y2="7"/>
+      </g>
+      <rect x="-78" y="-8" width="156" height="16" rx="5" fill="url(#knurlLite)" opacity="0.4"/>
+      <rect x="-94" y="-15" width="12" height="30" rx="2.5" fill="#141816" stroke="#7CFF2E" stroke-width="1.4"/>
+      <rect x="82" y="-15" width="12" height="30" rx="2.5" fill="#141816" stroke="#7CFF2E" stroke-width="1.4"/>
+    </g>
+
+    <!-- Right hex head -->
+    <g transform="translate(132 0)">
+      <path d="M-24 -42 L10 -56 L44 -42 L44 24 L10 38 L-24 24 Z" fill="url(#hexSide)" opacity="0.92"/>
+      <path d="M0 -52 L45 -26 L45 26 L0 52 L-45 26 L-45 -26 Z" fill="url(#hexFaceLite)"/>
+      <path d="M0 -52 L45 -26 L45 26 L0 52 L-45 26 L-45 -26 Z" stroke="url(#neonEdge)" stroke-width="2.6" fill="none" filter="url(#edgeBloom)"/>
+      <path d="M-45 -26 L0 0 L45 -26" stroke="#8FFF40" stroke-width="1.1" opacity="0.35"/>
+      <path d="M-45 26 L0 0 L45 26" stroke="#8FFF40" stroke-width="1.1" opacity="0.25"/>
+    </g>
   </g>
 </svg>

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import dumbbellsGreen from '../../assets/dashboard/dumbbells-green.webp'
+import dumbbellsGreen from '../../assets/dashboard/dumbbells-green.png'
 import { scrollToSection } from '../../utils/scrollToSection'
 import { IconChevron } from './icons'
 import { getWeeklyProgress } from '../../utils/todayWorkout'
