@@ -95,8 +95,8 @@ export default function DashboardSidebar({
               src={logoUrl('evoluafit-icon.png')}
               alt=""
               className="dash-sidebar__logo"
-              width={44}
-              height={44}
+              width={52}
+              height={52}
             />
             {!collapsed && (
               <div className="dash-sidebar__brand-copy">

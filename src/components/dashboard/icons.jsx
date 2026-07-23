@@ -175,7 +175,7 @@ export function IconCheck(props) {
   )
 }
 
-/** Large 3D-like dumbbells composition for Meus Treinos module. */
+/** Crossed metallic-green dumbbells for Meus Treinos — pure SVG (no raster/checkerboard). */
 export function DumbbellsVisual({ className = '' }) {
   return (
     <svg
@@ -184,6 +184,7 @@ export function DumbbellsVisual({ className = '' }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
+      role="presentation"
     >
       <defs>
         <linearGradient id="dbPlateLite" x1="40" y1="40" x2="120" y2="160" gradientUnits="userSpaceOnUse">
@@ -198,9 +199,10 @@ export function DumbbellsVisual({ className = '' }) {
           <stop offset="100%" stopColor="#035C35" />
         </linearGradient>
         <linearGradient id="dbBarMetal" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#E5E7EB" />
-          <stop offset="45%" stopColor="#9CA3AF" />
-          <stop offset="100%" stopColor="#4B5563" />
+          <stop offset="0%" stopColor="#F3F4F6" />
+          <stop offset="35%" stopColor="#C4C9D1" />
+          <stop offset="70%" stopColor="#7B8494" />
+          <stop offset="100%" stopColor="#3F4654" />
         </linearGradient>
         <linearGradient id="dbCollar" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#F3F4F6" />
@@ -212,18 +214,31 @@ export function DumbbellsVisual({ className = '' }) {
           <stop offset="55%" stopColor="#00E58F" stopOpacity="0.12" />
           <stop offset="100%" stopColor="#00E58F" stopOpacity="0" />
         </radialGradient>
-        <filter id="dbSoftGlow" x="-35%" y="-35%" width="170%" height="170%">
+        <filter id="dbSoftGlow" x="-40%" y="-40%" width="180%" height="180%">
           <feDropShadow dx="0" dy="14" stdDeviation="16" floodColor="#00E58F" floodOpacity="0.42" />
         </filter>
-        <filter id="dbInnerSoft" x="-20%" y="-20%" width="140%" height="140%">
+        <filter id="dbInnerSoft" x="-25%" y="-25%" width="150%" height="150%">
           <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#00E58F" floodOpacity="0.28" />
         </filter>
       </defs>
 
+      {/* Soft green aura only — no opaque backdrop that could read as a box */}
       <ellipse cx="160" cy="268" rx="118" ry="28" fill="url(#dbFloorGlow)" />
 
+      {/* Back dumbbell (−28°) */}
       <g filter="url(#dbSoftGlow)" transform="translate(160 148) rotate(-28)">
         <rect x="-58" y="-7" width="116" height="14" rx="7" fill="url(#dbBarMetal)" />
+        {/* Knurl grooves */}
+        <g stroke="#4B5563" strokeOpacity="0.45" strokeWidth="1.1">
+          <line x1="-42" y1="-6" x2="-42" y2="6" />
+          <line x1="-30" y1="-6" x2="-30" y2="6" />
+          <line x1="-18" y1="-6" x2="-18" y2="6" />
+          <line x1="-6" y1="-6" x2="-6" y2="6" />
+          <line x1="6" y1="-6" x2="6" y2="6" />
+          <line x1="18" y1="-6" x2="18" y2="6" />
+          <line x1="30" y1="-6" x2="30" y2="6" />
+          <line x1="42" y1="-6" x2="42" y2="6" />
+        </g>
         <rect x="-118" y="-28" width="28" height="56" rx="9" fill="url(#dbPlateDeep)" />
         <rect x="-96" y="-22" width="20" height="44" rx="7" fill="url(#dbPlateLite)" />
         <rect x="-78" y="-14" width="12" height="28" rx="4" fill="url(#dbCollar)" />
@@ -234,9 +249,19 @@ export function DumbbellsVisual({ className = '' }) {
         <ellipse cx="104" cy="-14" rx="8" ry="3.5" fill="#B8FFE0" opacity="0.4" />
       </g>
 
+      {/* Front dumbbell (+22°) */}
       <g filter="url(#dbInnerSoft)" transform="translate(160 168) rotate(22)">
         <rect x="-62" y="-8" width="124" height="16" rx="8" fill="url(#dbBarMetal)" />
-        <rect x="-28" y="-5" width="56" height="10" rx="4" fill="#6B7280" opacity="0.55" />
+        <g stroke="#374151" strokeOpacity="0.5" strokeWidth="1.2">
+          <line x1="-40" y1="-6.5" x2="-40" y2="6.5" />
+          <line x1="-28" y1="-6.5" x2="-28" y2="6.5" />
+          <line x1="-16" y1="-6.5" x2="-16" y2="6.5" />
+          <line x1="-4" y1="-6.5" x2="-4" y2="6.5" />
+          <line x1="8" y1="-6.5" x2="8" y2="6.5" />
+          <line x1="20" y1="-6.5" x2="20" y2="6.5" />
+          <line x1="32" y1="-6.5" x2="32" y2="6.5" />
+          <line x1="44" y1="-6.5" x2="44" y2="6.5" />
+        </g>
         <rect x="-128" y="-32" width="32" height="64" rx="10" fill="url(#dbPlateLite)" />
         <rect x="-104" y="-25" width="22" height="50" rx="8" fill="url(#dbPlateDeep)" />
         <rect x="-84" y="-15" width="14" height="30" rx="4" fill="url(#dbCollar)" />

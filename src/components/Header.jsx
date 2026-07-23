@@ -41,8 +41,8 @@ export default function Header({ onOpenDashboardMenu }) {
             src={logoUrl('evoluafit-icon.png')}
             alt=""
             className="brand-icon"
-            width={48}
-            height={48}
+            width={56}
+            height={56}
           />
           <div className="brand-copy">
             <strong className="brand-name">
