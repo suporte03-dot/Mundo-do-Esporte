@@ -723,35 +723,28 @@
   }
 
   .exercise-library .muscle-group-grid {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
   }
 
   .exercise-library .muscle-group-card {
-    min-height: 108px;
-    padding: 0.95rem;
-    padding-right: 2.5rem;
+    min-height: 240px;
+    padding: 0.85rem 0.85rem 0.8rem;
     border-radius: 18px;
   }
 
-  .exercise-library .muscle-group-card__letter {
-    width: 44px;
-    height: 44px;
-    font-size: 1rem;
+  .exercise-library .muscle-group-card__art {
+    height: 118px;
+    margin-bottom: 0.4rem;
   }
 
   .exercise-library .muscle-group-card__name {
-    font-size: 1.12rem;
-    letter-spacing: -0.04em;
+    font-size: 1.05rem;
+    letter-spacing: -0.03em;
   }
 
   .exercise-library .muscle-group-card__subtitle {
-    font-size: 0.8rem;
-  }
-
-  .exercise-library .muscle-group-card__cta {
-    font-size: 0.75rem;
-    margin-top: 0.28rem;
+    font-size: 0.78rem;
   }
 
   .exercise-library .muscle-group-card:hover {
@@ -759,10 +752,10 @@
   }
 
   .exercise-library .muscle-group-card:active {
-    border-color: rgba(var(--mg-rgb), 0.4);
+    border-color: rgba(var(--mg-rgb), 0.55);
     box-shadow:
-      0 0 0 1px rgba(var(--mg-rgb), 0.18),
-      0 0 20px rgba(var(--mg-rgb), 0.12);
+      0 0 0 1px rgba(var(--mg-rgb), 0.28),
+      0 0 24px rgba(var(--mg-rgb), 0.22);
   }
 
   .library-results-panel {

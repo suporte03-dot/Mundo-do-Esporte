@@ -819,21 +819,20 @@ html:has(.app--saas) body {
 }
 
 .dash-module__visual--dumbbells {
-  min-height: 220px;
+  min-height: 168px;
   overflow: visible;
   background: transparent;
 }
 
 .dash-visual-dumbbells {
   display: block;
-  width: min(100%, 320px);
+  width: min(100%, 220px);
   max-width: 100%;
   height: auto;
-  aspect-ratio: 1;
+  aspect-ratio: 240 / 160;
   object-fit: contain;
   background: transparent;
-  filter: drop-shadow(0 10px 26px rgba(107, 255, 40, 0.28));
-  transform: scale(1.08);
+  filter: drop-shadow(0 10px 16px rgba(0, 229, 143, 0.2));
   pointer-events: none;
   user-select: none;
 }
@@ -1287,11 +1286,11 @@ html:has(.app--saas) body {
 
   .dash-module__visual--dumbbells {
     order: -1;
-    min-height: 160px;
+    min-height: 140px;
   }
 
   .dash-visual-dumbbells {
-    width: min(100%, 260px);
+    width: min(100%, 180px);
   }
 }
 

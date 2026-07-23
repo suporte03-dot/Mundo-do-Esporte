@@ -1,7 +1,9 @@
 import { getMuscleGroupVisual } from '../../data/muscleGroupVisualConfig'
+import { MuscleGroupIllustration } from './MuscleGroupIllustrations'
 
 /**
- * Premium letter-badge muscle-group browse card (PT, CO, PN…).
+ * Portrait library card — sticker-art illustration + title + desc + count/arrow.
+ * Absolute visual pattern for all muscle-group module cards.
  */
 export default function MuscleGroupCard({
   group,
@@ -11,7 +13,6 @@ export default function MuscleGroupCard({
 }) {
   const visual = getMuscleGroupVisual(group.id)
   const expanding = Boolean(visual.expanding)
-  const letter = visual.letter || visual.shortCode
 
   const style = {
     '--mg-accent': visual.color,
@@ -33,8 +34,9 @@ export default function MuscleGroupCard({
       aria-pressed={isActive}
       aria-label={`${group.label}: ${count} ${count === 1 ? 'exercício' : 'exercícios'}`}
     >
-      <span className="muscle-group-card__letter" aria-hidden="true">
-        {letter}
+      <span className="muscle-group-card__art" aria-hidden="true">
+        <span className="muscle-group-card__glow" />
+        <MuscleGroupIllustration name={visual.illustration} />
       </span>
 
       <span className="muscle-group-card__body">
@@ -43,16 +45,15 @@ export default function MuscleGroupCard({
         {expanding ? (
           <em className="muscle-group-card__expanding">em expansão</em>
         ) : null}
-        <span className="muscle-group-card__cta">
-          Ver exercícios
-          <span className="muscle-group-card__cta-arrow" aria-hidden="true">
-            →
-          </span>
-        </span>
       </span>
 
-      <span className="muscle-group-card__badge" aria-hidden="true">
-        {count}
+      <span className="muscle-group-card__footer">
+        <span className="muscle-group-card__badge" aria-hidden="true">
+          {count}
+        </span>
+        <span className="muscle-group-card__cta-arrow" aria-hidden="true">
+          →
+        </span>
       </span>
     </button>
   )
