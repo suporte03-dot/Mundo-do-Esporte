@@ -70,8 +70,8 @@ export const GROUP_VISUAL_CONFIG = {
   Tríceps: {
     shortCode: 'TR',
     tone: 'triceps',
-    color: '#4ADE80',
-    rgb: '74, 222, 128',
+    color: '#A3E635',
+    rgb: '163, 230, 53',
     subtitle: 'Extensão e trava',
     illustration: 'triceps',
     expanding: false,
@@ -79,8 +79,8 @@ export const GROUP_VISUAL_CONFIG = {
   Abdômen: {
     shortCode: 'AB',
     tone: 'abdomen',
-    color: '#A78BFA',
-    rgb: '167, 139, 250',
+    color: '#E879F9',
+    rgb: '232, 121, 249',
     subtitle: 'Core e estabilidade',
     illustration: 'abs',
     expanding: true,
@@ -115,8 +115,8 @@ export const GROUP_VISUAL_CONFIG = {
   Antebraço: {
     shortCode: 'AN',
     tone: 'antebraco',
-    color: '#94A3B8',
-    rgb: '148, 163, 184',
+    color: '#84CC16',
+    rgb: '132, 204, 22',
     subtitle: 'Pegada e controle',
     illustration: 'forearm',
     expanding: false,

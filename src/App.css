@@ -5930,18 +5930,23 @@ main {
   z-index: 1;
   display: grid;
   place-items: center;
-  width: min(100%, 128px);
+  width: min(100%, 132px);
   height: 100%;
   filter:
-    drop-shadow(0 0 10px rgba(var(--mg-rgb), 0.45))
-    drop-shadow(0 0 22px rgba(var(--mg-rgb), 0.22));
+    drop-shadow(0 0 6px rgba(var(--mg-rgb), 0.75))
+    drop-shadow(0 0 16px rgba(var(--mg-rgb), 0.4))
+    drop-shadow(0 0 28px rgba(var(--mg-rgb), 0.2));
 }
 
 .mg-illust {
   width: 100%;
   height: auto;
-  max-height: 132px;
+  max-height: 136px;
   display: block;
+}
+
+.mg-illust--wire {
+  overflow: visible;
 }
 
 .muscle-group-card__body {
@@ -6044,8 +6049,9 @@ main {
 
 .muscle-group-card:hover .mg-illust-wrap {
   filter:
-    drop-shadow(0 0 14px rgba(var(--mg-rgb), 0.65))
-    drop-shadow(0 0 28px rgba(var(--mg-rgb), 0.35));
+    drop-shadow(0 0 8px rgba(var(--mg-rgb), 0.95))
+    drop-shadow(0 0 20px rgba(var(--mg-rgb), 0.55))
+    drop-shadow(0 0 36px rgba(var(--mg-rgb), 0.3));
 }
 
 .muscle-group-card.is-active {
@@ -6071,11 +6077,11 @@ main {
 .muscle-group-card--gluteos { --mg-accent: #c084fc; --mg-rgb: 192, 132, 252; }
 .muscle-group-card--ombros { --mg-accent: #38bdf8; --mg-rgb: 56, 189, 248; }
 .muscle-group-card--biceps { --mg-accent: #facc15; --mg-rgb: 250, 204, 21; }
-.muscle-group-card--triceps { --mg-accent: #4ade80; --mg-rgb: 74, 222, 128; }
-.muscle-group-card--antebraco { --mg-accent: #94a3b8; --mg-rgb: 148, 163, 184; }
+.muscle-group-card--triceps { --mg-accent: #a3e635; --mg-rgb: 163, 230, 53; }
+.muscle-group-card--antebraco { --mg-accent: #84cc16; --mg-rgb: 132, 204, 22; }
 .muscle-group-card--trapezio { --mg-accent: #818cf8; --mg-rgb: 129, 140, 248; }
 .muscle-group-card--lombar { --mg-accent: #34d399; --mg-rgb: 52, 211, 153; }
-.muscle-group-card--abdomen { --mg-accent: #a78bfa; --mg-rgb: 167, 139, 250; }
+.muscle-group-card--abdomen { --mg-accent: #e879f9; --mg-rgb: 232, 121, 249; }
 .muscle-group-card--panturrilha { --mg-accent: #fbbf24; --mg-rgb: 251, 191, 36; }
 .muscle-group-card--cardio { --mg-accent: #f87171; --mg-rgb: 248, 113, 113; }
 .muscle-group-card--mobilidade { --mg-accent: #22d3ee; --mg-rgb: 34, 211, 238; }
