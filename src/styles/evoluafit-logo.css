@@ -109,38 +109,40 @@
 /* ----- Sidebar brand block ----- */
 
 .evoluafit-brand {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  align-items: start;
+  column-gap: 8px;
   width: 100%;
-  padding: 16px 12px;
-  border-bottom: 1px solid rgba(74, 222, 200, 0.12);
+  padding: 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
   box-sizing: border-box;
 }
 
 .evoluafit-brand__identity {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: start;
+  column-gap: 11px;
   min-width: 0;
-  flex: 1;
   text-decoration: none;
   color: inherit;
 }
 
 .evoluafit-brand__mark {
-  width: 58px;
-  height: 58px;
+  width: 46px;
+  height: 46px;
   object-fit: contain;
-  flex: 0 0 auto;
-  filter: drop-shadow(0 0 5px rgba(20, 224, 181, 0.28));
+  object-position: center;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px rgba(20, 224, 181, 0.28));
   pointer-events: none;
   user-select: none;
 }
 
 .evoluafit-brand__content {
   min-width: 0;
+  padding-top: 1px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -151,36 +153,36 @@
   align-items: baseline;
   white-space: nowrap;
   font-family: var(--font-brand, 'Manrope', 'Sora', system-ui, sans-serif);
-  font-size: 1.28rem;
-  font-weight: 750;
-  font-style: italic;
-  line-height: 1;
+  font-size: 1.22rem;
+  font-weight: 780;
+  font-style: normal;
+  line-height: 1.05;
   letter-spacing: -0.025em;
   -webkit-font-smoothing: antialiased;
 }
 
 .evoluafit-brand__name-main {
-  color: var(--brand-white);
+  color: #f8fafc;
 }
 
 .evoluafit-brand__name-accent {
-  color: var(--brand-accent);
-  text-shadow: 0 0 6px rgba(20, 224, 181, 0.18);
+  color: #20dfb1;
+  text-shadow: none;
 }
 
 .evoluafit-brand__tagline {
-  margin: 5px 0 0;
-  max-width: 12rem;
-  color: var(--brand-muted);
+  max-width: 130px;
+  margin: 4px 0 0;
+  color: #91a1b5;
   font-size: 0.7rem;
   font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: 0.01em;
+  line-height: 1.4;
+  letter-spacing: 0;
   white-space: normal;
 }
 
 .evoluafit-brand__tagline-accent {
-  color: rgba(34, 227, 182, 0.82);
+  color: inherit;
 }
 
 .evoluafit-brand__collapse {
@@ -189,32 +191,33 @@
   justify-content: center;
   width: 34px;
   height: 34px;
-  flex: 0 0 auto;
-  margin-top: 2px;
-  border: 1px solid rgba(125, 211, 252, 0.16);
-  border-radius: 11px;
-  background: rgba(11, 26, 47, 0.9);
-  color: #dbeafe;
+  padding: 0;
+  margin-top: 1px;
+  flex-shrink: 0;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 10px;
+  background: rgba(9, 24, 43, 0.88);
+  color: #d8e4f2;
   cursor: pointer;
   transition:
     border-color 180ms ease,
     background-color 180ms ease,
-    color 180ms ease,
-    transform 180ms ease;
+    color 180ms ease;
 }
 
 .evoluafit-brand__collapse:hover {
-  border-color: rgba(34, 227, 182, 0.48);
-  background: rgba(12, 34, 57, 0.98);
-  color: #e0f2fe;
+  border-color: rgba(32, 223, 177, 0.48);
+  background: rgba(12, 32, 53, 0.96);
+  color: #20dfb1;
 }
 
 .evoluafit-brand__collapse:focus-visible {
-  outline: 2px solid var(--brand-accent, #22e3b6);
+  outline: 2px solid #20dfb1;
   outline-offset: 2px;
 }
 
 .evoluafit-brand--collapsed {
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -223,13 +226,15 @@
 }
 
 .evoluafit-brand--collapsed .evoluafit-brand__identity {
-  flex: 0 0 auto;
+  display: flex;
   justify-content: center;
+  grid-template-columns: none;
+  column-gap: 0;
 }
 
 .evoluafit-brand--collapsed .evoluafit-brand__mark {
-  width: 50px;
-  height: 50px;
+  width: 46px;
+  height: 46px;
 }
 
 .evoluafit-brand--collapsed .evoluafit-brand__collapse {
@@ -239,36 +244,32 @@
 }
 
 @media (max-width: 1100px) {
-  .evoluafit-brand {
-    padding: 16px 18px;
+  .evoluafit-brand__mark {
+    width: 42px;
+    height: 42px;
   }
 
-  .evoluafit-brand__mark {
-    width: 58px;
-    height: 58px;
+  .evoluafit-brand__identity {
+    grid-template-columns: 42px minmax(0, 1fr);
   }
 
   .evoluafit-brand__name {
-    font-size: 1.32rem;
+    font-size: 1.1rem;
   }
 
   .evoluafit-brand__tagline {
-    font-size: 0.66rem;
+    font-size: 0.68rem;
   }
 }
 
 @media (max-width: 900px) {
   .evoluafit-brand {
-    padding: 16px 18px;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px;
   }
 
   .evoluafit-brand__collapse {
     display: none;
-  }
-
-  .evoluafit-brand__tagline {
-    white-space: normal;
-    max-width: 11.5rem;
   }
 }
 
@@ -278,11 +279,15 @@
   }
 
   .evoluafit-brand__name {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
 
   .evoluafit-brand__mark {
-    width: 52px;
-    height: 52px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .evoluafit-brand__identity {
+    grid-template-columns: 42px minmax(0, 1fr);
   }
 }

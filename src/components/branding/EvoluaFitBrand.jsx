@@ -45,8 +45,9 @@ export default function EvoluaFitBrand({
             </div>
 
             <p className="evoluafit-brand__tagline">
-              Treine com foco. <span className="evoluafit-brand__tagline-accent">Evolua</span> com
-              constância.
+              Treine com foco.
+              <br />
+              Evolua com constância.
             </p>
           </div>
         )}

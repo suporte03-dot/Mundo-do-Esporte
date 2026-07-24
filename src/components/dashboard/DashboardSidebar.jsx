@@ -94,7 +94,7 @@ export default function DashboardSidebar({
                 aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
                 aria-pressed={collapsed}
               >
-                <IconPanel size={18} />
+                <IconPanel size={16} />
               </button>
             }
           />

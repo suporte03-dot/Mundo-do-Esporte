@@ -149,6 +149,7 @@ html:has(.app--saas) body {
 .dash-sidebar__top {
   display: block;
   padding: 0;
+  /* Flush brand block to sidebar edges so its own 16px padding is the real inset */
   margin: -0.9rem -0.7rem 0;
   border-bottom: none;
 }
