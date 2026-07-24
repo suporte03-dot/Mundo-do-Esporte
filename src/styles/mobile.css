@@ -743,6 +743,15 @@
     max-height: 120px;
   }
 
+  .exercise-library .muscle-group-card--neon .muscle-group-card__art {
+    height: 148px;
+  }
+
+  .exercise-library .muscle-group-card--neon .muscle-group-card__neon {
+    max-width: 148px;
+    max-height: 140px;
+  }
+
   .exercise-library .mg-illust-wrap {
     width: min(100%, 120px);
   }

@@ -302,13 +302,18 @@
   overflow: visible;
 }
 
-.exercise-library .muscle-group-card__body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.28rem;
-  min-width: 0;
-  flex: 1 1 auto;
-  padding: 0 0.2rem;
+.exercise-library .muscle-group-card--neon .muscle-group-card__art {
+  height: 176px;
+  margin-bottom: 0.45rem;
+}
+
+.exercise-library .muscle-group-card--neon .muscle-group-card__neon {
+  max-width: 188px;
+  max-height: 168px;
+}
+
+.exercise-library .muscle-group-card--neon .muscle-group-card__body {
+  gap: 0.2rem;
 }
 
 .exercise-library .muscle-group-card__name {

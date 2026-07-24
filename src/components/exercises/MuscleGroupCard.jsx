@@ -48,7 +48,9 @@ export default function MuscleGroupCard({
       </span>
 
       <span className="muscle-group-card__body">
-        <span className="muscle-group-card__name">{group.label}</span>
+        {!neonImage ? (
+          <span className="muscle-group-card__name">{group.label}</span>
+        ) : null}
         <span className="muscle-group-card__subtitle">{visual.subtitle}</span>
         {expanding ? (
           <em className="muscle-group-card__expanding">em expansão</em>
