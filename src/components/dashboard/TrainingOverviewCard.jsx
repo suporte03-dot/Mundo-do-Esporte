@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { scrollToSection } from '../../utils/scrollToSection'
-import { DumbbellsVisual, IconChevron } from './icons'
+import { IconChevron } from './icons'
+import dumbbellsImage from '../../assets/dashboard/dumbbells-green.png'
 import { getWeeklyProgress } from '../../utils/todayWorkout'
 
 export default function TrainingOverviewCard({ workouts = [], history = [], profile, goals }) {
@@ -35,7 +36,11 @@ export default function TrainingOverviewCard({ workouts = [], history = [], prof
         </div>
 
         <div className="dash-module__visual dash-module__visual--dumbbells" aria-hidden="true">
-          <DumbbellsVisual className="dash-visual-dumbbells" />
+          <img
+            src={dumbbellsImage}
+            alt=""
+            className="dash-visual-dumbbells"
+          />
         </div>
       </div>
 
