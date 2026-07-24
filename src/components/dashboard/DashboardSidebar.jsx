@@ -10,10 +10,9 @@ import {
   IconSpark,
   IconTrend,
 } from './icons'
+import EvoluaFitLogo from '../branding/EvoluaFitLogo'
 import { deriveXpProgress, initialsFromName } from './dashboardUtils'
 import { scrollToSection, handleSectionClick } from '../../utils/scrollToSection'
-
-const logoUrl = (file) => `${import.meta.env.BASE_URL}assets/${file}`
 
 const MAIN_NAV = [
   { id: 'inicio', label: 'Dashboard', Icon: IconHome, tone: 'blue' },
@@ -90,22 +89,13 @@ export default function DashboardSidebar({
             className="dash-sidebar__brand"
             onClick={(e) => handleSectionClick(e, 'inicio', onCloseMobile)}
             aria-label="EvoluaFit — Dashboard"
+            title={collapsed ? 'EvoluaFit' : undefined}
           >
-            <img
-              src={logoUrl('evoluafit-icon.png')}
-              alt=""
-              className="dash-sidebar__logo"
-              width={52}
-              height={52}
+            <EvoluaFitLogo
+              size="medium"
+              compact={collapsed}
+              showWordmark={!collapsed}
             />
-            {!collapsed && (
-              <div className="dash-sidebar__brand-copy">
-                <strong className="dash-sidebar__name">
-                  <span>Evolua</span>
-                  <em>Fit</em>
-                </strong>
-              </div>
-            )}
           </a>
 
           <button

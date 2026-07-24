@@ -26,6 +26,7 @@ import DashboardSidebar from './components/dashboard/DashboardSidebar'
 import './App.css'
 import './styles/dashboard.css'
 import './styles/mobile.css'
+import './styles/evoluafit-logo.css'
 
 function AppContent() {
   const activeSection = useScrollSpy(sectionIds)

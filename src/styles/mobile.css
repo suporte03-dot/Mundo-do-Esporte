@@ -100,6 +100,13 @@
     font-weight: 900;
   }
 
+  .header__brand .evoluafit-logo {
+    --ef-mark: 36px;
+    --ef-word: 1.2rem;
+    --ef-gap: 8px;
+    max-width: min(240px, calc(100vw - 7.5rem));
+  }
+
   .brand-logo {
     height: 56px;
     max-width: min(240px, calc(100vw - 7.5rem));

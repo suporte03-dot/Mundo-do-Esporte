@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { scrollToSection, handleSectionClick } from '../utils/scrollToSection'
 import { IconMenu } from './dashboard/icons'
-
-const logoUrl = (file) => `${import.meta.env.BASE_URL}assets/${file}`
+import EvoluaFitLogo from './branding/EvoluaFitLogo'
 
 /**
  * Compact mobile top bar for SaaS shell.
@@ -33,23 +32,11 @@ export default function Header({ onOpenDashboardMenu }) {
 
         <a
           href="#inicio"
-          className="brand-logo header__brand"
+          className="header__brand"
           onClick={(e) => handleSectionClick(e, 'inicio')}
           aria-label="EvoluaFit — Início"
         >
-          <img
-            src={logoUrl('evoluafit-icon.png')}
-            alt=""
-            className="brand-icon"
-            width={56}
-            height={56}
-          />
-          <div className="brand-copy">
-            <strong className="brand-name">
-              <span>Evolua</span>
-              <em className="brand-name__fit">Fit</em>
-            </strong>
-          </div>
+          <EvoluaFitLogo size="medium" showWordmark />
         </a>
 
         <button
