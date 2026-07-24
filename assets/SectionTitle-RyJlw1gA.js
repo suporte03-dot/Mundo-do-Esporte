@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Qy3n81sD.js";var t=e();function n({tag:e,title:n,subtitle:r,id:i}){return(0,t.jsxs)(`header`,{className:`section-title`,id:i,children:[e&&(0,t.jsx)(`span`,{className:`section-title__tag`,children:e}),(0,t.jsx)(`h2`,{className:`section-title__heading`,children:n}),r&&(0,t.jsx)(`p`,{className:`section-title__subtitle`,children:r})]})}export{n as t};
