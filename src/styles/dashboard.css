@@ -147,12 +147,10 @@ html:has(.app--saas) body {
 }
 
 .dash-sidebar__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem;
-  padding: 0.2rem 0.3rem 0.7rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  display: block;
+  padding: 0;
+  margin: -0.9rem -0.7rem 0;
+  border-bottom: none;
 }
 
 .dash-sidebar__brand {
@@ -203,19 +201,20 @@ html:has(.app--saas) body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  border: 1px solid var(--dash-border);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  background: rgba(11, 26, 47, 0.9);
+  color: #dbeafe;
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .dash-sidebar__collapse:hover {
-  border-color: rgba(59, 130, 246, 0.45);
-  color: #93c5fd;
+  border-color: rgba(34, 227, 182, 0.48);
+  background: rgba(12, 34, 57, 0.98);
+  color: #e0f2fe;
 }
 
 .dash-sidebar__collapse:focus-visible,
@@ -1252,10 +1251,10 @@ html:has(.app--saas) body {
   }
 
   .app--saas .header--saas-mobile .evoluafit-logo {
-    --ef-mark: 36px;
-    --ef-word: 1.2rem;
+    --ef-mark: 48px;
+    --ef-word: 1.25rem;
     --ef-gap: 8px;
-    max-width: min(240px, calc(100vw - 7.5rem));
+    max-width: min(280px, calc(100vw - 7.5rem));
   }
 
   .app--saas .app__content {
@@ -1276,7 +1275,8 @@ html:has(.app--saas) body {
     transform: translateX(0);
   }
 
-  .dash-sidebar__collapse {
+  .dash-sidebar__collapse,
+  .evoluafit-brand__collapse {
     display: none;
   }
 

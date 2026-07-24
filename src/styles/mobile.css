@@ -101,10 +101,10 @@
   }
 
   .header__brand .evoluafit-logo {
-    --ef-mark: 36px;
-    --ef-word: 1.2rem;
+    --ef-mark: 48px;
+    --ef-word: 1.25rem;
     --ef-gap: 8px;
-    max-width: min(240px, calc(100vw - 7.5rem));
+    max-width: min(280px, calc(100vw - 7.5rem));
   }
 
   .brand-logo {

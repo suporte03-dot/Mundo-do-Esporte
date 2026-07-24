@@ -10,7 +10,7 @@ import {
   IconSpark,
   IconTrend,
 } from './icons'
-import EvoluaFitLogo from '../branding/EvoluaFitLogo'
+import EvoluaFitBrand from '../branding/EvoluaFitBrand'
 import { deriveXpProgress, initialsFromName } from './dashboardUtils'
 import { scrollToSection, handleSectionClick } from '../../utils/scrollToSection'
 
@@ -84,29 +84,21 @@ export default function DashboardSidebar({
         aria-label="Navegação do painel"
       >
         <div className="dash-sidebar__top">
-          <a
-            href="#inicio"
-            className="dash-sidebar__brand"
-            onClick={(e) => handleSectionClick(e, 'inicio', onCloseMobile)}
-            aria-label="EvoluaFit — Dashboard"
-            title={collapsed ? 'EvoluaFit' : undefined}
-          >
-            <EvoluaFitLogo
-              size="medium"
-              compact={collapsed}
-              showWordmark={!collapsed}
-            />
-          </a>
-
-          <button
-            type="button"
-            className="dash-sidebar__collapse"
-            onClick={onToggleCollapse}
-            aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
-            aria-pressed={collapsed}
-          >
-            <IconPanel size={18} />
-          </button>
+          <EvoluaFitBrand
+            collapsed={collapsed}
+            onNavigateHome={(e) => handleSectionClick(e, 'inicio', onCloseMobile)}
+            collapseControl={
+              <button
+                type="button"
+                className="evoluafit-brand__collapse"
+                onClick={onToggleCollapse}
+                aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+                aria-pressed={collapsed}
+              >
+                <IconPanel size={18} />
+              </button>
+            }
+          />
         </div>
 
         <nav className="dash-sidebar__nav" aria-label="Módulos">

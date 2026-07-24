@@ -7,8 +7,8 @@ const SIZE_MAP = {
 }
 
 /**
- * EvoluaFit brand mark - hexagonal athletes symbol + neon wordmark.
- * Horizontal composition only: [symbol] [EvoluaFit]
+ * EvoluaFit brand mark — hexagonal athletes symbol + wordmark.
+ * Used in the mobile header. Sidebar uses EvoluaFitBrand.
  */
 export default function EvoluaFitLogo({
   size = 'medium',
@@ -35,13 +35,15 @@ export default function EvoluaFitLogo({
       <img
         src={athletesMark}
         alt=""
+        aria-hidden="true"
         className="evoluafit-logo__mark"
         draggable={false}
         decoding="async"
       />
       {showText ? (
         <span className="evoluafit-logo__wordmark" aria-hidden="true">
-          EvoluaFit
+          <span className="evoluafit-logo__wordmark-main">Evolua</span>
+          <span className="evoluafit-logo__wordmark-accent">Fit</span>
         </span>
       ) : null}
     </span>
