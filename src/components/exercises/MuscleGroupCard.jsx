@@ -2,8 +2,8 @@ import { getMuscleGroupVisual } from '../../data/muscleGroupVisualConfig'
 import { MuscleGroupIllustration } from './MuscleGroupIllustrations'
 
 /**
- * Portrait library card — sticker-art illustration + title + desc + count/arrow.
- * Absolute visual pattern for all muscle-group module cards.
+ * Premium portrait library card — neon anatomical wireframe + title + desc + count/arrow.
+ * Absolute visual pattern for all muscle-group module cards in EvoluaFit.
  */
 export default function MuscleGroupCard({
   group,
@@ -32,7 +32,7 @@ export default function MuscleGroupCard({
       style={style}
       onClick={() => onSelect?.(group.id)}
       aria-pressed={isActive}
-      aria-label={`${group.label}: ${count} ${count === 1 ? 'exercício' : 'exercícios'}`}
+      aria-label={`${group.label}: ${count} ${count === 1 ? 'exercício' : 'exercícios'}. Ver exercícios`}
     >
       <span className="muscle-group-card__art" aria-hidden="true">
         <span className="muscle-group-card__glow" />
@@ -51,8 +51,9 @@ export default function MuscleGroupCard({
         <span className="muscle-group-card__badge" aria-hidden="true">
           {count}
         </span>
-        <span className="muscle-group-card__cta-arrow" aria-hidden="true">
-          →
+        <span className="muscle-group-card__cta" aria-hidden="true">
+          <span className="muscle-group-card__cta-label">Ver</span>
+          <span className="muscle-group-card__cta-arrow">→</span>
         </span>
       </span>
     </button>
