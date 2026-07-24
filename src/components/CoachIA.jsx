@@ -31,6 +31,7 @@ import {
   getContextualRecommendations,
   getTodaySuggestion,
   loadCoachMessages,
+  EMPTY_EXAMPLES,
   QUICK_CHIPS,
   saveCoachExchange,
   saveCoachSuggestionToPlan,
@@ -41,6 +42,14 @@ const COACH_PAGE_CSS = `
 .coach-page{--coach-page-gap:.85rem}
 .coach-page .container{display:flex;flex-direction:column;gap:var(--coach-page-gap);max-width:1100px}
 .coach-page__section-title{margin:0 0 .55rem;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
+.coach-page__notices{margin:0;padding:.75rem .95rem;border-radius:12px;border:1px solid rgba(148,163,184,.22);background:rgba(8,18,35,.55)}
+.coach-page__notices>summary{cursor:pointer;font-weight:700;font-size:.86rem;color:#e2e8f0;list-style:none}
+.coach-page__notices>summary::-webkit-details-marker{display:none}
+.coach-page__notices[open]>summary{margin-bottom:.75rem}
+.coach-page__notices .coach-notice{margin-top:.55rem}
+.coach-ia__empty-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+.coach-ia__picker-empty{display:grid;gap:.75rem}
+.coach-ia__picker-empty p{margin:0;color:rgba(186,198,216,.95);font-size:.9rem;line-height:1.45}
 .coach-hero{position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(140px,.85fr);align-items:center;gap:1rem;min-height:200px;padding:1.75rem 1.85rem;border-radius:var(--radius,16px);border:1px solid rgba(0,217,255,.28);background:linear-gradient(115deg,#071426 0%,#06101f 48%,#031423 100%);box-shadow:inset 0 1px 0 rgba(94,239,255,.08),0 18px 40px rgba(0,0,0,.28);overflow:hidden}
 .coach-hero__copy{position:relative;z-index:2;max-width:36rem}
 .coach-hero__label{margin:0 0 .45rem;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#2dd4bf}
@@ -778,17 +787,6 @@ export default function CoachIA() {
     <section id="coach-ia" className="section section--alt coach-ia coach-page">
       <div className="container">
         <CoachHero />
-        <CoachContextChips summary={summary} />
-        <CoachSafetyNotice />
-        <CoachPrivacyNotice voiceSupported={voiceSupported} />
-        <CoachRecommendations
-          recommendations={recommendations.slice(0, 2)}
-          applyingId={applyingId}
-          appliedIds={appliedIds}
-          onApply={handleApplyRecommendation}
-          onIgnore={handleIgnoreRecommendation}
-          disabled={loading}
-        />
 
         <div className="coach-ia__main glass-card">
           <form className="coach-ia__form" onSubmit={handleSubmit}>
@@ -917,12 +915,13 @@ export default function CoachIA() {
               className={`disclose-toggle disclose-toggle--inline${moreOpen ? ' is-open' : ''}`}
               onClick={() => setMoreOpen((o) => !o)}
               aria-expanded={moreOpen}
+              aria-controls="coach-more-chips"
             >
               <span>{moreOpen ? 'Ocultar sugestões' : 'Mais sugestões'}</span>
               <span aria-hidden="true">{moreOpen ? '▲' : '▼'}</span>
             </button>
             {moreOpen && (
-              <div className="coach-ia__chips" role="list">
+              <div id="coach-more-chips" className="coach-ia__chips" role="list">
                 {extraChips.map((chip) => (
                   <button
                     key={chip.id}
@@ -942,50 +941,85 @@ export default function CoachIA() {
           {showExercisePicker && (
             <div className="coach-ia__picker glass-card">
               <h4>Escolha um exercício</h4>
-              <select
-                className="coach-ia__select"
-                value={selectedExerciseId}
-                onChange={(e) => setSelectedExerciseId(e.target.value)}
-              >
-                <option value="">Selecione…</option>
-                {exerciseOptions.map((ex) => (
-                  <option key={ex.id} value={ex.id}>
-                    {ex.name}
-                  </option>
-                ))}
-              </select>
-              <div className="coach-ia__picker-actions">
-                <button type="button" className="btn btn--primary btn--sm" onClick={handleExplainExercise}>
-                  Explicar
-                </button>
-                <button
-                  type="button"
-                  className="btn btn--ghost btn--sm"
-                  onClick={() => setShowExercisePicker(false)}
-                >
-                  Cancelar
-                </button>
-              </div>
+              {exerciseOptions.length === 0 ? (
+                <div className="coach-ia__picker-empty">
+                  <p>Nenhum exercício disponível ainda. Abra a Biblioteca para explorar o catálogo.</p>
+                  <button
+                    type="button"
+                    className="btn btn--primary btn--sm"
+                    onClick={() => {
+                      setShowExercisePicker(false)
+                      scrollToSection('exercicios')
+                    }}
+                  >
+                    Ir para Biblioteca
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <select
+                    className="coach-ia__select"
+                    value={selectedExerciseId}
+                    onChange={(e) => setSelectedExerciseId(e.target.value)}
+                  >
+                    <option value="">Selecione…</option>
+                    {exerciseOptions.map((ex) => (
+                      <option key={ex.id} value={ex.id}>
+                        {ex.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="coach-ia__picker-actions">
+                    <button
+                      type="button"
+                      className="btn btn--primary btn--sm"
+                      onClick={handleExplainExercise}
+                      disabled={!selectedExerciseId}
+                    >
+                      Explicar
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--sm"
+                      onClick={() => setShowExercisePicker(false)}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
           <div className="coach-ia__chat" aria-live="polite">
             {chronological.length === 0 && !loading && (
               <div className="coach-ia__empty coach-ia__empty--example">
-                <p className="coach-ia__empty-title">Exemplo de conversa</p>
-                <div className="coach-ia__example">
-                  <div className="coach-ia__example-user">
-                    “O que treino hoje?” <span className="coach-ia__example-voice">(voz ou texto)</span>
-                  </div>
-                  <div className="coach-ia__example-coach">
-                    Resposta curta falada + texto na tela, com botão para iniciar o treino —
-                    sem prometer resultados milagrosos.
-                  </div>
-                </div>
+                <p className="coach-ia__empty-title">Comece por aqui</p>
                 <p className="coach-ia__empty-desc">
-                  No treino com as mãos ocupadas, use o microfone. O reconhecimento é do navegador;
-                  o áudio não vai para os servidores EvoluaFit.
+                  Toque em um atalho ou digite/fale sua pergunta. As respostas usam sua planilha e
+                  histórico neste aparelho.
                 </p>
+                <div className="coach-ia__empty-actions" role="list">
+                  {EMPTY_EXAMPLES.map((ex) => (
+                    <button
+                      key={ex.label}
+                      type="button"
+                      role="listitem"
+                      className="coach-ia__chip"
+                      disabled={loading}
+                      onClick={() => {
+                        const chip = QUICK_CHIPS.find((c) => c.prompt === ex.prompt) || {
+                          id: ex.label,
+                          label: ex.label,
+                          prompt: ex.prompt,
+                        }
+                        handleChip(chip)
+                      }}
+                    >
+                      {ex.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -1073,6 +1107,22 @@ export default function CoachIA() {
             <div ref={chatEndRef} />
           </div>
         </div>
+
+        <details className="coach-page__notices">
+          <summary>Avisos de segurança e privacidade</summary>
+          <CoachSafetyNotice />
+          <CoachPrivacyNotice voiceSupported={voiceSupported} />
+        </details>
+
+        <CoachContextChips summary={summary} />
+        <CoachRecommendations
+          recommendations={recommendations.slice(0, 2)}
+          applyingId={applyingId}
+          appliedIds={appliedIds}
+          onApply={handleApplyRecommendation}
+          onIgnore={handleIgnoreRecommendation}
+          disabled={loading}
+        />
       </div>
     </section>
   )

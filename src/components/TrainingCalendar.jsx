@@ -14,7 +14,6 @@ import {
   getMobileAgenda,
   getTrainingStatusByDate,
   markRestDay,
-  markWorkoutCompleted,
   statusLabel,
   syncPlanToCalendar,
   todayKey,
@@ -84,6 +83,7 @@ export default function TrainingCalendar() {
     addWorkout,
     replaceWorkouts,
     startWorkout,
+    markWorkoutDoneWithoutSession,
     showToast,
   } = useFitness()
 
@@ -99,6 +99,33 @@ export default function TrainingCalendar() {
   const [safetyHint, setSafetyHint] = useState('')
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [showFullMonth, setShowFullMonth] = useState(false)
+
+  useEffect(() => {
+    const applyFocusDate = (raw) => {
+      if (!raw || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return
+      setSelectedDate(raw)
+      const d = new Date(`${raw}T12:00:00`)
+      if (!Number.isNaN(d.getTime())) {
+        setCurrent(new Date(d.getFullYear(), d.getMonth(), 1))
+      }
+    }
+
+    try {
+      const stored = sessionStorage.getItem('evoluafit-calendar-focus')
+      if (stored) {
+        sessionStorage.removeItem('evoluafit-calendar-focus')
+        applyFocusDate(stored)
+      }
+    } catch {
+      /* ignore */
+    }
+
+    const onFocus = (event) => {
+      applyFocusDate(event?.detail?.date)
+    }
+    window.addEventListener('evoluafit:calendar-focus', onFocus)
+    return () => window.removeEventListener('evoluafit:calendar-focus', onFocus)
+  }, [])
 
   const year = current.getFullYear()
   const month = current.getMonth()
@@ -292,8 +319,20 @@ export default function TrainingCalendar() {
   }
 
   const handleMarkDone = (workout) => {
-    const next = markWorkoutCompleted(workouts, workout.id)
-    replaceWorkouts(next, 'Treino marcado como realizado!')
+    if (!workout?.id) return
+    const hasExercises = (workout.exercises || []).length > 0
+
+    if (hasExercises) {
+      const startSession = window.confirm(
+        'Para registrar séries e cargas (e alimentar a evolução), inicie a sessão.\n\nOK = iniciar treino agora\nCancelar = marcar como realizado sem cargas',
+      )
+      if (startSession) {
+        startWorkout(workout)
+        return
+      }
+    }
+
+    markWorkoutDoneWithoutSession(workout.id)
   }
 
   const handleRest = (date) => {
@@ -692,7 +731,7 @@ export default function TrainingCalendar() {
                     )}
                     {!w.isRest && st !== 'completed' && (
                       <button type="button" className="btn btn--ghost" onClick={() => handleMarkDone(w)}>
-                        Marcar como realizado
+                        Concluir / iniciar
                       </button>
                     )}
                     <button type="button" className="btn btn--ghost" onClick={() => openEdit(w)}>

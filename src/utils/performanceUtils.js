@@ -125,15 +125,30 @@ export function getLoadEvolution(history) {
 
   history.forEach((session) => {
     const d = new Date(session.completedAt || session.date)
-    const weekKey = `${d.getFullYear()}-W${Math.ceil(d.getDate() / 7)}-${d.getMonth()}`
-    if (!byWeek[weekKey]) byWeek[weekKey] = { week: weekKey, totalLoad: 0, sessions: 0 }
+    if (Number.isNaN(d.getTime())) return
+
+    const monday = new Date(d)
+    const day = monday.getDay()
+    const diff = day === 0 ? -6 : 1 - day
+    monday.setDate(monday.getDate() + diff)
+    monday.setHours(12, 0, 0, 0)
+
+    const weekKey = monday.toISOString().slice(0, 10)
+    const label = monday.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+
+    if (!byWeek[weekKey]) {
+      byWeek[weekKey] = { week: weekKey, label, totalLoad: 0, sessions: 0 }
+    }
     byWeek[weekKey].sessions++
     session.exercises?.forEach((ex) => {
       byWeek[weekKey].totalLoad += parseLoad(ex.load) * (ex.completedSets || ex.sets || 1)
     })
   })
 
-  return Object.values(byWeek).slice(-8)
+  return Object.values(byWeek)
+    .filter((week) => week.totalLoad > 0)
+    .sort((a, b) => a.week.localeCompare(b.week))
+    .slice(-8)
 }
 
 export function getAverageDuration(history) {

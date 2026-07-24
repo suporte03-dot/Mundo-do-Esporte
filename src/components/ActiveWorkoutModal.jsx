@@ -47,6 +47,8 @@ export default function ActiveWorkoutModal() {
     setActiveWorkout,
     completeWorkout,
     updateWorkout,
+    markWorkoutInProgress,
+    refreshPendingSession,
     showToast,
     profile,
   } = useFitness()
@@ -66,8 +68,11 @@ export default function ActiveWorkoutModal() {
   const [showAdd, setShowAdd] = useState(false)
   const [restDoneToast, setRestDoneToast] = useState(false)
   const [elapsedSec, setElapsedSec] = useState(0)
+  const [loadNudgeShown, setLoadNudgeShown] = useState(false)
 
   const isAdvanced = profile?.level === 'Avançado'
+  const canAddExercise = isAdvanced || sessionExercises.length === 0
+  const markedPartialRef = useRef(false)
   const muscleOptions = useMemo(() => {
     const fromWorkout = activeWorkout?.muscleGroups || []
     const fromExercises = (sessionExercises.length ? sessionExercises : activeWorkout?.exercises || [])
@@ -110,6 +115,8 @@ export default function ActiveWorkoutModal() {
   useEffect(() => {
     if (!activeWorkout) {
       restoredRef.current = false
+      markedPartialRef.current = false
+      setLoadNudgeShown(false)
       return
     }
 
@@ -224,6 +231,7 @@ export default function ActiveWorkoutModal() {
     if (window.confirm('Deseja sair do treino? O progresso desta sessão ficará salvo para continuar depois.')) {
       persistSession()
       setActiveWorkout(null)
+      window.setTimeout(() => refreshPendingSession?.(), 0)
     }
   }
 
@@ -243,6 +251,11 @@ export default function ActiveWorkoutModal() {
   const handleCompleteSet = (exIndex, setNumber, draft) => {
     if (!draft?.reps || isPaused) return
 
+    if (activeWorkout?.id && !markedPartialRef.current && activeWorkout.status !== 'Realizado') {
+      markedPartialRef.current = true
+      markWorkoutInProgress(activeWorkout.id)
+    }
+
     const updated = sessionExercises.map((ex, i) => {
       if (i !== exIndex) return ex
       return completeSetOnExercise(ex, setNumber, {
@@ -252,6 +265,12 @@ export default function ActiveWorkoutModal() {
     })
 
     setSessionExercises(updated)
+
+    const completedSets = getSessionProgress(updated).completedSets
+    if (!loadNudgeShown && completedSets >= 2 && !String(draft.weight || '').trim()) {
+      setLoadNudgeShown(true)
+      showToast('Dica: registrar cargas alimenta sua evolução de volume.', 'info')
+    }
 
     const ex = updated[exIndex]
     const stillMore = (ex.completedSets || 0) < (ex.targetSets || ex.sets || 3)
@@ -291,6 +310,13 @@ export default function ActiveWorkoutModal() {
   }
 
   const handleSummaryClose = () => {
+    if (
+      !window.confirm(
+        'Fechar sem salvar? O progresso da sessão continua disponível para retomar, mas este resumo não será gravado no histórico.',
+      )
+    ) {
+      return
+    }
     setShowSummary(false)
     setPendingPayload(null)
   }
@@ -382,6 +408,16 @@ export default function ActiveWorkoutModal() {
               <button type="button" className="btn btn--ghost btn--sm" onClick={togglePause}>
                 {isPaused ? 'Retomar' : 'Pausar'}
               </button>
+              {progress.completedSets > 0 && progress.percent < 100 && (
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm"
+                  onClick={() => openSummary(true)}
+                  disabled={isPaused}
+                >
+                  Salvar parcial
+                </button>
+              )}
               <button
                 type="button"
                 className="btn btn--primary"
@@ -486,7 +522,17 @@ export default function ActiveWorkoutModal() {
           </div>
 
           {!sessionExercises.length && (
-            <p className="empty-text">Este treino não possui exercícios cadastrados.</p>
+            <div className="workout-session__empty">
+              <p className="empty-text">Este treino não possui exercícios cadastrados.</p>
+              <button
+                type="button"
+                className="btn btn--primary btn--sm"
+                onClick={() => setShowAdd(true)}
+                disabled={isPaused}
+              >
+                Adicionar exercício
+              </button>
+            </div>
           )}
 
           <DayVolumeSummary
@@ -495,7 +541,7 @@ export default function ActiveWorkoutModal() {
             volumeSummary={activeWorkout?.volumeSummary}
           />
 
-          {isAdvanced && (
+          {canAddExercise && sessionExercises.length > 0 && (
             <div className="workout-session__add-row">
               <button
                 type="button"

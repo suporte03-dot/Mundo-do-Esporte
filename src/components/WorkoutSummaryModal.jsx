@@ -31,6 +31,16 @@ export default function WorkoutSummaryModal({ isOpen, onClose, onConfirm, sessio
     onConfirm?.()
   }
 
+  const handleDismiss = () => {
+    if (
+      window.confirm(
+        'Fechar sem salvar? Este resumo não entrará no histórico. A sessão ainda pode ser retomada se você não salvou antes.',
+      )
+    ) {
+      onClose?.()
+    }
+  }
+
   const handleBackToWorkouts = () => {
     onConfirm?.()
     setTimeout(() => scrollToSection('treinos'), 80)
@@ -42,7 +52,7 @@ export default function WorkoutSummaryModal({ isOpen, onClose, onConfirm, sessio
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Resumo do treino" size="md">
+    <Modal isOpen={isOpen} onClose={handleDismiss} title="Resumo do treino" size="md">
       <div className="workout-summary workout-summary--complete">
         <div className="workout-summary__celebrate" aria-hidden="true">
           <span>✓</span>

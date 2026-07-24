@@ -1,0 +1,131 @@
+/* EvoluaFit design tokens — single source for premium dark UI */
+
+:root {
+  --app-bg: #030b18;
+  --surface-primary: #071426;
+  --surface-secondary: #0a1930;
+  --surface-elevated: #0d2038;
+
+  --accent-primary: #14e0b5;
+  --accent-blue: #3b82f6;
+  --accent-orange: #f59e0b;
+  --accent-green: #22c55e;
+  --accent-purple: #a855f7;
+  --accent-cyan: #06b6d4;
+  --accent-red: #ef4444;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --border-subtle: rgba(148, 163, 184, 0.16);
+  --border-accent: rgba(20, 224, 181, 0.28);
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --shadow-card: 0 18px 50px rgba(0, 0, 0, 0.24);
+
+  --bg-main: var(--app-bg);
+  --bg-section: var(--surface-primary);
+  --bg-card: #0b1220;
+  --bg-card-soft: var(--surface-secondary);
+  --primary: var(--accent-primary);
+  --primary-soft: rgba(20, 224, 181, 0.14);
+  --primary-border: rgba(20, 224, 181, 0.45);
+  --secondary: var(--accent-cyan);
+  --secondary-soft: rgba(6, 182, 212, 0.14);
+  --coach: var(--accent-purple);
+  --coach-soft: rgba(168, 85, 247, 0.16);
+  --energy: var(--accent-orange);
+  --energy-soft: rgba(245, 158, 11, 0.16);
+  --performance: var(--accent-blue);
+  --performance-soft: rgba(59, 130, 246, 0.16);
+  --danger: var(--accent-red);
+  --danger-soft: rgba(239, 68, 68, 0.14);
+  --text-main: var(--text-primary);
+  --border-soft: var(--border-subtle);
+
+  --gradient-primary: linear-gradient(135deg, #14e0b5, #06b6d4);
+  --gradient-coach: linear-gradient(135deg, #a855f7, #06b6d4);
+  --glow-primary: 0 0 22px rgba(20, 224, 181, 0.18);
+  --glow-secondary: 0 0 22px rgba(6, 182, 212, 0.16);
+  --glow-coach: 0 0 22px rgba(168, 85, 247, 0.18);
+  --glow-energy: 0 0 20px rgba(245, 158, 11, 0.16);
+
+  --type-push: var(--primary);
+  --type-push-soft: var(--primary-soft);
+  --type-pull: var(--performance);
+  --type-pull-soft: var(--performance-soft);
+  --type-legs: var(--energy);
+  --type-legs-soft: var(--energy-soft);
+  --type-full: var(--coach);
+  --type-full-soft: var(--coach-soft);
+  --type-core: #a78bfa;
+  --type-core-soft: rgba(167, 139, 250, 0.16);
+  --type-cardio: #f97316;
+  --type-cardio-soft: rgba(249, 115, 22, 0.16);
+  --type-mobility: var(--secondary);
+  --type-mobility-soft: var(--secondary-soft);
+  --type-rest: var(--text-muted);
+  --type-rest-soft: rgba(148, 163, 184, 0.14);
+
+  --color-bg: var(--bg-main);
+  --color-surface: var(--bg-section);
+  --color-surface-soft: var(--bg-card-soft);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-coach: var(--coach);
+  --color-energy: var(--energy);
+  --color-danger: var(--danger);
+  --color-text: var(--text-main);
+  --color-muted: var(--text-muted);
+  --color-perf: var(--performance);
+
+  --fn-week: var(--secondary);
+  --fn-month: var(--performance);
+  --fn-next: var(--energy);
+  --fn-muscle: var(--secondary);
+  --fn-streak: var(--energy);
+  --fn-avgtime: var(--performance);
+  --fn-volume: var(--primary);
+  --fn-goals: var(--energy);
+
+  --bg-primary: var(--bg-main);
+  --bg-deep: #04101f;
+  --graphite: var(--bg-section);
+  --green: var(--primary);
+  --green-secondary: #00c97b;
+  --accent: var(--primary);
+  --blue: var(--performance);
+  --blue-deep: #12304f;
+  --cyan: var(--secondary);
+  --purple: var(--coach);
+  --orange: var(--energy);
+  --red: var(--danger);
+  --snow: var(--text-main);
+  --gray: var(--text-muted);
+
+  --bg-page: var(--bg-main);
+  --bg-glass: rgba(11, 18, 32, 0.78);
+  --bg-glass-soft: rgba(11, 34, 56, 0.55);
+  --border: var(--border-soft);
+  --border-strong: var(--primary-border);
+
+  --radius: var(--radius-md);
+  --font-heading: 'Sora', system-ui, sans-serif;
+  --font-brand: 'Manrope', 'Sora', system-ui, sans-serif;
+  --font: 'Inter', system-ui, sans-serif;
+  --header-h: 96px;
+  --header-banner-h: 0px;
+  --container: 1140px;
+  --shadow: var(--shadow-card);
+  --glow-green: var(--glow-primary);
+  --glow-cyan: var(--glow-secondary);
+
+  --dash-orange: var(--energy);
+  --dash-orange-soft: var(--energy-soft);
+  --dash-module-green: var(--primary);
+  --dash-module-blue: var(--performance);
+  --dash-module-purple: var(--coach);
+  --dash-module-cyan: var(--secondary);
+}

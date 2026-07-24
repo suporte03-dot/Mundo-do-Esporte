@@ -81,7 +81,7 @@ export default function PerformanceDashboard() {
   const loadPoints = useMemo(
     () =>
       (performance.loadEvolution || []).map((week, i) => ({
-        label: `S${i + 1}`,
+        label: week.label || `S${i + 1}`,
         value: week.totalLoad || 0,
       })),
     [performance.loadEvolution],
@@ -243,7 +243,7 @@ export default function PerformanceDashboard() {
                         const maxLoad = Math.max(...performance.loadEvolution.map((w) => w.totalLoad), 1)
                         return (
                           <div key={week.week} className="bar-chart-row">
-                            <span className="bar-chart-row__label">{week.week}</span>
+                            <span className="bar-chart-row__label">{week.label || week.week}</span>
                             <div className="bar-chart">
                               <div
                                 className="bar-chart__fill bar-chart__fill--orange"

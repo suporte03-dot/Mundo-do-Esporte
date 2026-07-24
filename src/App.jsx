@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { sectionIds } from './data/siteData'
 import { useScrollSpy } from './hooks/useScrollSpy'
 import { useSectionHash } from './hooks/useSectionHash'
@@ -6,20 +6,11 @@ import { useHashRoute } from './hooks/useHashRoute'
 import { FitnessProvider, useFitness } from './context/FitnessContext'
 import { loadExercises } from './services/exerciseService'
 import Header from './components/Header'
-import HowItWorks from './components/HowItWorks'
 import SectionDivider from './components/SectionDivider'
-import MyWorkouts from './components/MyWorkouts'
-import WorkoutPlanner from './components/WorkoutPlanner'
-import CoachIA from './components/CoachIA'
-import ExerciseLibrary from './components/ExerciseLibrary'
-import ExerciseDetailPage from './components/ExerciseDetailPage'
-import TrainingCalendar from './components/TrainingCalendar'
-import PerformanceDashboard from './components/PerformanceDashboard'
-import Goals from './components/Goals'
-import UserProfile from './components/UserProfile'
 import Footer from './components/Footer'
 import Toast from './components/Toast'
 import StartWorkoutModal from './components/StartWorkoutModal'
+import SessionResumeBanner from './components/SessionResumeBanner'
 import MobileNav from './components/MobileNav'
 import DashboardShell from './components/dashboard/DashboardShell'
 import DashboardSidebar from './components/dashboard/DashboardSidebar'
@@ -27,6 +18,26 @@ import './App.css'
 import './styles/dashboard.css'
 import './styles/mobile.css'
 import './styles/evoluafit-logo.css'
+
+const HowItWorks = lazy(() => import('./components/HowItWorks'))
+const MyWorkouts = lazy(() => import('./components/MyWorkouts'))
+const WorkoutPlanner = lazy(() => import('./components/WorkoutPlanner'))
+const CoachIA = lazy(() => import('./components/CoachIA'))
+const ExerciseLibrary = lazy(() => import('./components/ExerciseLibrary'))
+const ExerciseDetailPage = lazy(() => import('./components/ExerciseDetailPage'))
+const TrainingCalendar = lazy(() => import('./components/TrainingCalendar'))
+const PerformanceDashboard = lazy(() => import('./components/PerformanceDashboard'))
+const Goals = lazy(() => import('./components/Goals'))
+const UserProfile = lazy(() => import('./components/UserProfile'))
+
+function SectionFallback({ label = 'Carregando' }) {
+  return (
+    <div className="section-lazy-fallback" role="status" aria-live="polite">
+      <span className="section-lazy-fallback__pulse" aria-hidden="true" />
+      <span>{label}...</span>
+    </div>
+  )
+}
 
 function AppContent() {
   const activeSection = useScrollSpy(sectionIds)
@@ -77,22 +88,25 @@ function AppContent() {
             onOpenDashboardMenu={() => setMobileMenuOpen(true)}
           />
           <main>
+            <SessionResumeBanner />
             <DashboardShell />
-            <HowItWorks />
-            <SectionDivider variant="workouts" label="TREINOS" />
-            <MyWorkouts />
-            <WorkoutPlanner />
-            <SectionDivider variant="coach" label="COACH IA" />
-            <CoachIA />
-            <ExerciseLibrary />
-            <SectionDivider variant="calendar" label="CALENDÁRIO" />
-            <TrainingCalendar />
-            <SectionDivider variant="progress" label="EVOLUÇÃO" />
-            <PerformanceDashboard />
-            <Goals />
-            <SectionDivider variant="profile" label="PERFIL" />
-            <UserProfile />
-            <Footer />
+            <Suspense fallback={<SectionFallback label="Carregando conteúdo" />}>
+              <HowItWorks />
+              <SectionDivider variant="workouts" label="TREINOS" />
+              <MyWorkouts />
+              <WorkoutPlanner />
+              <SectionDivider variant="coach" label="COACH IA" />
+              <CoachIA />
+              <ExerciseLibrary />
+              <SectionDivider variant="calendar" label="CALENDÁRIO" />
+              <TrainingCalendar />
+              <SectionDivider variant="progress" label="EVOLUÇÃO" />
+              <PerformanceDashboard />
+              <Goals />
+              <SectionDivider variant="profile" label="PERFIL" />
+              <UserProfile />
+              <Footer />
+            </Suspense>
           </main>
         </div>
       </div>
@@ -100,7 +114,11 @@ function AppContent() {
       <Toast toasts={toasts} />
       <StartWorkoutModal />
       <MobileNav activeSection={activeSection} />
-      {page === 'exercise' && exerciseId && <ExerciseDetailPage exerciseId={exerciseId} />}
+      {page === 'exercise' && exerciseId && (
+        <Suspense fallback={<SectionFallback label="Carregando exercício" />}>
+          <ExerciseDetailPage exerciseId={exerciseId} />
+        </Suspense>
+      )}
     </div>
   )
 }

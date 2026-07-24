@@ -1,10 +1,9 @@
 import {
-  IconBell,
   IconCalendar,
   IconChart,
   IconDumbbell,
   IconHome,
-  IconMessage,
+  IconLibrary,
   IconPanel,
   IconSettings,
   IconSpark,
@@ -18,12 +17,13 @@ const MAIN_NAV = [
   { id: 'inicio', label: 'Dashboard', Icon: IconHome, tone: 'blue' },
   { id: 'inicio', label: 'Indicadores', Icon: IconChart, hash: 'dash-indicadores', tone: 'orange' },
   { id: 'treinos', label: 'Meus Treinos', Icon: IconDumbbell, tone: 'green' },
+  { id: 'planilha', label: 'Planilha', Icon: IconPanel, tone: 'green' },
+  { id: 'exercicios', label: 'Biblioteca', Icon: IconLibrary, tone: 'cyan' },
   { id: 'calendario', label: 'Calendário', Icon: IconCalendar, tone: 'blue' },
   { id: 'desempenho', label: 'Evolução', Icon: IconTrend, tone: 'purple' },
   { id: 'coach-ia', label: 'Coach IA', Icon: IconSpark, tone: 'cyan' },
-  { id: 'perfil', label: 'Notificações', Icon: IconBell, badge: 2, tone: 'blue' },
-  { id: 'coach-ia', label: 'Mensagens', Icon: IconMessage, tone: 'cyan' },
-  { id: 'perfil', label: 'Configurações', Icon: IconSettings, tone: 'blue' },
+  { id: 'metas', label: 'Metas', Icon: IconChart, tone: 'orange' },
+  { id: 'perfil', label: 'Perfil', Icon: IconSettings, tone: 'blue' },
 ]
 
 function navTarget(item) {
@@ -57,7 +57,6 @@ export default function DashboardSidebar({
   const isActive = (item) => {
     if (item.label === 'Dashboard') return activeSection === 'inicio' && !item.hash
     if (item.hash) return false
-    if (['Notificações', 'Mensagens', 'Configurações'].includes(item.label)) return false
     return activeSection === item.id
   }
 

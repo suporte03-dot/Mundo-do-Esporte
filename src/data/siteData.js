@@ -23,18 +23,19 @@ export const navItems = [
 ]
 
 export const mobileNavItems = [
-  { id: 'inicio', label: 'Início', icon: '🏠' },
-  { id: 'treinos', label: 'Treinos', icon: '🏋️' },
-  { id: 'calendario', label: 'Calendário', icon: '🗓️' },
-  { id: 'desempenho', label: 'Evolução', icon: '📈' },
-  { id: 'perfil', label: 'Perfil', icon: '👤' },
+  { id: 'inicio', label: 'Início' },
+  { id: 'treinos', label: 'Treinos' },
+  { id: 'calendario', label: 'Calendário' },
+  { id: 'desempenho', label: 'Evolução' },
+  { id: 'mais', label: 'Mais' },
 ]
 
 export const mobileNavMoreItems = [
-  { id: 'planilha', label: 'Planilha', icon: '📋' },
-  { id: 'exercicios', label: 'Exercícios', icon: '💪' },
-  { id: 'metas', label: 'Metas', icon: '🎯' },
-  { id: 'coach-ia', label: 'Coach IA', icon: '✦' },
+  { id: 'planilha', label: 'Planilha' },
+  { id: 'exercicios', label: 'Biblioteca' },
+  { id: 'coach-ia', label: 'Coach IA' },
+  { id: 'metas', label: 'Metas' },
+  { id: 'perfil', label: 'Perfil' },
 ]
 
 export const BRAND = {

@@ -178,5 +178,10 @@ export async function loadExercises() {
   }
 
   setExerciseCache(localExercises)
-  return { exercises: localExercises, source: 'local', error }
+  return {
+    exercises: localExercises,
+    source: 'local',
+    error: error || null,
+    fallback: Boolean(error),
+  }
 }

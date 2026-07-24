@@ -118,7 +118,17 @@ export default function CalendarOverviewCard({ workouts = [] }) {
                     className={`dash-mini-cal__day${cell.key === todayKey ? ' is-today' : ''}${
                       cell.status ? ` is-${cell.status}` : ''
                     }`}
-                    onClick={() => scrollToSection('calendario')}
+                    onClick={() => {
+                      try {
+                        sessionStorage.setItem('evoluafit-calendar-focus', cell.key)
+                      } catch {
+                        /* ignore */
+                      }
+                      window.dispatchEvent(
+                        new CustomEvent('evoluafit:calendar-focus', { detail: { date: cell.key } }),
+                      )
+                      scrollToSection('calendario')
+                    }}
                     aria-label={`Dia ${cell.day}${cell.status ? `, ${cell.status}` : ''}`}
                   >
                     {cell.day}

@@ -47,6 +47,18 @@ export function IconChart(props) {
   )
 }
 
+export function IconLibrary(props) {
+  return (
+    <Icon {...props}>
+      <path d="M4 19.5V6.5A2.5 2.5 0 0 1 6.5 4H20v15.5" />
+      <path d="M6.5 4A2.5 2.5 0 0 0 4 6.5" />
+      <path d="M8 8h8" />
+      <path d="M8 12h8" />
+      <path d="M8 16h5" />
+    </Icon>
+  )
+}
+
 export function IconDumbbell(props) {
   return (
     <Icon {...props}>

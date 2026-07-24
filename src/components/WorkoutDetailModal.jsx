@@ -25,7 +25,8 @@ function persistableExercises(list) {
 }
 
 export default function WorkoutDetailModal({ workout, isOpen, onClose }) {
-  const { startWorkout, addWorkoutToPlan, updateWorkout, showToast, profile } = useFitness()
+  const { startWorkout, addWorkoutToPlan, updateWorkout, updatePlanDay, showToast, profile } =
+    useFitness()
   const [substituteIndex, setSubstituteIndex] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
 
@@ -39,6 +40,20 @@ export default function WorkoutDetailModal({ workout, isOpen, onClose }) {
     const main = detail?.mainMuscleGroup ? [detail.mainMuscleGroup] : []
     return [...new Set([...main, ...fromWorkout, ...fromExercises].filter(Boolean))]
   }, [workout, detail])
+
+  const persistDayExercises = (next) => {
+    const volumeSummary = summarizeDayVolume(next, workout.workoutType || detail.type).text
+    const exercises = persistableExercises(next)
+
+    if (workout?.planId && workout?.dayNumber != null) {
+      updatePlanDay(workout.planId, workout.dayNumber, {
+        exercises,
+        volumeSummary,
+      })
+    } else {
+      updateWorkout(workout.id, { exercises, volumeSummary })
+    }
+  }
 
   if (!isOpen || !detail) return null
 
@@ -58,10 +73,7 @@ export default function WorkoutDetailModal({ workout, isOpen, onClose }) {
   const handleSubstitute = (catalogEx) => {
     if (substituteIndex == null || !workout?.id) return
     const next = replaceExerciseInList(workout.exercises || [], substituteIndex, catalogEx, true)
-    updateWorkout(workout.id, {
-      exercises: persistableExercises(next),
-      volumeSummary: summarizeDayVolume(next, workout.workoutType || detail.type).text,
-    })
+    persistDayExercises(next)
     setSubstituteIndex(null)
     showToast('Exercício substituído com sucesso!')
   }
@@ -69,10 +81,7 @@ export default function WorkoutDetailModal({ workout, isOpen, onClose }) {
   const handleAddExercise = (catalogEx) => {
     if (!workout?.id) return
     const next = appendExerciseToList(workout.exercises || [], catalogEx, { sets: 3, reps: '8-12' })
-    updateWorkout(workout.id, {
-      exercises: persistableExercises(next),
-      volumeSummary: summarizeDayVolume(next, workout.workoutType || detail.type).text,
-    })
+    persistDayExercises(next)
     setShowAdd(false)
     showToast('Exercício adicionado ao treino!')
   }

@@ -51,7 +51,7 @@
   object-fit: contain;
   object-position: center;
   opacity: 1;
-  filter: drop-shadow(0 0 7px rgba(34, 227, 182, 0.38));
+  filter: drop-shadow(0 0 5px rgba(20, 224, 181, 0.28));
   pointer-events: none;
   user-select: none;
 }
@@ -75,7 +75,7 @@
 
 .evoluafit-logo__wordmark-accent {
   color: var(--brand-accent);
-  text-shadow: 0 0 8px rgba(34, 227, 182, 0.24);
+  text-shadow: 0 0 6px rgba(20, 224, 181, 0.18);
 }
 
 .evoluafit-logo--compact {
@@ -134,7 +134,7 @@
   height: 58px;
   object-fit: contain;
   flex: 0 0 auto;
-  filter: drop-shadow(0 0 7px rgba(34, 227, 182, 0.38));
+  filter: drop-shadow(0 0 5px rgba(20, 224, 181, 0.28));
   pointer-events: none;
   user-select: none;
 }
@@ -165,7 +165,7 @@
 
 .evoluafit-brand__name-accent {
   color: var(--brand-accent);
-  text-shadow: 0 0 8px rgba(34, 227, 182, 0.24);
+  text-shadow: 0 0 6px rgba(20, 224, 181, 0.18);
 }
 
 .evoluafit-brand__tagline {

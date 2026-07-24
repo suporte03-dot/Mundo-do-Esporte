@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx'
 import { getExerciseById } from '../data/exercisesData'
 
 const WEEKDAY_LABELS = [
@@ -102,29 +101,31 @@ export function planToExcelRows(plan) {
  * @param {string} [filename]
  */
 export function exportWorkoutToExcel(plan, filename = 'evoluafit-planilha-treino.xlsx') {
-  const rows = planToExcelRows(plan)
-  if (!rows.length) {
-    throw new Error('Planilha vazia')
-  }
+  return import('xlsx').then((XLSX) => {
+    const rows = planToExcelRows(plan)
+    if (!rows.length) {
+      throw new Error('Planilha vazia')
+    }
 
-  const worksheet = XLSX.utils.json_to_sheet(rows, { header: HEADERS })
-  worksheet['!cols'] = [
-    { wch: 18 },
-    { wch: 22 },
-    { wch: 18 },
-    { wch: 14 },
-    { wch: 16 },
-    { wch: 16 },
-    { wch: 28 },
-    { wch: 8 },
-    { wch: 12 },
-    { wch: 10 },
-    { wch: 16 },
-    { wch: 40 },
-    { wch: 40 },
-  ]
+    const worksheet = XLSX.utils.json_to_sheet(rows, { header: HEADERS })
+    worksheet['!cols'] = [
+      { wch: 18 },
+      { wch: 22 },
+      { wch: 18 },
+      { wch: 14 },
+      { wch: 16 },
+      { wch: 16 },
+      { wch: 28 },
+      { wch: 8 },
+      { wch: 12 },
+      { wch: 10 },
+      { wch: 16 },
+      { wch: 40 },
+      { wch: 40 },
+    ]
 
-  const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Planilha de Treino')
-  XLSX.writeFile(workbook, filename)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Planilha de Treino')
+    XLSX.writeFile(workbook, filename)
+  })
 }

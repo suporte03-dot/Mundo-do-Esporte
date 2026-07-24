@@ -44,6 +44,8 @@ export default function WorkoutHistory({ embedded = false }) {
               <div className="history-item__meta">
                 <span>{session.durationMinutes} min</span>
                 <span>{session.exercises?.length} exercícios</span>
+                {session.partial ? <span>Parcial</span> : null}
+                {session.noSession ? <span>Sem cargas</span> : null}
               </div>
             </button>
           ))}
@@ -56,7 +58,10 @@ export default function WorkoutHistory({ embedded = false }) {
             <p>
               Realizado em{' '}
               {new Date(selected.completedAt).toLocaleString('pt-BR')} · {selected.durationMinutes} minutos
+              {selected.partial ? ' · parcial' : ''}
+              {selected.noSession ? ' · sem sessão de cargas' : ''}
             </p>
+            {selected.notes ? <p className="history-detail__notes">{selected.notes}</p> : null}
             <ul>
               {selected.exercises?.map((ex, i) => (
                 <li key={i}>

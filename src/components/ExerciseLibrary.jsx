@@ -43,7 +43,7 @@ function usePageSize() {
 
 export default function ExerciseLibrary() {
   const { addExerciseToPlan } = useFitness()
-  const { exercises, loading } = useExercises()
+  const { exercises, loading, error, usingFallback, reload } = useExercises()
   const pageSize = usePageSize()
 
   const [search, setSearch] = useState('')
@@ -312,8 +312,29 @@ export default function ExerciseLibrary() {
           <p className="library-loading" aria-live="polite">
             Carregando exercícios...
           </p>
+        ) : error && exercises.length === 0 ? (
+          <div className="library-empty library-empty--error" role="alert">
+            <p>Não foi possível carregar a biblioteca.</p>
+            <p className="library-empty__hint">{error}</p>
+            <button type="button" className="btn btn--primary" onClick={reload}>
+              Tentar novamente
+            </button>
+          </div>
         ) : (
           <>
+            {usingFallback && (
+              <p className="library-fallback-note" role="status">
+                Catálogo local em uso — nuvem indisponível no momento.
+              </p>
+            )}
+            {activeFilterCount > 0 && showGroups && (
+              <div className="library-active-filters">
+                <span>{activeFilterCount} filtro{activeFilterCount === 1 ? '' : 's'} ativo{activeFilterCount === 1 ? '' : 's'}</span>
+                <button type="button" className="btn btn--ghost btn--sm" onClick={clearFilters}>
+                  Limpar filtros
+                </button>
+              </div>
+            )}
             {showGroups && (
               <div className="muscle-browse">
                 <div className="muscle-group-grid">
@@ -377,7 +398,10 @@ export default function ExerciseLibrary() {
 
                 {resultList.length === 0 ? (
                   <div className="library-empty">
-                    <p>Nenhum exercício encontrado.</p>
+                    <p>Nenhum exercício encontrado com esses critérios.</p>
+                    <p className="library-empty__hint">
+                      Tente outro termo, limpe os filtros ou volte aos grupos musculares.
+                    </p>
                     <button type="button" className="btn btn--primary" onClick={clearFilters}>
                       Limpar filtros
                     </button>

@@ -312,6 +312,14 @@
   max-height: 168px;
 }
 
+.exercise-library .muscle-group-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .exercise-library .muscle-group-card--neon .muscle-group-card__body {
   gap: 0.2rem;
 }
@@ -515,6 +523,45 @@
   align-items: flex-start;
   gap: 0.85rem;
   padding: 1.25rem 0 0.5rem;
+}
+
+.exercise-library .library-empty__hint {
+  margin: 0;
+  color: rgba(148, 163, 184, 0.95);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  max-width: 36rem;
+}
+
+.exercise-library .library-empty--error {
+  padding: 1.5rem 1.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  background: rgba(127, 29, 29, 0.18);
+}
+
+.exercise-library .library-fallback-note {
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  background: rgba(14, 116, 144, 0.14);
+  color: rgba(186, 230, 253, 0.95);
+  font-size: 0.88rem;
+}
+
+.exercise-library .library-active-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.55);
+  color: rgba(203, 213, 225, 0.95);
+  font-size: 0.88rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

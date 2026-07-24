@@ -1,10 +1,24 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useFitness } from '../context/FitnessContext'
 import { generateWorkoutPlan, planToWorkouts } from '../utils/workoutGenerator'
 import { exportWorkoutToExcel } from '../utils/exportWorkoutToExcel'
 import SectionTitle from './SectionTitle'
 import GeneratedPlan from './GeneratedPlan'
 import PremiumSelect from './PremiumSelect'
+
+const PLANNER_DRAFT_KEY = 'evoluafit-planner-draft'
+
+function readPlannerDraft() {
+  try {
+    const raw = localStorage.getItem(PLANNER_DRAFT_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (!parsed?.form || typeof parsed.step !== 'number') return null
+    return parsed
+  } catch {
+    return null
+  }
+}
 
 const objectives = [
   { value: 'saude', label: 'Saúde geral' },
@@ -41,21 +55,41 @@ const STEPS = [
 ]
 
 export default function WorkoutPlanner() {
-  const { profile, savePlan, addPlanWorkouts, showToast, generatedPlan } = useFitness()
-  const [form, setForm] = useState({
-    objective: profile.objective || 'saude',
-    level: profile.level || 'Iniciante',
-    daysPerWeek: profile.daysPerWeek || 3,
-    duration: profile.duration || 45,
-    location: profile.location || 'Academia',
-    equipment: profile.equipment || ['Academia completa'],
-    restrictions: profile.restrictions || [],
-  })
+  const { profile, savePlan, addPlanWorkouts, showToast, generatedPlan, workouts } = useFitness()
+  const draft = readPlannerDraft()
+
+  const [form, setForm] = useState(() => ({
+    objective: draft?.form?.objective || profile.objective || 'saude',
+    level: draft?.form?.level || profile.level || 'Iniciante',
+    daysPerWeek: draft?.form?.daysPerWeek || profile.daysPerWeek || 3,
+    duration: draft?.form?.duration || profile.duration || 45,
+    location: draft?.form?.location || profile.location || 'Academia',
+    equipment: draft?.form?.equipment || profile.equipment || ['Academia completa'],
+    restrictions: draft?.form?.restrictions || profile.restrictions || [],
+  }))
   const [plan, setPlan] = useState(() => generatedPlan || null)
-  const [noRestrictions, setNoRestrictions] = useState(!(profile.restrictions || []).length)
-  const [step, setStep] = useState(1)
+  const [noRestrictions, setNoRestrictions] = useState(
+    draft ? Boolean(draft.noRestrictions) : !(profile.restrictions || []).length,
+  )
+  const [step, setStep] = useState(() => Math.min(5, Math.max(1, draft?.step || 1)))
   const [generating, setGenerating] = useState(false)
   const [justGenerated, setJustGenerated] = useState(false)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        PLANNER_DRAFT_KEY,
+        JSON.stringify({
+          form,
+          step,
+          noRestrictions,
+          updatedAt: new Date().toISOString(),
+        }),
+      )
+    } catch {
+      /* ignore quota */
+    }
+  }, [form, step, noRestrictions])
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
 
@@ -128,13 +162,13 @@ export default function WorkoutPlanner() {
     }, 280)
   }
 
-  const handleDownloadExcel = () => {
+  const handleDownloadExcel = async () => {
     if (!plan) {
       showToast('Gere uma planilha antes de baixar o Excel.', 'info')
       return
     }
     try {
-      exportWorkoutToExcel(plan)
+      await exportWorkoutToExcel(plan)
       showToast('Planilha exportada para Excel!')
     } catch {
       showToast('Não foi possível exportar a planilha.', 'error')
@@ -146,12 +180,27 @@ export default function WorkoutPlanner() {
       showToast('Gere uma planilha antes de salvar.', 'info')
       return
     }
-    const workouts = planToWorkouts(plan)
-    if (!workouts.length) {
+    const nextWorkouts = planToWorkouts(plan)
+    if (!nextWorkouts.length) {
       showToast('Nenhum dia para salvar nesta planilha.', 'info')
       return
     }
-    addPlanWorkouts(workouts)
+
+    const planId = nextWorkouts[0]?.planId
+    const existing = (workouts || []).filter((w) => w.planId === planId)
+    const hasProgress = existing.some((w) => {
+      const s = String(w.status || '').toLowerCase()
+      return ['realizado', 'parcial', 'completed', 'done', 'partial'].includes(s)
+    })
+
+    if (hasProgress) {
+      const ok = window.confirm(
+        'Já existem dias desta planilha com progresso. Dias concluídos ou parciais serão preservados; os demais serão atualizados. Continuar?',
+      )
+      if (!ok) return
+    }
+
+    addPlanWorkouts(nextWorkouts)
   }
 
   const currentStep = STEPS.find((s) => s.id === step) || STEPS[0]
@@ -235,7 +284,7 @@ export default function WorkoutPlanner() {
         <SectionTitle
           tag="Planilha"
           title="Monte sua planilha ideal"
-          subtitle="Siga as etapas e gere um plano equilibrado para a sua rotina."
+          subtitle="Siga as etapas e gere um plano equilibrado para a sua rotina. Seu progresso no formulário é salvo automaticamente."
         />
 
         <div className="planner-wizard-progress" aria-label={`Etapa ${step} de ${STEPS.length}`}>

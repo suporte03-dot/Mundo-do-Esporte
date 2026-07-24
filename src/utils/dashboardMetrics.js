@@ -178,24 +178,54 @@ export function metricHint(key, metrics) {
 export function metricEmptyCopy(key) {
   switch (key) {
     case 'nextWorkout':
-      return { value: '—', hint: 'Agende no calendário ou gere uma planilha' }
+      return {
+        value: 'Nada agendado',
+        hint: 'Agende no calendário ou gere uma planilha',
+      }
     case 'weeklyWorkouts':
-      return { value: '—', hint: 'Conclua um treino para começar' }
+      return {
+        value: 'Sem treinos',
+        hint: 'Conclua um treino para começar a semana',
+      }
     case 'monthlyPerformancePct':
-      return { value: '—', hint: 'Precisa de volume em dois meses' }
+      return {
+        value: 'Sem dados',
+        hint: 'Conclua treinos em pelo menos duas semanas',
+      }
     case 'streak':
-      return { value: '—', hint: 'Complete treinos em dias seguidos' }
+      return {
+        value: 'Sem sequência',
+        hint: 'Complete treinos em dias seguidos',
+      }
     case 'totalVolume':
-      return { value: '—', hint: 'Registre cargas nas sessões' }
+      return {
+        value: 'Sem volume',
+        hint: 'Registre cargas nas sessões',
+      }
     case 'avgDuration':
-      return { value: '—', hint: 'Disponível após a 1ª sessão' }
+      return {
+        value: 'Sem média',
+        hint: 'Disponível após a 1ª sessão',
+      }
     case 'topMuscleGroup':
-      return { value: '—', hint: 'Aparece após treinos com volume' }
+      return {
+        value: 'Sem grupo',
+        hint: 'Aparece após treinos com volume',
+      }
     case 'restDays':
-      return { value: '—', hint: 'Com base nos últimos 7 dias' }
+      return {
+        value: 'Sem base',
+        hint: 'Com base nos últimos 7 dias',
+      }
     case 'activeGoals':
-      return { value: '—', hint: 'Defina metas em Perfil / Metas' }
+      return {
+        value: 'Sem metas',
+        hint: 'Defina metas em Perfil / Metas',
+      }
     default:
-      return { value: '—', hint: 'Sem dados suficientes' }
+      return {
+        value: 'Sem dados',
+        hint: 'Ainda não há informações suficientes',
+      }
   }
 }

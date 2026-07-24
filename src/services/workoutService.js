@@ -18,6 +18,8 @@ export function buildHistoryEntry(workoutId, sessionData) {
     durationMinutes: sessionData.durationMinutes,
     exercises: sessionData.exercises,
     notes: sessionData.notes || '',
+    partial: Boolean(sessionData.partial),
+    noSession: Boolean(sessionData.noSession),
   }
 }
 
