@@ -122,7 +122,7 @@
 .evoluafit-brand__identity {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 14px;
   min-width: 0;
   flex: 1;
   text-decoration: none;
@@ -130,8 +130,8 @@
 }
 
 .evoluafit-brand__mark {
-  width: 54px;
-  height: 54px;
+  width: 64px;
+  height: 64px;
   object-fit: contain;
   flex: 0 0 auto;
   filter: drop-shadow(0 0 7px rgba(34, 227, 182, 0.38));
@@ -228,8 +228,8 @@
 }
 
 .evoluafit-brand--collapsed .evoluafit-brand__mark {
-  width: 44px;
-  height: 44px;
+  width: 50px;
+  height: 50px;
 }
 
 .evoluafit-brand--collapsed .evoluafit-brand__collapse {
@@ -244,8 +244,8 @@
   }
 
   .evoluafit-brand__mark {
-    width: 48px;
-    height: 48px;
+    width: 58px;
+    height: 58px;
   }
 
   .evoluafit-brand__name {
@@ -282,7 +282,7 @@
   }
 
   .evoluafit-brand__mark {
-    width: 44px;
-    height: 44px;
+    width: 52px;
+    height: 52px;
   }
 }
